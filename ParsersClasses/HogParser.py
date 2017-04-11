@@ -12,7 +12,7 @@ PARAMETERS = "0,1.05,1,1,48,0.9,100"
 class HogParser(ObjectDetectionParser):
 
     def __init__(self, **kwargs):
-        super(ObjectDetectionParser, self).__init__(kwargs)
+        ObjectDetectionParser.__init__(self, **kwargs)
 
 
     _imgListPath = None

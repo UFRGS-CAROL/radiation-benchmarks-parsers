@@ -8,7 +8,7 @@ class LuleshParser(Parser):
 
 
     def __init__(self, **kwargs):
-        super(Parser, self).__init__(kwargs)
+        Parser.__init__(self, **kwargs)
 
     _box = 50
     _hasThirdDimention = True
@@ -130,7 +130,7 @@ class LuleshParser(Parser):
     def setSize(self, header):
         #for lulesh
         #structured:YES size:50 iterations:50
-        print "\n", header
+        # print "\n", header
         m = re.match(".*structured:YES.*size\:(\d+).*iterations:(\d+).*box:(\d+).*",header)
         if m:
             self._size = None

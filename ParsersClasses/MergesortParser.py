@@ -5,7 +5,7 @@ from SortParser import SortParser
 
 class MergesortParser(SortParser):
     def __init__(self, **kwargs):
-        super(SortParser, self).__init__(kwargs)
+        SortParser.__init__(self, **kwargs)
 
 
 

@@ -9,8 +9,8 @@ from sklearn.metrics import jaccard_similarity_score
 class LavaMDParser(Parser):
 
     def __init__(self, **kwargs):
-        super(Parser, self).__init__(kwargs)
-
+        # super(Parser, self).__init__(kwargs)
+        Parser.__init__(self, **kwargs)
 
     _box = None
     _blockSize = None

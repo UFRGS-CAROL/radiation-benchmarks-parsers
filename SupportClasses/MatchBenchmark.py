@@ -63,34 +63,8 @@ class MatchBenchmark():
                 self.__notMatchedBenchs.append(benchmark)
         return isBench
 
-            #raise BaseException
 
-            # isHotspot = re.search("hotspot", self.benchmark, flags=re.IGNORECASE)
 
-    # isGEMM = re.search("GEMM", self.benchmark, flags=re.IGNORECASE)
-    # isLavaMD = re.search("lavamd", self.benchmark, flags=re.IGNORECASE)
-    # isCLAMR = re.search("clamr", self.benchmark, flags=re.IGNORECASE)
-    # # algoritmos ACCL, NW, Lulesh, Mergesort e Quicksort
-    # isACCL = re.search("accl", self.benchmark, flags=re.IGNORECASE)
-    # isNW = re.search("nw", self.benchmark, flags=re.IGNORECASE)
-    # isLulesh = re.search("lulesh", self.benchmark, flags=re.IGNORECASE)
-    # isLud = re.search("lud", self.benchmark, flags=re.IGNORECASE)
-    # isMergesort = re.search("mergesort", self.benchmark, flags=re.IGNORECASE)
-    # isQuicksort = re.search("quicksort", self.benchmark, flags=re.IGNORECASE)
-    # isDarknet = re.search("darknet", self.benchmark, flags=re.IGNORECASE)
-    # isPyFaster = re.search("pyfasterrcnn", self.benchmark, flags=re.IGNORECASE)
-    # def turnBenchmarkOff(self):
-    #     if self.__benchSet:
-    #         self.__benchParser[self.__benchmark][0] = False
-
-    # #it is only for build image
-    # def matchBench(self, logFileName):
-    #     self.__logFileNameNoExt = logFileName
-    #     m = re.match("(.*).log", logFileName)
-    #
-    #     # for each header of each benchmark
-    #     if m:
-    #         self.__logFileNameNoExt = m.group(1)
     def checkNotDoneBenchs(self):
         if len(self.__notMatchedBenchs) == 0:
             return ""

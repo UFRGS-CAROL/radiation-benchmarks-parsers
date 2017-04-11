@@ -6,7 +6,7 @@ from Parser import Parser
 class NWParser(Parser):
 
     def __init__(self, **kwargs):
-        super(Parser, self).__init__(kwargs)
+        Parser.__init__(self, **kwargs)
 
     # Return [posX, posY, read, expected] -> [int, int, float, float]
     # Returns None if it is not possible to parse

@@ -6,7 +6,7 @@ from Parser import Parser
 class GemmParser(Parser):
 
     def __init__(self, **kwargs):
-        super(Parser, self).__init__(kwargs)
+        Parser.__init__(self, **kwargs)
 
 
     def getBenchmark(self):

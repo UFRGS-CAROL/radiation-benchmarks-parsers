@@ -4,7 +4,7 @@ import csv
 class SortParser(Parser):
 
     def __init__(self, **kwargs):
-        super(SortParser, self).__init__(kwargs)
+        Parser.__init__(self, **kwargs)
 
     #tem que setar essas variaveis no _relatievErrorParser
     _timestamp = None

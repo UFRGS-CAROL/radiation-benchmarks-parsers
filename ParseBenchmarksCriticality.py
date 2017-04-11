@@ -1,23 +1,15 @@
 #!/usr/bin/env python
 import sys
 from SupportClasses import MatchBenchmark
+from SupportClasses import WriteSDCDatabase
 import shelve
 import argparse
 import Parameters as par
-
-# temporary set
-buildImages = False
-size = 0
-
 
 # benchmarks dict => (bechmarkname_machinename : list of SDC item)
 # SDC item => [logfile name, header, sdc iteration, iteration total amount error, iteration accumulated error, list of errors ]
 # list of errors => list of strings with all the error detail print in lines using #ERR
 def parseErrors(benchmarkname_machinename, sdcItemList):
-    # matchBench = MatchBenchmark(sdcItemList, benchmarkname_machinename)
-    # benchmark = benchmarkname_machinename
-    # machine = benchmarkname_machinename
-
     sdci = 1
     totalSdcs = len(sdcItemList)
     matchBench = MatchBenchmark.MatchBenchmark()
@@ -43,12 +35,21 @@ def parseErrors(benchmarkname_machinename, sdcItemList):
         "\rProcessing SDC " + str(sdci - 1) + " of " + str(totalSdcs) + " - 100%                     " + "\n")
     sys.stdout.flush()
 
+
 def parse_args():
     """Parse input arguments."""
 
     parser = argparse.ArgumentParser(description='Parse logs for Neural Networks')
-    # parser.add_argument('--gold', dest='gold_dir', help='Directory where gold is located',
-    #                     default=GOLD_DIR, type=str)
+
+    parser.add_argument('--gen_database', dest='gen_data',
+                        help="if this flag is passed the other flags will have no effects. --gen_data <path where the parser must search for ALL LOGs FILES",
+                        default='')
+
+    parser.add_argument('--out_database', dest='out_data', help = "The output database name", default='./error_log_database')
+
+   # args = parser.parse_args()
+
+
     parser.add_argument('--database', dest='error_database',
                         help='Where database is located', default="errors_log_database")
 
@@ -58,7 +59,7 @@ def parse_args():
                              '\nnw, quicksort, accl, PyFasterRCNN, Lulesh, LUD, mergesort.'
                              ' Darknet benchmark needs --parse_layers parameter, which is False if no layer will be parsed, and True otherwise.'
                              ' Darknet, HOG, and PyFasterRCNN need a Precision and Recall threshold value.'
-                             'If you want a more correct radiation test result pass --check_csv flag', required=True)
+                             'If you want a more correct radiation test result pass --check_csv flag')
 
     parser.add_argument('--parse_layers', dest='parse_layers',
                         help='If you want parse Darknet layers, set it True, default values is False',
@@ -77,11 +78,11 @@ def parse_args():
                         help='If the boards have ecc this is passed, otherwise nothing must be passed', default=False,
                         action='store_true')
 
-    parser.add_argument('--is_fi', dest='is_fi', help='if it is a fault injection log processing', action='store_true', default=False)
+    parser.add_argument('--is_fi', dest='is_fi', help='if it is a fault injection log processing', action='store_true',
+                        default=False)
 
 
     args = parser.parse_args()
-
     return args
 
 
@@ -91,42 +92,27 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    #try:
-    benchlist = (str(args.benchmarks).lower()).split(',')
-    print args.parse_layers
-    par.setBenchmarks(
-        benchmarks=benchlist,
-        pr_threshold=args.pr_threshold,
-        parse_layers=args.parse_layers,
-        check_csv=args.check_csv,
-        ecc=args.ecc,
-        is_fi=args.is_fi
-    )
-# except:
-    #     print "SET ALL PARAMTERS CORRECTLY, error on set parameters"
-    #     sys.exit(-1)
 
-    # db = shelve.open("errors_log_database") #python3
-    db = shelve.open(args.error_database)  # python2
-    # jump = True
-    # for k, v in db.items(): #python3
-    for k, v in db.iteritems():  # python2
-        # isHotspot = re.search("Hotspot", k, flags=re.IGNORECASE)
-        # isGEMM = re.search("GEMM", k, flags=re.IGNORECASE)
-        # isLavaMD = re.search("lavamd", k, flags=re.IGNORECASE)
-        # isCLAMR = re.search("clamr", k, flags=re.IGNORECASE)
-        # # algoritmos ACCL, NW, Lulesh, Mergesort e Quicksort
-        # isACCL = re.search("accl", k, flags=re.IGNORECASE)
-        # isNW = re.search("nw", k, flags=re.IGNORECASE)
-        # isLulesh = re.search("lulesh", k, flags=re.IGNORECASE)
-        # isLud = re.search("lud", k, flags=re.IGNORECASE)
-        # isDarknet = re.search("darknet", k, flags=re.IGNORECASE)
-        # isPyFaster = re.search("pyfasterrcnn", k, flags=re.IGNORECASE)
-        #
-        # if isHotspot or isGEMM or isLavaMD or isACCL or isNW or isLulesh or isLud or isDarknet or isPyFaster:
-        print("Processing ", k)
-        parseErrors(k, v)
-        # else:
-        #     print("Ignoring ", k)
+    # generating error_log_database
+    if args.gen_data != '':
+        writeSDCData = WriteSDCDatabase.WriteSDCDatabase(path=str(args.gen_data),out=str(args.out_data))
+        writeSDCData.execute()
+    else:
 
-    db.close()
+        benchlist = (str(args.benchmarks).lower()).split(',')
+        print args.parse_layers
+        par.setBenchmarks(
+            benchmarks=benchlist,
+            pr_threshold=args.pr_threshold,
+            parse_layers=args.parse_layers,
+            check_csv=args.check_csv,
+            ecc=args.ecc,
+            is_fi=args.is_fi
+        )
+
+        db = shelve.open(args.error_database)
+        for k, v in db.iteritems():
+            print("Processing ", k)
+            parseErrors(k, v)
+
+        db.close()

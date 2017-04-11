@@ -4,9 +4,9 @@ from Parser import Parser
 import csv
 import copy
 
-#build image
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+# build image
+# import matplotlib.pyplot as plt
+# import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
 
@@ -19,7 +19,6 @@ class ImageRaw():
     def __init__(self, file):
         self.w, self.h = self.getImageSize(file)
         self.file = file
-
 
     def getImageSize(self, imgPath):
         # print imgPath
@@ -35,25 +34,25 @@ class ImageRaw():
             print "\n", imgPath
         return width, height
 
+
 class ObjectDetectionParser(Parser):
-    __metaclass__ =  ABCMeta
+    __metaclass__ = ABCMeta
     # precisionRecallObj = None
     _prThreshold = None
     _detectionThreshold = 0.2
 
-
-    #local radiation-benchmarks git
+    # local radiation-benchmarks git
     _localRadiationBench = ""
     # these strings in GOLD_BASE_DIR must be the directory paths of the gold logs for each machine
     _goldBaseDir = None
 
-    #used datasets
+    # used datasets
     _datasets = None
 
-    #output img dir
+    # output img dir
     _imgOutputDir = ''
 
-    #img list size
+    # img list size
     _imgListSize = 1000
 
     _iterations = None
@@ -67,24 +66,23 @@ class ObjectDetectionParser(Parser):
         self._goldBaseDir = kwargs.pop("goldBaseDir")
         self._datasets = kwargs.pop("datasets")
 
-
     _goldDatasetArray = dict()
     _goldFileName = None
     _imgListPath = None
 
     _classes = ['__background__',
-               'aeroplane', 'bicycle', 'bird', 'boat',
-               'bottle', 'bus', 'car', 'cat', 'chair',
-               'cow', 'diningtable', 'dog', 'horse',
-               'motorbike', 'person', 'pottedplant',
-               'sheep', 'sofa', 'train', 'tvmonitor']
+                'aeroplane', 'bicycle', 'bird', 'boat',
+                'bottle', 'bus', 'car', 'cat', 'chair',
+                'cow', 'diningtable', 'dog', 'horse',
+                'motorbike', 'person', 'pottedplant',
+                'sheep', 'sofa', 'train', 'tvmonitor']
 
-    #overiding csvheader
+    # overiding csvheader
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors",
-                             "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass",
-                             "y_center_of_mass", "precision", "recall", "false_negative", "false_positive",
-                             "true_positive", "abft_type", "row_detected_errors", "col_detected_errors",
-                    "header"]
+                  "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass",
+                  "y_center_of_mass", "precision", "recall", "false_negative", "false_positive",
+                  "true_positive", "abft_type", "row_detected_errors", "col_detected_errors",
+                  "header"]
 
     # ["gold_lines",
     #     "detected_lines", "x_center_of_mass", "y_center_of_mass", "precision",
@@ -108,7 +106,6 @@ class ObjectDetectionParser(Parser):
     def getBenchmark(self):
         return self._benchmark
 
-
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
@@ -127,18 +124,18 @@ class ObjectDetectionParser(Parser):
                           self._sdcIteration,
                           self._accIteErrors,
                           self._iteErrors, self._goldLines,
-            self._detectedLines,
-            self._wrongElements,
-            self._xCenterOfMass,
-            self._yCenterOfMass,
-            self._precision,
-            self._recall,
-            self._falseNegative,
-            self._falsePositive,
-            self._truePositive, self._abftType, self._rowDetErrors,
-                self._colDetErrors,
-            self._header
-            ]
+                          self._detectedLines,
+                          self._wrongElements,
+                          self._xCenterOfMass,
+                          self._yCenterOfMass,
+                          self._precision,
+                          self._recall,
+                          self._falseNegative,
+                          self._falsePositive,
+                          self._truePositive, self._abftType, self._rowDetErrors,
+                          self._colDetErrors,
+                          self._header
+                          ]
 
             # if self._abftType != 'no_abft' and self._abftType != None:
             #     outputList.extend([])
@@ -147,7 +144,7 @@ class ObjectDetectionParser(Parser):
             csvWFP.close()
 
         except:
-            #ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
+            # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
             print "Error on writing row to " + str(csvFileName)
             raise
 
@@ -164,8 +161,6 @@ class ObjectDetectionParser(Parser):
         temp = []
         for i in objList: temp.append(copy.deepcopy(i.deepcopy()))
         return temp
-
-
 
     def buildImageMethod(self, imageFile, rectanglesGold, rectanglesFound, logFileName, dir):
         im = np.array(Image.open(imageFile), dtype=np.uint8)
@@ -192,11 +187,10 @@ class ObjectDetectionParser(Parser):
 
         axG.title.set_text("gold")
 
-
         for rF in rectanglesFound:
             rectF = patches.Rectangle((rF.left, rF.bottom), rF.width,
-                                     rF.height, linewidth=1, edgecolor='g',
-                                     facecolor='none')
+                                      rF.height, linewidth=1, edgecolor='g',
+                                      facecolor='none')
             axF.add_patch(rectF)
         axF.title.set_text("found")
 
