@@ -8,7 +8,10 @@ TODO: Describe the installation process
 
 ## Usage
 
-usage: ParseBenchmarksCriticality.py [-h] [--gen_database GEN_DATA]
+usage: ParseBenchmarksCriticality.py
+
+                                     [-h]
+                                     [--gen_database GEN_DATA]
                                      [--out_database OUT_DATA]
                                      [--database ERROR_DATABASE]
                                      [--benchmarks BENCHMARKS]
@@ -19,37 +22,68 @@ usage: ParseBenchmarksCriticality.py [-h] [--gen_database GEN_DATA]
 Parse logs for Neural Networks
 
 optional arguments:
+
   -h, --help            show this help message and exit
-  --gen_database GEN_DATA
-                        if this flag is passed the other flags will have no
+
+  --gen_database <GEN_DATA>
+
+                        If this flag is passed the other flags will have no
                         effects. --gen_data <path where the parser must search
                         for ALL LOGs FILES
-  --out_database OUT_DATA
+
+  --out_database <OUT_DATA>
+
                         The output database name
-  --database ERROR_DATABASE
+
+  --database <ERROR_DATABASE>
+
                         Where database is located
-  --benchmarks BENCHMARKS
+
+  --benchmarks <BENCHMARKS>
+
                         A list separated by ',' (commas with no sapace) where
                         each item will be the benchmarks that parser will
-                        process. Availiable parsers: Darknet, Hotspot, GEMM,
-                        HOG, lavamd nw, quicksort, accl, PyFasterRCNN, Lulesh,
-                        LUD, mergesort. Darknet benchmark needs --parse_layers
-                        parameter, which is False if no layer will be parsed,
-                        and True otherwise. Darknet, HOG, and PyFasterRCNN
-                        need a Precision and Recall threshold value.If you
-                        want a more correct radiation test result pass
-                        --check_csv flag
-  --parse_layers        If you want parse Darknet layers, set it True, default
+                        process. Availiable parsers:
+
+                        * Darknet --> needs --parse_layers and a Precision and Recall threshold value.
+                        * Hotspot
+                        * GEMM,
+                        * HOG --> needs a Precision and Recall threshold value.
+                        * lavamd
+                        * nw
+                        * quicksort
+                        * accl
+                        * PyFasterRCNN --> needs a Precision and Recall threshold value.
+                        * Lulesh
+                        * LUD
+                        * mergesort
+
+
+  --parse_layers
+
+                        If you want parse Darknet layers, set it True, default
                         values is False
-  --pr_threshold PR_THRESHOLD
+
+  --pr_threshold <PR_THRESHOLD>
+
                         Precision and Recall threshold value,0 - 1, defautl
                         value is 0.5
-  --check_csv           This parameter will open a csv file which contains all
+
+  --check_csv
+
+                        This parameter will open a csv file which contains all
                         radiation test runs, then it will check if every SDC
                         is on a valid run, default is false
-  --ecc                 If the boards have ecc this is passed, otherwise
+
+
+  --ecc
+
+                        If the boards have ecc this is passed, otherwise
                         nothing must be passed
-  --is_fi               if it is a fault injection log processing
+
+  --is_fi
+
+                        if it is a fault injection log processing
 
 
 ## Contributing
