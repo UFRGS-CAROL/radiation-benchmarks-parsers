@@ -100,7 +100,7 @@ if __name__ == '__main__':
     else:
 
         benchlist = (str(args.benchmarks).lower()).split(',')
-        print args.parse_layers
+
         par.setBenchmarks(
             benchmarks=benchlist,
             pr_threshold=args.pr_threshold,

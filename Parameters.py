@@ -80,6 +80,13 @@ FASTER_RCNN_DATASETS = {
 
 
 ############################################################################################
+################################## HOG PARSER PARAMETERS ###################################
+############################################################################################
+HOG_GOLD_BASE_DIR = "/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/histogram_ori_gradients/"
+HOG_DATASETS = 'urbanstreet'
+
+
+############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
 
@@ -106,16 +113,24 @@ def setBenchmarks(**kwargs):
                                                    layersPath=LAYERS_PATH,
                                                    imgOutputDir=IMG_OUTPUT_DIR,
                                                    localRadiationBench=LOCAL_RADIATION_BENCH,
-                                                   check_csv= checkCsv,
-                                                   ecc= ecc,
-                                                   is_fi= isFi,
-                                                   goldBaseDir = GOLD_BASE_DIR,
+                                                   check_csv=checkCsv,
+                                                   ecc=ecc,
+                                                   is_fi=isFi,
+                                                   goldBaseDir=GOLD_BASE_DIR,
                                                    datasets=DARKNET_DATASETS
                                                    )
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser()
         elif i == 'hog':
-            benchObj = HogParser.HogParser()
+            benchObj = HogParser.HogParser(
+                prThreshold=pr_threshold,
+                imgOutputDir=IMG_OUTPUT_DIR,
+                localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc,
+                goldBaseDir=HOG_GOLD_BASE_DIR,
+                datasets=HOG_DATASETS
+            )
         elif i == 'lavamd':
             benchObj = LavaMDParser.LavaMDParser()
         elif i == 'mergesort':
@@ -128,15 +143,15 @@ def setBenchmarks(**kwargs):
             benchObj = ACCLParser.ACCLParser()
         elif i == 'pyfasterrcnn':
             benchObj = FasterRcnnParser.FasterRcnnParser(
-                                                   prThreshold=pr_threshold,
-                                                   imgOutputDir=IMG_OUTPUT_DIR,
-                                                   localRadiationBench=LOCAL_RADIATION_BENCH,
-                                                   check_csv= checkCsv,
-                                                   ecc= ecc,
-                                                   is_fi= isFi,
-                                                   goldBaseDir = GOLD_BASE_DIR,
-                                                   datasets=FASTER_RCNN_DATASETS
-                                                         )
+                prThreshold=pr_threshold,
+                imgOutputDir=IMG_OUTPUT_DIR,
+                localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc,
+                is_fi=isFi,
+                goldBaseDir=GOLD_BASE_DIR,
+                datasets=FASTER_RCNN_DATASETS
+            )
         elif i == 'lulesh':
             benchObj = LuleshParser.LuleshParser()
         elif i == 'lud':
@@ -147,4 +162,3 @@ def setBenchmarks(**kwargs):
         radiationBenchmarks[i] = benchObj
 
     print ""
-
