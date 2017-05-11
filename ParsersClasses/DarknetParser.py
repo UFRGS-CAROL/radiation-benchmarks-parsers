@@ -99,7 +99,7 @@ class DarknetParser(ObjectDetectionParser):
             sys.exit(-1)
 
     _failed_layer = None
-    
+
     def getMaskableHeaderName(self, layerNum):
         # layer<layerNum>MaskableErrorsNum
         maskableHeaderName = 'layer' + str(layerNum) + 'MaskableErrorsNum'
