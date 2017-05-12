@@ -10,6 +10,7 @@ from ParsersClasses import LudParser
 from ParsersClasses import LuleshParser
 from ParsersClasses import MergesortParser
 from ParsersClasses import QuicksortParser
+from ParsersClasses import DarknetV2Parser
 
 ############################################################################################
 #################################DARKNET PARSER PARAMETERS##################################
@@ -118,6 +119,16 @@ def setBenchmarks(**kwargs):
                                                    is_fi=isFi,
                                                    goldBaseDir=GOLD_BASE_DIR,
                                                    datasets=DARKNET_DATASETS
+                                                   )
+        if i == 'darknetv2':
+            benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
+                                                   prThreshold=pr_threshold,
+                                                   layersGoldPath=LAYERS_GOLD_PATH,
+                                                   layersPath=LAYERS_PATH,
+                                                   imgOutputDir=IMG_OUTPUT_DIR,
+                                                   localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                   check_csv=checkCsv,
+                                                   goldBaseDir=GOLD_BASE_DIR,
                                                    )
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser()

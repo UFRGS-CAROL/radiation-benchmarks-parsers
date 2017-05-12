@@ -10,7 +10,7 @@ from SupportClasses import PrecisionAndRecall
 from SupportClasses import _GoldContent
 
 
-class DarknetParser(ObjectDetectionParser):
+class DarknetV2Parser(ObjectDetectionParser):
     __executionType = None
     __executionModel = None
 
@@ -652,53 +652,53 @@ class DarknetParser(ObjectDetectionParser):
         if len(errList) <= 0:
             return
 
-        goldKey = self._machine + "_" + self._benchmark + "_" + self._goldFileName
-
-        if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/darknet/" + self._goldFileName
-        else:
-            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
-            return
-
-        if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknet', filepath=goldPath)
-            self._goldDatasetArray[goldKey] = g
-
-        gold = self._goldDatasetArray[goldKey]
-        imgFilename = ''
-        imgObj = ImageRaw(imgFilename)
-
-        gValidRects = []
-        fValidRects = []
-        for i in errList:
-            pass
-
-
-        precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
-        gValidSize = len(gValidRects)
-        fValidSize = len(fValidRects)
-
-        precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
-        self._precision = precisionRecallObj.getPrecision()
-        self._recall = precisionRecallObj.getRecall()
-
-        if self._parseLayers:  # and self.hasLayerLogs(self._sdcIteration):
-            # print self._sdcIteration + 'debug'
-            self.parseLayers()
-            # print self._machine + self._abftType
-
-        if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
-            self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
-                                  + '_' + self._logFileName, self._imgOutputDir)
-
-        self._falseNegative = precisionRecallObj.getFalseNegative()
-        self._falsePositive = precisionRecallObj.getFalsePositive()
-        self._truePositive = precisionRecallObj.getTruePositive()
-        # set all
-        self._goldLines = gValidSize
-        self._detectedLines = fValidSize
-        self._xCenterOfMass, self._yCenterOfMass = precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
-                                                                                              imgObj.w, imgObj.h)
+        # goldKey = self._machine + "_" + self._benchmark + "_" + self._goldFileName
+        #
+        # if self._machine in self._goldBaseDir:
+        #     goldPath = self._goldBaseDir[self._machine] + "/darknet/" + self._goldFileName
+        # else:
+        #     print 'not indexed machine: ', self._machine, " set it on Parameters.py"
+        #     return
+        #
+        # if goldKey not in self._goldDatasetArray:
+        #     g = _GoldContent._GoldContent(nn='darknet', filepath=goldPath)
+        #     self._goldDatasetArray[goldKey] = g
+        #
+        # gold = self._goldDatasetArray[goldKey]
+        # imgFilename = ''
+        # imgObj = ImageRaw(imgFilename)
+        #
+        # gValidRects = []
+        # fValidRects = []
+        # for i in errList:
+        #     pass
+        #
+        #
+        # precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
+        # gValidSize = len(gValidRects)
+        # fValidSize = len(fValidRects)
+        #
+        # precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
+        # self._precision = precisionRecallObj.getPrecision()
+        # self._recall = precisionRecallObj.getRecall()
+        #
+        # if self._parseLayers:  # and self.hasLayerLogs(self._sdcIteration):
+        #     # print self._sdcIteration + 'debug'
+        #     self.parseLayers()
+        #     # print self._machine + self._abftType
+        #
+        # if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
+        #     self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
+        #                           + '_' + self._logFileName, self._imgOutputDir)
+        #
+        # self._falseNegative = precisionRecallObj.getFalseNegative()
+        # self._falsePositive = precisionRecallObj.getFalsePositive()
+        # self._truePositive = precisionRecallObj.getTruePositive()
+        # # set all
+        # self._goldLines = gValidSize
+        # self._detectedLines = fValidSize
+        # self._xCenterOfMass, self._yCenterOfMass = precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
+        #                                                                                       imgObj.w, imgObj.h)
 
 
     # parse Darknet
@@ -707,92 +707,11 @@ class DarknetParser(ObjectDetectionParser):
         # parse errString for darknet
         ret = {}
         imgListPosition = ""
-        if 'boxes' in errString:
-            dictBox, imgListPosition = self.__processBoxes(errString)
-            if len(dictBox) > 0:
-                ret["boxes"] = dictBox
-                ret["type"] = "boxes"
-        elif 'probs' in errString:
-            dictProbs, imgListPosition = self.__processProbs(errString)
-            if len(dictProbs) > 0:
-                ret["probs"] = dictProbs
-                ret["type"] = "probs"
-        elif 'INF' in errString:
-            dictAbft, imgListPosition = self.__processAbft(errString)
-            if len(dictAbft) > 0:
-                ret["abft_det"] = dictAbft
-                ret["type"] = "abft"
 
-        if imgListPosition != "":
-            ret["img_list_position"] = int(imgListPosition)
 
         return ret if len(ret) > 0 else None
 
 
-    def __processBoxes(self, errString):
-        ret = {}
-        imgListPosition = ""
-        # ERR image_list_position: [823] boxes: [0]  x_r:
-        # 6.7088904380798340e+00 x_e: 6.7152066230773926e+00 x_diff:
-        # 6.3161849975585938e-03 y_r: 4.9068140983581543e+00 y_e:
-        # 4.9818339347839355e+00 y_diff: 7.5019836425781250e-02 w_r:
-        # 2.1113674640655518e+00 w_e: 2.1666510105133057e+00 w_diff:
-        # 5.5283546447753906e-02 h_r: 3.4393796920776367e+00 h_e:
-        # 3.4377186298370361e+00 h_diff: 1.6610622406005859e-03
-        image_err = re.match(
-            ".*image_list_position\: \[(\d+)\].*boxes\: \[(\d+)\].*x_r\: (\S+).*x_e\: (\S+).*x_diff\:"
-            " (\S+).*y_r\: (\S+).*y_e\: (\S+).*y_diff\: (\S+).*w_r\: (\S+).*w_e\: (\S+).*w_diff\:"
-            " (\S+).*h_r\: (\S+).*h_e\: (\S+).*h_diff\: (\S+).*", errString)
-
-        if image_err:
-            try:
-                pass
-            except:
-                print "Error on parsing boxes"
-                raise
 
 
 
-        return ret, imgListPosition
-
-
-    def __processProbs(self, errString):
-        ret = {}
-        imgListPosition = ""
-        image_err = re.match(
-            ".*image_list_position\: \[(\d+)\].*probs\: \[(\d+),"
-            "(\d+)\].*prob_r\: ([0-9e\+\-\.]+).*prob_e\: ([0-9e\+\-\.]+).*",
-            errString)
-        if image_err:
-            try:
-                imgListPosition = image_err.group(1)
-                ret["probs_x"] = image_err.group(2)
-                ret["probs_y"] = image_err.group(3)
-                ret["prob_r"] = image_err.group(4)
-                ret["prob_e"] = image_err.group(5)
-                # if math.fabs(float(ret["prob_r"]) - float(ret["prob_e"])) > 0.1:
-                #     print float(ret["prob_r"]) - float(ret["prob_e"])
-            except:
-                print "Error on parsing probs"
-                raise
-
-        return ret, imgListPosition
-
-
-    def __processAbft(self, errString):
-        # INF abft_type: dumb image_list_position: [151] row_detected_errors: 1 col_detected_errors: 1
-        m = re.match(
-            ".*abft_type\: (\S+).*image_list_position\: \[(\d+)\].*row_detected_errors\:"
-            " (\d+).*col_detected_errors\: (\d+).*", errString)
-        ret = {}
-        imgListPosition = ""
-        if m:
-            try:
-                imgListPosition = str(m.group(2))
-                ret["row_detected_errors"] = int(m.group(3))
-                ret["col_detected_errors"] = int(m.group(4))
-            except:
-                print "Error on parsing abft info"
-                raise
-
-        return ret, imgListPosition
