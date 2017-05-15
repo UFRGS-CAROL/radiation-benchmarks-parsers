@@ -1,4 +1,5 @@
 import copy
+import csv
 import math
 import pickle
 from ctypes import *
@@ -46,6 +47,24 @@ class _GoldContent():
     __totalSize = 0
     __prob_array = {}
     __pyFasterGold = []
+
+    # args->thresh,
+    #  args->hier_thresh, img_list_size, args->img_list_path,
+    #  args->config_file, args->cfg_data, args->model, args->weights,
+    #                   total, classes
+
+    # for darknetv2
+    __thesh = 0
+    __hierThresh = 0
+    __configFile = ''
+    __cfgData = ''
+    __model = ''
+    __weights = ''
+    __nn = None
+
+
+
+
     pyFasterImgList = ""
 
     # return a dict that look like this
@@ -62,15 +81,18 @@ class _GoldContent():
     def __init__(self, **kwargs):
         #use keyargs
         try:
-            nn = kwargs.pop("nn")
+            self.__nn = kwargs.pop("nn")
             filePath = kwargs.pop("filepath")
 
-            if "darknet" in nn:
+            if "darknet" == self.__nn:
                 self.darknetConstructor(filePath)
-            elif "pyfaster" in nn:
+            elif "pyfaster" == self.__nn:
                 self.pyFasterConstructor(filePath)
+
+            elif "darknetv2" == self.__nn:
+                self.darknetV2Constructor(filePath)
         except:
-            pass
+            raise
 
 
     def getTotalSize(self): return self.__totalSize
@@ -81,7 +103,11 @@ class _GoldContent():
     def getRectArray(self):
         return self.__prob_array['boxes']
 
-    def getProbArray(self):
+    def getProbArray(self, **kwargs):
+        if self.__nn == 'darknetv2':
+            imgPath = kwargs.pop('imgPath')
+            return self.__prob_array[imgPath]
+
         return self.__prob_array['probs']
 
     def darknetConstructor(self, filePath):
@@ -172,7 +198,56 @@ class _GoldContent():
         return prob
 
 
+    def darknetV2Constructor(self, filePath):
+        csvfile = open(filePath, 'rb')
 
-# gold = _GoldContent(nn='darknet', filepath="/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/darknet/gold.voc.2012.1K.test")
+        spamreader = csv.reader(csvfile, delimiter=';')
+        header = next(spamreader)
+        print "ate aqui", header
+        # args->thresh,
+        #  args->hier_thresh, img_list_size, args->img_list_path,
+        #  args->config_file, args->cfg_data, args->model, args->weights,
+        #                   total, classes);
+        self.__thesh = float(header[0])
+        self.__hierThresh = float(header[1])
+        self.__plistSize = int(header[2])
+        #ignore img_list_path header[3]
+        self.__configFile = str(header[4])
+        self.__cfgData = str(header[5])
+        self.__model = str(header[6])
+        self.__weights = str(header[7])
+        self.__totalSize = int(header[8])
+        self.__classes = int(header[9])
+
+        for i, row in enumerate(spamreader):
+            print row
+            self.__prob_array[str(row[0])] = self.readProbsAndBoxesV2(spamreader)
+
+        csvfile.close()
+
+    def readProbsAndBoxesV2(self, spamreader):
+        prob = np.empty((self.__totalSize, self.__classes), dtype=float)
+        boxes = np.empty(self.__totalSize, dtype=object)
+
+
+        for i in xrange(0,self.__totalSize):
+            line = next(spamreader)
+            left = float(line[1])
+            bottom = float(line[2])
+            h = float(line[3])
+            w = float(line[4])
+            class_ = int(line[5])
+
+            prob[i][class_] = float(line[0]);
+            boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
+
+        return prob, boxes
+
+
+# temp = _GoldContent(nn='darknetv2', filepath='/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/darknet_v2/temp.csv')
 #
-# print gold.getRectArray()[77][31]
+# # print temp
+# prob = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[0]
+# boxes = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[1]
+# for i in boxes:
+#     print i

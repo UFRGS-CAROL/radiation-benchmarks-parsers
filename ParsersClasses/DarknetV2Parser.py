@@ -88,8 +88,8 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
         self._sizeOfDNN = 32
-        self._allProperties = [self._smallestError, self._biggestError, self._numErrors, self._errorsAverage,
-                               self._errorsStdDeviation, self._numMaskableErrors]
+        # self._allProperties = [self._smallestError, self._biggestError, self._numErrors, self._errorsAverage,
+        #                        self._errorsStdDeviation, self._numMaskableErrors]
 
         try:
             if self._parseLayers:
