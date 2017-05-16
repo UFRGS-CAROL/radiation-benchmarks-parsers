@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import csv
+
 import numpy as np
 import struct
 
@@ -47,7 +49,7 @@ class GenerateLayersHistogram():
 
     # returns the opened layers if files were found
     # an empty dict otherwise
-    def openLayersImg(self, imgNumber, layersFilePath):
+    def openLayersImg(self, imgNumber, layersFilePath, imgName):
         retDict = {}
         for i in self.__layerDimentions:
             goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
@@ -59,11 +61,15 @@ class GenerateLayersHistogram():
             logLayerArray = self.tupleToArray(layerContents=logLayerContents, layerSize=layerSize)
             fi.close()
 
-            #calculate the min an max values
+            # calculate the min an max values
             sortedArray = np.sort(logLayerArray, kind='mergesort')
 
             if layerSize > 0:
-                retDict[i] = {'min':sortedArray[0], 'max':sortedArray[len(sortedArray) - 1], 'img':imgNumber}
+                retDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName}
+            else:
+                retDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName}
+
+
 
         return retDict
 
@@ -74,8 +80,19 @@ class GenerateLayersHistogram():
 
 if __name__ == '__main__':
     hist = GenerateLayersHistogram()
-    values = hist.openLayersImg(0, "/home/fernando/git_pesquisa/radiation-benchmarks/radiation-benchmarks-parsers/SupportClasses/temp_layers/")
+    texts = ["/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.1K.txt",
+             "/home/carol/radiation-benchmarks/data/networks_img_list/voc.2012.1K.txt",
+             "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.critical.1K.txt"]
+    layersPath = ""
+    csvFilePath = "temp.csv"
+    csvFile = open(csvFilePath, "a")
+    fieldnames = ['min', 'max', 'imgNumber', 'imgName']
+    writer = csv.DictWriter(csvFile, fieldnames=fieldnames)
+    writer.writeheader()
+    for txtList in texts:
+        # read lines
+        lines = open(txtList, "r").readlines()
 
-    for i in values:
-        print "min " , values[i]['min'], " max " , values[i]['max'], " i " , i
-
+        for i, line in enumerate(lines):
+            dict = hist.openLayersImg(i, layersPath, line)
+            writer.writerow(dict)
