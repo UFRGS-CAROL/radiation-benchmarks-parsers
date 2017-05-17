@@ -10,7 +10,8 @@ class GenerateLayersHistogram():
     csvFilePath = ""
     csvFile = None
     writer = None
-    lineDict = {}
+    finalInfo = []
+
     def __init__(self, **kwargs):
         self.csvFilePath = kwargs.pop("csvFile")
         fieldnames = kwargs.pop("fieldnames")
@@ -69,7 +70,7 @@ class GenerateLayersHistogram():
     # returns the opened layers if files were found
     # an empty dict otherwise
     def openLayersImg(self, imgNumber, layersFilePath, imgName):
-        self.lineDict.clear()
+        lineDict = {}
         for i in self.__layerDimentions:
             goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
             width, height, depth = self.__layerDimentions[i]
@@ -84,16 +85,44 @@ class GenerateLayersHistogram():
             sortedArray = np.sort(logLayerArray, kind='mergesort')
 
             if layerSize > 0:
-                self.lineDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
+                lineDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
             else:
-                self.lineDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
+                lineDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
+
+        return lineDict
+
+    def writeToCSV(self):
+        # for i in self.lineDict:
+        #     # print self.lineDict[i]
+        #     self.writer.writerow(self.lineDict[i])
+        localMin = {}
+        localMax = {}
+
+        for i in self.finalInfo:
+            for j in xrange(0,32):
+                min_l = i[j]['min']
+                max_l = i[j]['max']
+                if localMin[j] > min_l:
+                    localMin[j] = i[j]
+
+                if localMax[j] < max_l:
+                    localMax[j] = i[j]
+
+        for i in localMax:
+            self.writer.writerow(localMax[i])
+
+        self.writer.writerow({'min': "Min values", 'max': "", 'imgNumber': "", 'imgName': "", 'layer':""})
+
+        for i in localMin:
+            self.writer.writerow(localMin[i])
 
 
-    def writeToCSV(self, i, layers, line):
-        hist.openLayersImg(i, layers, line)
-        for i in self.lineDict:
-            # print self.lineDict[i]
-            self.writer.writerow(self.lineDict[i])
+    def generateInfo(self, lines, layers):
+        for i, line in enumerate(lines):
+            print "Processing layers from img:", line.rstrip() , "i:", i
+            # hist.writeToCSV(i, layersPath, line)
+            self.finalInfo.append(hist.openLayersImg(i, layers, line))
+
 
 ###########################################
 # MAIN
@@ -115,9 +144,8 @@ if __name__ == '__main__':
     for txtList in texts:
         # read lines
         lines = open(txtList, "r").readlines()
+        hist.generateInfo(lines, layersPath)
 
-        for i, line in enumerate(lines):
-            print "Processing layers from img:", line.rstrip() , "i:", i
-            hist.writeToCSV(i, layersPath, line)
+    hist.writeToCSV()
 
     hist.closeCsv()
