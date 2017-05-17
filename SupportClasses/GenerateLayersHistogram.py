@@ -3,9 +3,28 @@ import csv
 
 import numpy as np
 import struct
-
+import os
 
 class GenerateLayersHistogram():
+
+    csvFilePath = ""
+    csvFile = None
+    writer = None
+    lineDict = {}
+    def __init__(self, **kwargs):
+        self.csvFilePath = kwargs.pop("csvFile")
+        fieldnames = kwargs.pop("fieldnames")
+        fileExists = os.path.isfile(self.csvFilePath)
+
+        self.csvFile = open(self.csvFilePath, "a")
+        self.writer = csv.DictWriter(self.csvFile, fieldnames=fieldnames, delimiter=';')
+
+        if not fileExists:
+            self.writer.writeheader()
+
+    def closeCsv(self):
+        self.csvFile.close()
+
     __layerDimentions = {
         0: [608, 608, 32],
         1: [304, 304, 32],
@@ -50,7 +69,7 @@ class GenerateLayersHistogram():
     # returns the opened layers if files were found
     # an empty dict otherwise
     def openLayersImg(self, imgNumber, layersFilePath, imgName):
-        retDict = {}
+        self.lineDict.clear()
         for i in self.__layerDimentions:
             goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
             width, height, depth = self.__layerDimentions[i]
@@ -65,34 +84,40 @@ class GenerateLayersHistogram():
             sortedArray = np.sort(logLayerArray, kind='mergesort')
 
             if layerSize > 0:
-                retDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName}
+                self.lineDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
             else:
-                retDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName}
+                self.lineDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
 
 
-
-        return retDict
-
+    def writeToCSV(self, i, layers, line):
+        hist.openLayersImg(i, layers, line)
+        for i in self.lineDict:
+            # print self.lineDict[i]
+            self.writer.writerow(self.lineDict[i])
 
 ###########################################
 # MAIN
 ###########################################'
 
 if __name__ == '__main__':
-    hist = GenerateLayersHistogram()
-    texts = ["/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.1K.txt",
-             "/home/carol/radiation-benchmarks/data/networks_img_list/voc.2012.1K.txt",
-             "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.critical.1K.txt"]
-    layersPath = ""
+    # to set vars
     csvFilePath = "temp.csv"
-    csvFile = open(csvFilePath, "a")
-    fieldnames = ['min', 'max', 'imgNumber', 'imgName']
-    writer = csv.DictWriter(csvFile, fieldnames=fieldnames)
-    writer.writeheader()
+    layersPath = "temp_layers/"
+    texts = ["temp.txt"]
+            # "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.1K.txt",]
+             # "/home/carol/radiation-benchmarks/data/networks_img_list/voc.2012.1K.txt",
+             # "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.critical.1K.txt"]
+
+    ##################
+    fieldnames = ['min', 'max', 'imgNumber', 'imgName', 'layer']
+    hist = GenerateLayersHistogram(csvFile=csvFilePath, fieldnames=fieldnames)
+
     for txtList in texts:
         # read lines
         lines = open(txtList, "r").readlines()
 
         for i, line in enumerate(lines):
-            dict = hist.openLayersImg(i, layersPath, line)
-            writer.writerow(dict)
+            print "Processing layers from img:", line.rstrip() , "i:", i
+            hist.writeToCSV(i, layersPath, line)
+
+    hist.closeCsv()
