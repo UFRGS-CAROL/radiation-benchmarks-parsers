@@ -684,7 +684,7 @@ class DarknetParser(ObjectDetectionParser):
                 self._errorsStdDeviation['allErrors'][i] = stdDeviation
                 self._numMaskableErrors[i] = numMaskableErrors
                 self._numCorrectableErrors[i] = numCorrectableErrors
-                if numLayer in [0, 2, 7, 18]:
+                if i in [0, 2, 7, 18]:
                     print ("\nDEBUG\ncamada: " + str(i) + "\nnumCorrectableErrors: " + str(numCorrectableErrors) + " / " + str(self._numErrors['allErrors'][i]) )
                 #print('\n numMaskableErrors: ' + str(numMaskableErrors) + ' :: ' + str(self._numMaskableErrors[i]))
                 if (self._errorFound):
