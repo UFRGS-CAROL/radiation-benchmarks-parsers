@@ -32,6 +32,7 @@ class DarknetParser(ObjectDetectionParser):
     _errorsAverage = None
     _errorsStdDeviation = None
     _numMaskableErrors = None
+    _numCorrectableErrors = None
 
     __layerDimentions = {
         0: [224, 224, 64],
@@ -99,6 +100,10 @@ class DarknetParser(ObjectDetectionParser):
             sys.exit(-1)
 
     _failed_layer = None
+    
+    def getNumCorrectableErrorsHeaderName(self, layerNum):
+        # layer<layerNum>CorrectableErrorsNum
+        correctableHeaderName = 'layer' + str(layerNum) + 'CorrectableErrorsNum'
 
     def getMaskableHeaderName(self, layerNum):
         # layer<layerNum>MaskableErrorsNum
@@ -539,7 +544,49 @@ class DarknetParser(ObjectDetectionParser):
                     layerArray[arrayIndex] = layer[i][j][k]
         return layerArray
 
-    def getErrorListInfos(self, layerErrorList):
+    def existsErrorNeighbor(self, layerError, layerErrorList):
+        #retorna True se existe erros vizinhos ao erro em questao
+        #retorna False caso contrario
+        for otherLayerError in layerErrorList:
+            if( otherLayerError != layerError):
+                # erros imediatamente ao lado
+                if (layerError[0] == otherLayerError[0] + 1)\
+                    and (layerError[1] == otherLayerError[1])\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0] - 1)\
+                    and (layerError[1] == otherLayerError[1])\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0])\
+                    and (layerError[1] == otherLayerError[1] + 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0])\
+                    and (layerError[1] == otherLayerError[1] - 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                # erros diagonais xy:
+                if (layerError[0] == otherLayerError[0] + 1)\
+                    and (layerError[1] == otherLayerError[1] + 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0] - 1)\
+                    and (layerError[1] == otherLayerError[1] - 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0] + 1)\
+                    and (layerError[1] == otherLayerError[1] - 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+                if (layerError[0] == otherLayerError[0] - 1)\
+                    and (layerError[1] == otherLayerError[1] + 1)\
+                    and (layerError[2] == otherLayerError[2]):
+                        return True
+        # se nao achou nenhum vizinho ate aqui, eh pq nao tem nenhum
+        return False
+
+    def getErrorListInfos(self, layerErrorList, numLayer):
         # layerError :: xPos, yPos, zPos, found(?), expected(?)
         smallest = 0.0
         biggest = 0.0
@@ -547,20 +594,17 @@ class DarknetParser(ObjectDetectionParser):
         stdDeviation = 0.0
         maxpoolAbftThreshold = 110
         numMaskableErrors = 0
+        numCorrectableErrors = 0
         # totalSum = long(0)
         relativeErrorsList = []
+        
         for layerError in layerErrorList:
-            #print('\nlayer error: ' + str(layerError))
-	    if(abs(layerError[3]) > maxpoolAbftThreshold):
+            if(abs(layerError[3]) > maxpoolAbftThreshold):
                 numMaskableErrors +=1
+                
             relativeError = self.getRelativeError(layerError[4], layerError[3])
-            #if(relativeError>1000000000):#debug
-		#print('big relative error, value: ' + str(layerError[3]))
-		#print('numMaskableErrors: ' + str(numMaskableErrors))
-	    relativeErrorsList.append(relativeError)
-            #print('\nlayer error: ' + str(layerError))
-            #print('relative error: ' + str(relativeError))
-	    # totalSum = totalSum + relativeError
+            relativeErrorsList.append(relativeError)
+            
             average += relativeError / len(layerErrorList)
 
             if (smallest == 0.0 and biggest == 0.0):
@@ -571,14 +615,29 @@ class DarknetParser(ObjectDetectionParser):
                     smallest = relativeError
                 if (relativeError > biggest):
                     biggest = relativeError
-        # print('\ndebug totalSum: ' + str(totalSum))
-        # average = totalSum/len(layerErrorList)
-        # average = numpy.average(relativeErrorsList)
+        
         if (average != 0.0):
             stdDeviation = numpy.std(relativeErrorsList)
+        
+        # calculando numCorrectableErrors:
+        if numLayer in [0, 2, 7, 18]: #layers logo antes dos maxpooling
+            for layerError in layerErrorList:
+                #print('\nlayer error: ' + str(layerError))
+                if(layerError[1] == -1) and (layerError[2] == -1):
+                    # layer 1D: nao existe maxpooling,
+                    #         entao nao tem erros corrigiveis pelo smartpooling
+                    pass                
+                elif((layerError[1] == -1) or (layerError[2] == -1)):
+                    #somente y ou z tem -1: erro
+                    print ('ERRO\nsomente y ou z tem -1\n')
+                    print('\nlayer error: ' + str(layerError) + '\n\n')
+                else:
+                    # layer 3D
+                    if( not self.existsErrorNeighbor(layerError, layerErrorList) ):
+                        numCorrectableErrors += 1
 
-	#print('debug numMaskableErrors: ' + str(numMaskableErrors))
-        return smallest, biggest, average, stdDeviation, numMaskableErrors
+        #print('debug numMaskableErrors: ' + str(numMaskableErrors))
+        return smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors
 
     def parseLayers(self):
         ### faz o parsing de todas as camadas de uma iteracao
@@ -595,6 +654,7 @@ class DarknetParser(ObjectDetectionParser):
         self._errorsAverage = {filterName: [0.0 for i in xrange(32)] for filterName in self.__filterNames}
         self._errorsStdDeviation = {filterName: [0.0 for i in xrange(32)] for filterName in self.__filterNames}
         self._numMaskableErrors = [0 for i in xrange(32)]
+        self._numCorrectableErrors = [0 for i in xrange(32)]
         self._failed_layer = ""
         logsNotFound = False
         goldsNotFound = False
@@ -617,13 +677,16 @@ class DarknetParser(ObjectDetectionParser):
                 layerErrorList = self.getLayerErrorList(layer, gold, i)
                 if (len(layerErrorList) > 0):
                     self._numErrors['allErrors'][i] = len(layerErrorList)
-                smallest, biggest, average, stdDeviation, numMaskableErrors = self.getErrorListInfos(layerErrorList)
+                smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors = self.getErrorListInfos(layerErrorList, i)
                 self._smallestError['allErrors'][i] = smallest
                 self._biggestError['allErrors'][i] = biggest
                 self._errorsAverage['allErrors'][i] = average
                 self._errorsStdDeviation['allErrors'][i] = stdDeviation
                 self._numMaskableErrors[i] = numMaskableErrors
-		#print('\n numMaskableErrors: ' + str(numMaskableErrors) + ' :: ' + str(self._numMaskableErrors[i]))
+                self._numCorrectableErrors[i] = numCorrectableErrors
+                if numLayer in [0, 2, 7, 18]:
+                    print ("\nDEBUG\ncamada: " + str(i) + "\nnumCorrectableErrors: " + str(numCorrectableErrors) + " / " + str(self._numErrors['allErrors'][i]) )
+                #print('\n numMaskableErrors: ' + str(numMaskableErrors) + ' :: ' + str(self._numMaskableErrors[i]))
                 if (self._errorFound):
                     # ja tinha erros em alguma camada anterior
                     self._numErrors['propagatedErrors'][i] = self._numErrors['allErrors'][i]
@@ -987,6 +1050,4 @@ class DarknetParser(ObjectDetectionParser):
             except:
                 print "Error on parsing abft info"
                 raise
-
         return ret, imgListPosition
-
