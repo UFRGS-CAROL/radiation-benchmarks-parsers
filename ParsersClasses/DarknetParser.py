@@ -95,6 +95,8 @@ class DarknetParser(ObjectDetectionParser):
                                        for layerNum in xrange(32))
                 self._csvHeader.extend(self.getMaskableHeaderName(layerNum)
                                         for layerNum in xrange(32))
+                self._csvHeader.extend(self.getNumCorrectableErrorsHeaderName(layerNum)
+                                        for layerNum in [0, 2, 7, 18])
         except:
             print "\n Crash on create parse layers parameters"
             sys.exit(-1)
@@ -104,6 +106,7 @@ class DarknetParser(ObjectDetectionParser):
     def getNumCorrectableErrorsHeaderName(self, layerNum):
         # layer<layerNum>CorrectableErrorsNum
         correctableHeaderName = 'layer' + str(layerNum) + 'CorrectableErrorsNum'
+        return correctableHeaderName
 
     def getMaskableHeaderName(self, layerNum):
         # layer<layerNum>MaskableErrorsNum
@@ -181,6 +184,7 @@ class DarknetParser(ObjectDetectionParser):
                     outputList.extend([self._errorsStdDeviation[filterName][i] for i in xrange(32)])
                 outputList.extend(self.errorTypeToString(self.errorTypeList[i]) for i in xrange(32))
                 outputList.extend(self._numMaskableErrors[i] for i in xrange(32))
+                outputList.extend(self._numCorrectableErrors[i] for i in [0, 2, 7, 18])
 
             writer.writerow(outputList)
             csvWFP.close()
@@ -549,43 +553,20 @@ class DarknetParser(ObjectDetectionParser):
         #retorna False caso contrario
         for otherLayerError in layerErrorList:
             if( otherLayerError != layerError):
-                # erros imediatamente ao lado
-                if (layerError[0] == otherLayerError[0] + 1)\
-                    and (layerError[1] == otherLayerError[1])\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0] - 1)\
-                    and (layerError[1] == otherLayerError[1])\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0])\
-                    and (layerError[1] == otherLayerError[1] + 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0])\
-                    and (layerError[1] == otherLayerError[1] - 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                # erros diagonais xy:
-                if (layerError[0] == otherLayerError[0] + 1)\
-                    and (layerError[1] == otherLayerError[1] + 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0] - 1)\
-                    and (layerError[1] == otherLayerError[1] - 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0] + 1)\
-                    and (layerError[1] == otherLayerError[1] - 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
-                if (layerError[0] == otherLayerError[0] - 1)\
-                    and (layerError[1] == otherLayerError[1] + 1)\
-                    and (layerError[2] == otherLayerError[2]):
-                        return True
+                # erros imediatamente ao lado, com msm zPos
+                if (layerError[2] == otherLayerError[2]):
+                    if(layerError[0] == otherLayerError[0])\
+                    or(layerError[0] == otherLayerError[0] + 1)\
+                    or(layerError[0] == otherLayerError[0] - 1):
+                        if(layerError[1] == otherLayerError[1]) \
+                        or(layerError[1] == otherLayerError[1] + 1) \
+                        or (layerError[1] == otherLayerError[1] - 1):
+                            #print("DEBUG\nerror: " + str(layerError))
+                            #print("otherError: " + str(otherLayerError))
+                            return True 
         # se nao achou nenhum vizinho ate aqui, eh pq nao tem nenhum
         return False
-
+    
     def getErrorListInfos(self, layerErrorList, numLayer):
         # layerError :: xPos, yPos, zPos, found(?), expected(?)
         smallest = 0.0
@@ -634,6 +615,7 @@ class DarknetParser(ObjectDetectionParser):
                 else:
                     # layer 3D
                     if( not self.existsErrorNeighbor(layerError, layerErrorList) ):
+                        #print("\nDEBUG\n erro corrigivel: " + str(layerError))
                         numCorrectableErrors += 1
 
         #print('debug numMaskableErrors: ' + str(numMaskableErrors))
