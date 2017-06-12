@@ -548,9 +548,11 @@ class DarknetParser(ObjectDetectionParser):
                     layerArray[arrayIndex] = layer[i][j][k]
         return layerArray
 
+
     def existsErrorNeighbor(self, layerError, layerErrorList):
         #retorna True se existe erros vizinhos ao erro em questao
         #retorna False caso contrario
+
         for otherLayerError in layerErrorList:
             if( otherLayerError != layerError):
                 # erros imediatamente ao lado, com msm zPos
@@ -566,6 +568,47 @@ class DarknetParser(ObjectDetectionParser):
                             return True 
         # se nao achou nenhum vizinho ate aqui, eh pq nao tem nenhum
         return False
+    
+    def getGroupedNumCorrectableErrors(self, layerErrorList):
+        # dada uma error list com todos os layerError tendo mesmo Z
+        # retorna o numero dos erros que sao corrigiveis
+        numCorrectableErrors = 0
+        for layerError in layerErrorList:
+            if not self.existsErrorNeighbor(layerError, layerErrorList):
+                numCorrectableErrors += 1
+                
+        ##DEBUG
+        #print "\nDEBUG\nlayerErrorList:\n" + str(layerErrorList)
+        #print "numCorrectableErrors: " + str(numCorrectableErrors)
+        return numCorrectableErrors
+        
+    def getNumCorrectableErrors(self, layerErrorList):
+        #retorna o numero de erros corrigiveis por smartpooling
+
+        sortedLayerErrorList = sorted(layerErrorList, key= lambda layerError: layerError[2]) #zPos
+        numCorrectableErrors = 0
+
+        #debug
+        currentZ = -20 #iterador
+        currentLayerErrorList = []
+        for layerError in sortedLayerErrorList:
+            if currentZ == -20: #primeiro item da lista
+                currentLayerErrorList.append(layerError)
+                currentZ = layerError[2]
+            elif currentZ > layerError[2]:
+                print "\nERRO que nao era pra acontecer: getNumCorrectableErrors"
+            elif currentZ == layerError[2]:
+                currentLayerErrorList.append(layerError)
+            elif currentZ < layerError[2]:
+                numCorrectableErrors += self.getGroupedNumCorrectableErrors(currentLayerErrorList)
+                currentZ = layerError[2]
+                currentLayerErrorList = []
+                currentLayerErrorList.append(layerError)
+        numCorrectableErrors += self.getGroupedNumCorrectableErrors(currentLayerErrorList)
+            
+            
+        return numCorrectableErrors
+        
     
     def getErrorListInfos(self, layerErrorList, numLayer):
         # layerError :: xPos, yPos, zPos, found(?), expected(?)
@@ -601,22 +644,8 @@ class DarknetParser(ObjectDetectionParser):
             stdDeviation = numpy.std(relativeErrorsList)
         
         # calculando numCorrectableErrors:
-        if numLayer in [0, 2, 7, 18]: #layers logo antes dos maxpooling
-            for layerError in layerErrorList:
-                #print('\nlayer error: ' + str(layerError))
-                if(layerError[1] == -1) and (layerError[2] == -1):
-                    # layer 1D: nao existe maxpooling,
-                    #         entao nao tem erros corrigiveis pelo smartpooling
-                    pass                
-                elif((layerError[1] == -1) or (layerError[2] == -1)):
-                    #somente y ou z tem -1: erro
-                    print ('ERRO\nsomente y ou z tem -1\n')
-                    print('\nlayer error: ' + str(layerError) + '\n\n')
-                else:
-                    # layer 3D
-                    if( not self.existsErrorNeighbor(layerError, layerErrorList) ):
-                        #print("\nDEBUG\n erro corrigivel: " + str(layerError))
-                        numCorrectableErrors += 1
+        if numLayer in [0, 2, 7, 18] and  layerErrorList != []: #layers logo antes dos maxpooling
+            numCorrectableErrors = self.getNumCorrectableErrors(layerErrorList)
 
         #print('debug numMaskableErrors: ' + str(numMaskableErrors))
         return smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors
