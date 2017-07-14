@@ -27,12 +27,13 @@ arguments:
   --gen_database <GEN_DATA>
 
                         If this flag is passed the other flags will have no
-                        effects. --gen_data <path where the parser must search
+                        effects, despite out_database. --gen_data <path where the parser must search
                         for ALL LOGs FILES
 
   --out_database <OUT_DATA>
 
-                        The output database name
+                        The output database name. If gen_database is used, this flag will set the filename for the generated database.
+                        The default filename is ./error_log_database.
 
   --database <ERROR_DATABASE>
 
