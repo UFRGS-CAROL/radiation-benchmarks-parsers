@@ -6,7 +6,10 @@ TODO: Write a project description
 
 TODO: Describe the installation process
 
+
 ## Usage
+
+Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py, on the contrary this parser will crash.
 
 usage: /path/ParseBenchmarksCriticality.py
                                      [-h]
@@ -24,6 +27,8 @@ arguments:
 
   -h, --help            show this help message and exit
 
+### Flags for database generation
+
   --gen_database <GEN_DATA>
 
                         If this flag is passed the other flags will have no
@@ -38,6 +43,8 @@ arguments:
   --database <ERROR_DATABASE>
 
                         Where database is located
+
+### Flags for error parser
 
   --benchmarks <BENCHMARKS>
 
