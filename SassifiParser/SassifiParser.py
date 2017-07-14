@@ -6,15 +6,17 @@ import csv
 import re
 from collections import Counter
 
-ASID_STR = ["IADD_IMUL", "FADD_FMUL", "MAD", "FMA", "SETP", "LDS", "LD",
-            "MISC_OP", "GPR", "CC", "PR", "STORE_VAL"]
+IGID_STR = ["GPR", "CC", "PR", "STORE_OP",
+            "IADD_IMUL_OP", "FADD_FMUL_OP", "DADD_DMUL_OP",
+            "MAD_OP", "FFMA_OP", "DFMA_OP", "SETP_OP",
+            "LDS_OP", "LD_OP", "MISC_OP"]
 
 EM_STR = ["FLIP_SINGLE_BIT", "FLIP_TWO_BITS", "RANDOM_VALUE", "ZERO_VALUE",
           "WARP_FLIP_SINGLE_BIT", "WARP_FLIP_TWO_BITS", "WARP_RANDOM_VALUE",
           "WARP_ZERO_VALUE"]
 
 ERROR_MODEL_SIZE = len(EM_STR)
-INSTRUCTION_SIZE = len(ASID_STR)
+INSTRUCTION_SIZE = len(IGID_STR)
 
 
 class SassifiParser:
@@ -26,9 +28,9 @@ class SassifiParser:
 
     def __init__(self, instType):
         self.inst_type = instType
-        self._contCrashPerInstruction = {i: {j: 0 for j in EM_STR} for i in ASID_STR}
-        self._contErrorTypePerInstruction = {i: {j: 0 for j in EM_STR} for i in ASID_STR}
-        self._contAbortPerInstruction = {i: {j: 0 for j in EM_STR} for i in ASID_STR}
+        self._contCrashPerInstruction = {i: {j: 0 for j in EM_STR} for i in IGID_STR}
+        self._contErrorTypePerInstruction = {i: {j: 0 for j in EM_STR} for i in IGID_STR}
+        self._contAbortPerInstruction = {i: {j: 0 for j in EM_STR} for i in IGID_STR}
 
     def check_crash(self, log_filename):
         log_file = open(log_filename)
@@ -97,7 +99,7 @@ class SassifiParser:
         print "Parsing " + csv_input
         # separate the good data
         if cp != "":
-            copyLogsFolder = "./" + str(cp) + "_logs"
+            copyLogsFolder = str(cp)
             os.system("mkdir -p " + copyLogsFolder)
         for i in range(0, INSTRUCTION_SIZE):
             sdc_inst_count.append(0)
@@ -130,7 +132,7 @@ class SassifiParser:
                 sdcs += 1
 
                 # to get each EM avf for each instruction type
-                self._contErrorTypePerInstruction[ASID_STR[it_inst_count]][EM_STR[it_em_count]] += 1
+                self._contErrorTypePerInstruction[IGID_STR[it_inst_count]][EM_STR[it_em_count]] += 1
                 # count em per kernel
                 if row["inj_kname"] not in sdc_em_count_per_kernel:
                     sdc_em_count_per_kernel[row["inj_kname"]] = []
@@ -167,7 +169,7 @@ class SassifiParser:
             total_faults += 1
 
             # to get avf of each EM for each instruction type
-            self._contCrashPerInstruction[ASID_STR[it_inst_count]][EM_STR[it_em_count]] += crash + abort
+            self._contCrashPerInstruction[IGID_STR[it_inst_count]][EM_STR[it_em_count]] += crash + abort
             # self._contAbortPerInstruction[ASID_STR[it_inst_count]][EM_STR[it_em_count]] += abort
             # print row['inj_asid'] + " " + row['inj_fault_model']
 
@@ -177,7 +179,7 @@ class SassifiParser:
         csvfile.close()
         # ---------------------------------------------------------------
         # print instruction histogram
-        csvfile = open('parse_' + csv_input, 'w')
+        csvfile = self.__generate_parse_filename(csv_input)
         fieldnames = ['instruction', 'sdc_num', 'total_inst_count', 'crashes',
                       'abort', 'nothing']
         fieldnames.extend(['sdc_' + str(i) for i in EM_STR])
@@ -188,7 +190,7 @@ class SassifiParser:
 
         for i in range(0, INSTRUCTION_SIZE):
             tempDict = {
-                'instruction': ASID_STR[i],
+                'instruction': IGID_STR[i],
                 'sdc_num': str(sdc_inst_count[i]),
                 'total_inst_count': str(total_inst_count[i]),
                 'crashes': str(crashes_inst_count[i]),
@@ -196,10 +198,10 @@ class SassifiParser:
                 'nothing': '',
             }
             for t in EM_STR:
-                tempDict['sdc_' + t] = self._contErrorTypePerInstruction[ASID_STR[i]][t]
+                tempDict['sdc_' + t] = self._contErrorTypePerInstruction[IGID_STR[i]][t]
 
             for t in EM_STR:
-                tempDict['crash_abort_' + t] = self._contCrashPerInstruction[ASID_STR[i]][t]
+                tempDict['crash_abort_' + t] = self._contCrashPerInstruction[IGID_STR[i]][t]
 
             writer.writerow(tempDict)
 
@@ -251,7 +253,7 @@ class SassifiParser:
                 err_list = sdc_inst_count_per_kernel[kernel]
                 for j in range(INSTRUCTION_SIZE):
                     writer.writerow(
-                        {'instruction': ASID_STR[j], 'sdc_num': str(err_list[j])})
+                        {'instruction': IGID_STR[j], 'sdc_num': str(err_list[j])})
 
         writer.writerow({'instruction': '', 'total_inst_count': ''})
         writer.writerow({
@@ -269,8 +271,14 @@ class SassifiParser:
         csvfile.close()
         print csv_input + " parsed"
 
+    def __generate_parse_filename(self, csv_input):
+        dir_generate = csv_input.split('/')[-1]
+        first_part = csv_input.split(dir_generate)[0]
+        csvfile = open(first_part + 'parse_' + dir_generate, 'w')
+        return csvfile
+
     def process_daniels_and_caios_log(self, csv_input, to_join, key, joined, del1, del2):
-        #sassifi output
+        # sassifi output
         csvfile = open(csv_input)
         reader = csv.DictReader(csvfile, delimiter=del1)
 
@@ -290,7 +298,7 @@ class SassifiParser:
         writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
         writer.writeheader()
 
-        #put the content into two list
+        # put the content into two list
         daniel_rows = []
         logs_rows = []
         for row in reader_daniel:
@@ -354,10 +362,10 @@ def parse_args():
 
     parser.add_argument('--to_join_csv', dest='to_join_csv', help='Other csv to join', default='none')
 
-    parser.add_argument('--joined_output', dest='joined', help='Output file which will have two csvs joined', default='joined_logs.csv')
+    parser.add_argument('--joined_output', dest='joined', help='Output file which will have two csvs joined',
+                        default='joined_logs.csv')
 
     parser.add_argument('--del1', dest='del1', help='Delimiter csv <--csv_input>', default=',')
-
 
     parser.add_argument('--del2', dest='del2', help='Delimiter csv <--to_join_csv>', default=';')
 
@@ -378,7 +386,8 @@ if __name__ == "__main__":
     if args.to_join_csv == 'none':
         sassiParse.parse_csv(args.csv_input, args.logs_dir, args.copy)
     else:
-        sassiParse.process_daniels_and_caios_log(args.csv_input, args.to_join_csv, args.join_key, args.joined, args.del1, args.del2)
+        sassiParse.process_daniels_and_caios_log(args.csv_input, args.to_join_csv, args.join_key, args.joined,
+                                                 args.del1, args.del2)
         # ():
         # else:
         #     process_daniels_and_caios_log(parameter[0], parameter[1],
