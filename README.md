@@ -9,7 +9,8 @@ TODO: Describe the installation process
 
 ## Usage
 
-Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py, on the contrary this parser will crash.
+Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py,
+on the contrary this parser will crash.
 
 usage: /path/ParseBenchmarksCriticality.py
                                      [-h]
@@ -37,7 +38,8 @@ arguments:
 
   --out_database <OUT_DATA>
 
-                        The output database name. If gen_database is used, this flag will set the filename for the generated database.
+                        The output database name. If gen_database is used,
+                        this flag will set the filename for the generated database.
                         The default filename is ./error_log_database.
 
   --database <ERROR_DATABASE>
