@@ -51,6 +51,7 @@ class MatchBenchmark():
                 # print "\n\ncurrent bench ", key
                 # print "\n\n len " ,logFileName, machine, benchmark, header, sdcIteration, accIteErrors, iteErrors
                 self.__currBench = self.__radiationBenchmarks[str(key)]
+
                 # doind it I will have duplicate data, but it is the cost of generalization
                 self.__currBench.setDefaultValues(logFileName, machine, benchmark, header, sdcIteration, accIteErrors,
                                                   iteErrors, errList, logFileNameNoExt, pureHeader)

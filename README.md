@@ -42,11 +42,12 @@ arguments:
                         this flag will set the filename for the generated database.
                         The default filename is ./error_log_database.
 
+### Flags for error parser
+
   --database <ERROR_DATABASE>
 
                         Where database is located
 
-### Flags for error parser
 
   --benchmarks <BENCHMARKS>
 
@@ -75,7 +76,7 @@ arguments:
 
   --pr_threshold <PR_THRESHOLD>
 
-                        Precision and Recall threshold value,0 - 1, defautl
+                        Precision and Recall threshold value,0 - 1, default
                         value is 0.5
 
   --check_csv

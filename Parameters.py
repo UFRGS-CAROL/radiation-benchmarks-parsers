@@ -83,7 +83,7 @@ FASTER_RCNN_DATASETS = {
 ############################################################################################
 ################################## HOG PARSER PARAMETERS ###################################
 ############################################################################################
-HOG_GOLD_BASE_DIR = "/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/histogram_ori_gradients/"
+HOG_GOLD_BASE_DIR = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_results_new/golds/histogram_ori_gradients/"
 HOG_DATASETS = 'urbanstreet'
 
 
@@ -106,7 +106,7 @@ def setBenchmarks(**kwargs):
     print "Parsing for: ",
     for i in benchmarks:
         benchObj = None
-        print i, " ",
+        print i,
         if i == 'darknet':
             benchObj = DarknetParser.DarknetParser(parseLayers=parse_layers,
                                                    prThreshold=pr_threshold,
@@ -169,6 +169,9 @@ def setBenchmarks(**kwargs):
             benchObj = LudParser.LudParser()
         elif i == 'gemm':
             benchObj = GemmParser.GemmParser()
+
+        if benchObj == None:
+            print "\nERROR: " ,i , " is not in the benchmark list, this will probaly crash the system"
 
         radiationBenchmarks[i] = benchObj
 
