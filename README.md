@@ -56,6 +56,8 @@ arguments:
                         process. Availiable parsers:
 
                         * Darknet --> needs --parse_layers and a Precision and Recall threshold value.
+                        * DarknetV2 --> needs --parse_layers and a Precision and Recall threshold value.
+                        * Lenet --> needs --parse_layers and a Precision and Recall threshold value.
                         * Hotspot
                         * GEMM,
                         * HOG --> needs a Precision and Recall threshold value.
