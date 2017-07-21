@@ -11,6 +11,7 @@ from ParsersClasses import LuleshParser
 from ParsersClasses import MergesortParser
 from ParsersClasses import QuicksortParser
 from ParsersClasses import DarknetV2Parser
+from ParsersClasses import LenetParser
 
 ############################################################################################
 #################################DARKNET PARSER PARAMETERS##################################
@@ -169,9 +170,13 @@ def setBenchmarks(**kwargs):
             benchObj = LudParser.LudParser()
         elif i == 'gemm':
             benchObj = GemmParser.GemmParser()
+        elif i == 'lenet':
+            benchObj = LenetParser.LenetParser()
 
-        if benchObj == None:
+        elif benchObj == None:
             print "\nERROR: " ,i , " is not in the benchmark list, this will probaly crash the system"
+
+
 
         radiationBenchmarks[i] = benchObj
 

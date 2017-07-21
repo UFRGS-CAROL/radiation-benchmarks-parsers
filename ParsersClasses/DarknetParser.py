@@ -748,7 +748,7 @@ class DarknetParser(ObjectDetectionParser):
                         jaccardCoef = 1
                         # print('jaccard = ' + str(jaccardCoef))
 
-	#print('\n numMaskableErrors: ' + str(self._numMaskableErrors))
+	    #print('\n numMaskableErrors: ' + str(self._numMaskableErrors))
         if logsNotFound and goldsNotFound:
             self._failed_layer += 'golds and logs not found'
         elif logsNotFound:
