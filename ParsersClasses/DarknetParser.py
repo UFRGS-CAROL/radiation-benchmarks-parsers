@@ -174,8 +174,8 @@ class DarknetParser(ObjectDetectionParser):
                           self._header]
 
             if (self._parseLayers):
-		#for i in xrange(32): #debug
-		    #print(str(self._numMaskableErrors[i]))
+        #for i in xrange(32): #debug
+            #print(str(self._numMaskableErrors[i]))
                 for filterName in self.__filterNames:
                     outputList.extend([self._smallestError[filterName][i] for i in xrange(32)])
                     outputList.extend([self._biggestError[filterName][i]  for i in xrange(32)])
@@ -748,7 +748,7 @@ class DarknetParser(ObjectDetectionParser):
                         jaccardCoef = 1
                         # print('jaccard = ' + str(jaccardCoef))
 
-	    #print('\n numMaskableErrors: ' + str(self._numMaskableErrors))
+        #print('\n numMaskableErrors: ' + str(self._numMaskableErrors))
         if logsNotFound and goldsNotFound:
             self._failed_layer += 'golds and logs not found'
         elif logsNotFound:

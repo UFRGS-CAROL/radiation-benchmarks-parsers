@@ -1,5 +1,3 @@
-from boto.dynamodb.condition import LE
-
 from ParsersClasses import GemmParser
 from ParsersClasses import ACCLParser
 from ParsersClasses import DarknetParser

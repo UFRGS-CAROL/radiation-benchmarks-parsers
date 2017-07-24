@@ -42,7 +42,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Parse logs for Neural Networks')
 
     parser.add_argument('--gen_database', dest='gen_data',
-                        help="if this flag is passed the other flags will have no effects. --gen_data <path where the parser must search for ALL LOGs FILES",
+                        help="If this flag is passed the other flags will have no "
+                             "effects, despite out_database. --gen_data <path where the parser must search for ALL LOGs FILES>",
                         default='')
 
     parser.add_argument('--out_database', dest='out_data', help = "The output database name", default='./error_log_database')

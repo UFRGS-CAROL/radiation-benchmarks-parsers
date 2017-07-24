@@ -2,13 +2,9 @@ import sys
 from ObjectDetectionParser import ObjectDetectionParser, ImageRaw
 import re
 import csv
-import glob, struct
-import os
-import numpy
 
-from SupportClasses import PrecisionAndRecall
-from SupportClasses import _GoldContent
-
+from sklearn import metrics
+import numpy as np
 
 class LenetParser(ObjectDetectionParser):
     __executionType = None
@@ -38,14 +34,20 @@ class LenetParser(ObjectDetectionParser):
     _sizeOfDNN = 0
     _allProperties = None
 
-    #change it for Lenet
+    # change it for Lenet
+    # ConvolutionalLayer(32, 32, 1, 5, 6));
+    # MaxpoolingLayer(28, 28, 6));
+    # ConvolutionalLayer(14, 14, 6, 5, 16));
+    # MaxpoolingLayer(10, 10, 16));
+    # ConvolutionalLayer(5, 5, 16, 5, 100));
+    # FullyConnectedLayer(100, 10));
     __layerDimentions = {
-        0: [608, 608, 32],
-        1: [304, 304, 32],
-        2: [304, 304, 64],
-        3: [152, 152, 64],
-        4: [152, 152, 128],
-        5: [152, 152, 64],
+        0: [32, 32, 1],
+        1: [28, 28, 6],
+        2: [14, 14, 6],
+        3: [10, 10, 16],
+        4: [5, 5, 16],
+        5: [100, 10, 1],
     }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
@@ -63,7 +65,7 @@ class LenetParser(ObjectDetectionParser):
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
         self._sizeOfDNN = 5
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def errorTypeToString(self, errorType):
         if (errorType[0] == 1):
@@ -138,16 +140,84 @@ class LenetParser(ObjectDetectionParser):
         except:
             print "\n Crash on log ", self._logFileName
 
-
     def setSize(self, header):
-        raise NotImplementedError
+        # gold_file: gold_test weights: ./lenet.weights iterations: 10
+        lenetM = re.match("gold_file\: (\S+).*weights\: (\S+).*iterations\: (\d+).*", header)
+        if lenetM:
+            self._size = str(lenetM.group(1))
+            self.__weights = str(lenetM.group(2))
+            self._iterations = str(lenetM.group(3))
+        else:
+            self._size = ""
+            self.__weights = ""
+            self._iterations = ""
 
     # parse Darknet
     # returns a dictionary
     def parseErrMethod(self, errString):
-        raise NotImplementedError
+        if len(errString) == 0:
+            return
 
+        ret = {}
+        # img: [6] expected_first: [3] read_first: [4] expected_second: [1] read_second: [1]
+        errM = re.match(
+            ".*img\: \[(\d+)\].*expected_first\: \[(\d+)\].*read_first\: \[(\d+)\].*expected_second\: \[(\d+)\].*read_second\: \[(\d+)\].*",
+            errString)
 
+        if errM:
+            ret["img"] = errM.group(1)
+            ret["expected_first"] = errM.group(2)
+            ret["read_first"] = errM.group(3)
+            ret["expected_second"] = errM.group(4)
+            ret["read_second"] = errM.group(5)
+
+            try:
+                ret["img"] = int(ret["img"])
+            except:
+                ret["img"] = -1
+
+            try:
+                ret["expected_first"] = int(ret["expected_first"])
+            except:
+                ret["expected_first"] = 1e10
+
+            try:
+                ret["read_first"] = int(ret["read_first"])
+            except:
+                ret["read_first"] = 1e10
+
+            try:
+                ret["expected_second"] = int(ret["expected_second"])
+            except:
+                ret["expected_second"] = 1e10
+
+            try:
+                ret["read_second"] = int(ret["read_second"])
+            except:
+                ret["read_second"] = 1e10
+
+            return ret
+
+        return None
 
     def _relativeErrorParser(self, errList):
-        raise NotImplementedError
+        if len(errList) == 0:
+            return
+
+        yPredicted = []
+        yGold = []
+
+        for i in errList:
+            yPredicted.append(i["read_first"])
+            yGold.append(i["expected_first"])
+
+
+            yPredicted.append(i["expected_second"])
+            yGold.append(i["read_second"])
+
+
+        self._precision = metrics.precision_score(yGold, yPredicted, average=None)
+        self._recall = metrics.recall_score(yGold, yPredicted, average=None)
+
+
+
