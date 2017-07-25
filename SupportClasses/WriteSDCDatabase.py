@@ -20,7 +20,6 @@ class WriteSDCDatabase():
             print "FILE NOT OPEN"
             raise
 
-
     def generateSDCList(self, fi):
         sdc_item_list = []
         sdc_iter = 0  # number of iterations with error
@@ -110,18 +109,17 @@ class WriteSDCDatabase():
                         benchmarks_dict[insertKey] = []
                     benchmarks_dict[insertKey].extend(sdcs_list)
             i += 1
-        sys.stdout.write(
-            "Processing file " + str(i) + " of " + str(total_files) + " - 100%                     " + "\n")
+        # sys.stdout.write(
+        #     "Processing file " + str(i) + " of " + str(total_files) +"\n\n")
 
         # for k, v in benchmarks_dict.iteritems(): #python2.*
-        print("writing to database ...")
+        print("\nwriting to database ...")
         for k, v in benchmarks_dict.items():  # python3
             self._data[k] = v
             print("key: ", k, "; size of v:", len(v))
 
         print("database written!")
         self._data.close()
-
 
     def writeToFile(self, db, filename):
         outFile = open(filename, 'w')
