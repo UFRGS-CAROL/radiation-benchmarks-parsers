@@ -1,10 +1,9 @@
-import sys
 from ObjectDetectionParser import ObjectDetectionParser, ImageRaw
 import re
 import csv
 
-from sklearn import metrics
-import numpy as np
+# 0 to 9 digits
+MAX_LENET_ELEMENT = 9.0
 
 class LenetParser(ObjectDetectionParser):
     __executionType = None
@@ -51,8 +50,8 @@ class LenetParser(ObjectDetectionParser):
     }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass", "y_center_of_mass", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
+                  "gold_lines", "precision",
+                  "recall", "abft_type", "row_detected_errors",
                   "col_detected_errors", "failed_layer", "header"]
 
     # it is only for darknet for a while
@@ -107,15 +106,8 @@ class LenetParser(ObjectDetectionParser):
                           self._accIteErrors,
                           self._iteErrors,
                           self._goldLines,
-                          self._detectedLines,
-                          self._wrongElements,
-                          self._xCenterOfMass,
-                          self._yCenterOfMass,
                           self._precision,
                           self._recall,
-                          self._falseNegative,
-                          self._falsePositive,
-                          self._truePositive,
                           self._abftType,
                           self._rowDetErrors,
                           self._colDetErrors,
@@ -201,23 +193,27 @@ class LenetParser(ObjectDetectionParser):
         return None
 
     def _relativeErrorParser(self, errList):
-        if len(errList) == 0:
+        errListLen = len(errList)
+        if errListLen == 0:
             return
 
-        yPredicted = []
-        yGold = []
+        if errListLen != 1:
+            raise
 
-        for i in errList:
-            yPredicted.append(i["read_first"])
-            yGold.append(i["expected_first"])
+        read = errList[0]["read_first"]
+        gold = errList[0]["expected_first"]
 
+        self._precision = abs(gold - read) / MAX_LENET_ELEMENT
 
-            yPredicted.append(i["expected_second"])
-            yGold.append(i["read_second"])
+        if read == gold:
+            self._recall = 1.0
+        else:
+            self._recall = 0.0
 
+        self._goldLines = 1
+        self._abftType = "not_implemented"
+        self._rowDetErrors = 0
+        self._colDetErrors = 0
 
-        self._precision = metrics.precision_score(yGold, yPredicted, average=None)
-        self._recall = metrics.recall_score(yGold, yPredicted, average=None)
-
-
-
+        if self._parseLayers:
+            raise  NotImplemented
