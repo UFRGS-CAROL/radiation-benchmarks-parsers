@@ -6,14 +6,18 @@ import shelve
 import argparse
 import Parameters as par
 
+
 # benchmarks dict => (bechmarkname_machinename : list of SDC item)
-# SDC item => [logfile name, header, sdc iteration, iteration total amount error, iteration accumulated error, list of errors ]
+# SDC item => [logfile name, header, sdc iteration,
+# iteration total amount error, iteration accumulated error, list of errors ]
 # list of errors => list of strings with all the error detail print in lines using #ERR
 def parseErrors(benchmarkname_machinename, sdcItemList):
     sdci = 1
     totalSdcs = len(sdcItemList)
     matchBench = MatchBenchmark.MatchBenchmark()
     for sdcItem in sdcItemList:
+
+        # set header and each class specific values for futher process
         match = matchBench.processHeader(sdcItem, benchmarkname_machinename)
         if not match:
             continue
@@ -46,9 +50,10 @@ def parse_args():
                              "effects, despite out_database. --gen_data <path where the parser must search for ALL LOGs FILES>",
                         default='')
 
-    parser.add_argument('--out_database', dest='out_data', help = "The output database name", default='./error_log_database')
+    parser.add_argument('--out_database', dest='out_data', help="The output database name",
+                        default='./error_log_database')
 
-   # args = parser.parse_args()
+    # args = parser.parse_args()
 
 
     parser.add_argument('--database', dest='error_database',
@@ -82,7 +87,6 @@ def parse_args():
     parser.add_argument('--is_fi', dest='is_fi', help='if it is a fault injection log processing', action='store_true',
                         default=False)
 
-
     args = parser.parse_args()
     return args
 
@@ -94,14 +98,17 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    # generating error_log_database
     if args.gen_data != '':
-        writeSDCData = WriteSDCDatabase.WriteSDCDatabase(path=str(args.gen_data),out=str(args.out_data))
+        # generating error_log_database
+        writeSDCData = WriteSDCDatabase.WriteSDCDatabase(path=str(args.gen_data), out=str(args.out_data))
         writeSDCData.execute()
-    else:
 
+    else:
+        # splits the list of benchmarks
         benchlist = (str(args.benchmarks).lower()).split(',')
 
+        # this function will generate a Dict with all objects parsers
+        # selected in the benchList above
         par.setBenchmarks(
             benchmarks=benchlist,
             pr_threshold=args.pr_threshold,
@@ -111,7 +118,10 @@ if __name__ == '__main__':
             is_fi=args.is_fi
         )
 
+        # open the shelve error database
         db = shelve.open(args.error_database)
+
+        # process each benchmark class
         for k, v in db.iteritems():
             print("Processing ", k)
             parseErrors(k, v)

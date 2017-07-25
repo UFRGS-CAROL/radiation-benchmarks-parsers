@@ -94,12 +94,21 @@ class WriteSDCDatabase():
                 benchmark = m.group(7)
                 machine_name = m.group(8)
 
+                # check if ECC LOG filename is already active
+                testECC = re.match("(.*)_ECC_(.*).*", m.group(7))
+                eccStatus = ""
+                if testECC:
+                    benchmark = testECC.group(1)
+                    eccStatus = "-ECC-" + testECC.group(2)
+
                 sdcs_list = self.generateSDCList(fi)
 
                 if len(sdcs_list) > 0:
-                    if benchmark + "_" + machine_name not in benchmarks_dict:
-                        benchmarks_dict[benchmark + "_" + machine_name] = []
-                    benchmarks_dict[benchmark + "_" + machine_name].extend(sdcs_list)
+                    # necessary for ecc status
+                    insertKey = benchmark + "_" + machine_name + str(eccStatus)
+                    if insertKey not in benchmarks_dict:
+                        benchmarks_dict[insertKey] = []
+                    benchmarks_dict[insertKey].extend(sdcs_list)
             i += 1
         sys.stdout.write(
             "Processing file " + str(i) + " of " + str(total_files) + " - 100%                     " + "\n")
