@@ -98,11 +98,19 @@ class DarknetV2Parser(ObjectDetectionParser):
             # raise
 
     def setSize(self, header):
+        sizeM = re.match(".*gold_file\: (\S+).*", header)
+        if sizeM:
+            print sizeM.group(1)
 
         self._size = str(self._goldFileName)
 
     def _relativeErrorParser(self, errList):
-        raise NotImplementedError
+        if len(errList) == 0:
+            return
+
+        print self._goldFileName
+        for i in errList:
+            pass
 
     # parse Darknet
     # returns a dictionary
