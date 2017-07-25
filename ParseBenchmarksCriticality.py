@@ -58,8 +58,8 @@ def parse_args():
                         help='A list separated by \',\' (commas with no sapace) where each item will be the benchmarks that parser will process.'
                              '\nAvailiable parsers: Darknet, Hotspot, GEMM, HOG, lavamd'
                              '\nnw, quicksort, accl, PyFasterRCNN, Lulesh, LUD, mergesort.'
-                             ' Darknet benchmark needs --parse_layers parameter, which is False if no layer will be parsed, and True otherwise.'
-                             ' Darknet, HOG, and PyFasterRCNN need a Precision and Recall threshold value.'
+                             ' Darknet, Darknetv2 and Lenet benchmarks need --parse_layers parameter, which is False if no layer will be parsed, and True otherwise.'
+                             ' Darknet, Darknetv2, HOG, and PyFasterRCNN need a Precision and Recall threshold value.'
                              'If you want a more correct radiation test result pass --check_csv flag')
 
     parser.add_argument('--parse_layers', dest='parse_layers',

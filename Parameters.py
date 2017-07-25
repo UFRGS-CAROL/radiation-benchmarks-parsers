@@ -13,7 +13,6 @@ from ParsersClasses import QuicksortParser
 from ParsersClasses import DarknetV2Parser
 from ParsersClasses import LenetParser
 
-
 ############################################################################################
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
 ############################################################################################
@@ -25,20 +24,19 @@ LAYERS_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/data_inst_16_03_2017/'  #
 IMG_OUTPUT_DIR = ''  # ''/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/img_corrupted_output/'
 
 GOLD_BASE_DIR = {
-        # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_K40'
-        'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/',
-        #'/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_TITAN'
-        'carol-tx': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN/',
-        # # carolx1a
-        # 'carolx1a': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
-        # # carolx1b
-        # 'carolx1b': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
-        # # carolx1c
-        # 'carolx1c': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1c',
-        # fault injection
-        'carolk402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Fault_Injections/sassifi_darknet_paper_micro'
-    }
-
+    # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_K40'
+    'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/',
+    # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_TITAN'
+    'carol-tx': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN/',
+    # # carolx1a
+    # 'carolx1a': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
+    # # carolx1b
+    # 'carolx1b': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
+    # # carolx1c
+    # 'carolx1c': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1c',
+    # fault injection
+    'carolk402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Fault_Injections/sassifi_darknet_paper_micro'
+}
 
 ############################################################################################
 #################################DARKNET PARSER PARAMETERS##################################
@@ -46,11 +44,10 @@ GOLD_BASE_DIR = {
 """This section MUST, I WRITE MUST, BE SET ACCORDING THE GOLD PATHS"""
 
 DARKNET_DATASETS = {'caltech.pedestrians.critical.1K.txt': {'dumb_abft': 'gold.caltech.critical.abft.1K.test',
-                                                         'no_abft': 'gold.caltech.critical.1K.test'},
-                 'caltech.pedestrians.1K.txt': {'dumb_abft': 'gold.caltech.abft.1K.test',
-                                                'no_abft': 'gold.caltech.1K.test'},
-                 'voc.2012.1K.txt': {'dumb_abft': 'gold.voc.2012.abft.1K.test', 'no_abft': 'gold.voc.2012.1K.test'}}
-
+                                                            'no_abft': 'gold.caltech.critical.1K.test'},
+                    'caltech.pedestrians.1K.txt': {'dumb_abft': 'gold.caltech.abft.1K.test',
+                                                   'no_abft': 'gold.caltech.1K.test'},
+                    'voc.2012.1K.txt': {'dumb_abft': 'gold.voc.2012.abft.1K.test', 'no_abft': 'gold.voc.2012.1K.test'}}
 
 ############################################################################################
 ###############################FASTER RCNN PARSER PARAMETERS################################
@@ -63,7 +60,6 @@ FASTER_RCNN_DATASETS = {
     'voc.2012.1K.txt': 'gold.voc.2012.1K.test'
 }
 
-
 ############################################################################################
 ################################## HOG PARSER PARAMETERS ###################################
 ############################################################################################
@@ -75,10 +71,9 @@ HOG_DATASETS = 'urbanstreet'
 ############################################################################################
 
 LENET_DATASETS = {
-    '':'',
-    'test':'foi',
+    '': '',
+    'test': 'foi',
 }
-
 
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
@@ -88,20 +83,26 @@ LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa'
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory
 SUMMARIES_FILES = {
-    'carol-k402_ecc_on': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                  'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data':None},
-    'carol-k402': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                  'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data':None},
-    'carol-tx': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                'logs_parsed_titan_ecc_off/summaries_titan.csv', 'data':None},
+    'carol-k402_ecc_on': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
+    'carol-k402': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data': None},
+    'carol-tx': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_titan_ecc_off/summaries_titan.csv', 'data': None},
 
-    'carolx1a': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                'logs_parsed_parsed_x1/summaries_x1.csv', 'data':None},
+    'carolx1a': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
 
-    'carolx1b': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                'logs_parsed_parsed_x1/summaries_x1.csv', 'data':None},
-    'carolx1c': {'csv':'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-                'logs_parsed_parsed_x1/summaries_x1.csv', 'data':None},
+    'carolx1b': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
+    'carolx1c': {
+        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
 }
 
 ###############################################################################################
@@ -138,14 +139,16 @@ def setBenchmarks(**kwargs):
                                                    )
         if i == 'darknetv2':
             benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
-                                                   prThreshold=pr_threshold,
-                                                   layersGoldPath=LAYERS_GOLD_PATH,
-                                                   layersPath=LAYERS_PATH,
-                                                   imgOutputDir=IMG_OUTPUT_DIR,
-                                                   localRadiationBench=LOCAL_RADIATION_BENCH,
-                                                   check_csv=checkCsv,
-                                                   goldBaseDir=GOLD_BASE_DIR,
-                                                   )
+                                                       prThreshold=pr_threshold,
+                                                       layersGoldPath=LAYERS_GOLD_PATH,
+                                                       layersPath=LAYERS_PATH,
+                                                       imgOutputDir=IMG_OUTPUT_DIR,
+                                                       localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                       check_csv=checkCsv,
+                                                       goldBaseDir=GOLD_BASE_DIR,
+                                                       datasets=DARKNET_DATASETS
+                                                       )
+
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser()
         elif i == 'hog':
@@ -187,21 +190,19 @@ def setBenchmarks(**kwargs):
             benchObj = GemmParser.GemmParser()
         elif i == 'lenet':
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
-                                                   prThreshold=pr_threshold,
-                                                   layersGoldPath=LAYERS_GOLD_PATH,
-                                                   layersPath=LAYERS_PATH,
-                                                   imgOutputDir=IMG_OUTPUT_DIR,
-                                                   localRadiationBench=LOCAL_RADIATION_BENCH,
-                                                   check_csv=checkCsv,
-                                                   ecc=ecc,
-                                                   is_fi=isFi,
-                                                   goldBaseDir=GOLD_BASE_DIR,
-                                                   datasets=LENET_DATASETS)
+                                               prThreshold=pr_threshold,
+                                               layersGoldPath=LAYERS_GOLD_PATH,
+                                               layersPath=LAYERS_PATH,
+                                               imgOutputDir=IMG_OUTPUT_DIR,
+                                               localRadiationBench=LOCAL_RADIATION_BENCH,
+                                               check_csv=checkCsv,
+                                               ecc=ecc,
+                                               is_fi=isFi,
+                                               goldBaseDir=GOLD_BASE_DIR,
+                                               datasets=LENET_DATASETS)
 
         elif benchObj == None:
-            print "\nERROR: " ,i , " is not in the benchmark list, this will probaly crash the system"
-
-
+            print "\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system"
 
         radiationBenchmarks[i] = benchObj
 

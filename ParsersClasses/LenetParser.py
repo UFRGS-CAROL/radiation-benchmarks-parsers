@@ -33,21 +33,14 @@ class LenetParser(ObjectDetectionParser):
     _sizeOfDNN = 0
     _allProperties = None
 
-    # change it for Lenet
-    # ConvolutionalLayer(32, 32, 1, 5, 6));
-    # MaxpoolingLayer(28, 28, 6));
-    # ConvolutionalLayer(14, 14, 6, 5, 16));
-    # MaxpoolingLayer(10, 10, 16));
-    # ConvolutionalLayer(5, 5, 16, 5, 100));
-    # FullyConnectedLayer(100, 10));
-    __layerDimentions = {
-        0: [32, 32, 1],
-        1: [28, 28, 6],
-        2: [14, 14, 6],
-        3: [10, 10, 16],
-        4: [5, 5, 16],
-        5: [100, 10, 1],
-    }
+    # __layerDimentions = {
+    #     0: [32, 32, 1],
+    #     1: [28, 28, 6],
+    #     2: [14, 14, 6],
+    #     3: [10, 10, 16],
+    #     4: [5, 5, 16],
+    #     5: [100, 10, 1],
+    # }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "precision",
@@ -66,32 +59,6 @@ class LenetParser(ObjectDetectionParser):
         self._sizeOfDNN = 5
         # raise NotImplementedError
 
-    def errorTypeToString(self, errorType):
-        if (errorType[0] == 1):
-            return "cubic"
-        elif (errorType[1] == 1):
-            return "square"
-        elif (errorType[2] == 1):
-            return "line"
-        elif (errorType[3] == 1):
-            return "single"
-        elif (errorType[4] == 1):
-            return "random"
-        else:
-            return "no errors"
-
-    def getMaskableHeaderName(self, layerNum):
-        # layer<layerNum>MaskableErrorsNum
-        maskableHeaderName = 'layer' + str(layerNum) + 'MaskableErrorsNum'
-        return maskableHeaderName
-
-    def getLayerHeaderNameErrorType(self, layerNum):
-        # layer<layerNum>ErrorType
-        layerHeaderName = 'layer' + str(layerNum) + 'ErrorType'
-        return layerHeaderName
-
-    def getLayerHeaderName(self, layerNum, infoName, filterName):
-        raise NotImplementedError
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
