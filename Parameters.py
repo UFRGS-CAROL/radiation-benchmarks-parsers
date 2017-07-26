@@ -21,7 +21,7 @@ LAYERS_GOLD_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/golds/'  # '/home/pf
 LAYERS_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/data_inst_16_03_2017/'  # '/home/pfpimenta/darknetLayers/layers/'
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
-IMG_OUTPUT_DIR = ''  # ''/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/img_corrupted_output/'
+IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
     # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_K40'

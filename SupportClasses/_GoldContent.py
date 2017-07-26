@@ -5,7 +5,7 @@ import pickle
 from ctypes import *
 import numpy as np
 
-#from SupportClasses
+# from SupportClasses
 import Rectangle
 
 """Read a darknet Gold content to memory"""
@@ -62,9 +62,6 @@ class _GoldContent():
     __weights = ''
     __nn = None
 
-
-
-
     pyFasterImgList = ""
 
     # return a dict that look like this
@@ -79,7 +76,7 @@ class _GoldContent():
     # } GoldPointers;
     #
     def __init__(self, **kwargs):
-        #use keyargs
+        # use keyargs
         try:
             self.__nn = kwargs.pop("nn")
             filePath = kwargs.pop("filepath")
@@ -94,11 +91,20 @@ class _GoldContent():
         except:
             raise
 
+    def getTotalSize(self):
+        return self.__totalSize
 
-    def getTotalSize(self): return self.__totalSize
-    def getClasses(self): return self.__classes
-    def getPlistSize(self): return self.__plistSize
-    def getPyFasterGold(self): return self.__pyFasterGold
+    def getThresh(self):
+        return self.__thesh
+
+    def getClasses(self):
+        return self.__classes
+
+    def getPlistSize(self):
+        return self.__plistSize
+
+    def getPyFasterGold(self):
+        return self.__pyFasterGold
 
     def getRectArray(self, **kwargs):
         if self.__nn == 'darknetv2':
@@ -113,6 +119,18 @@ class _GoldContent():
             return self.__prob_array[imgPath]['probs']
 
         return self.__prob_array['probs']
+
+    def getImgDim(self, **kwargs):
+        h = 0
+        w = 0
+        c = 0
+        if self.__nn == 'darknetv2':
+            imgPath = kwargs.pop('imgPath')
+            h, w, c = self.__prob_array[imgPath]['h'],\
+                      self.__prob_array[imgPath]['w'], self.__prob_array[imgPath]['c']
+
+        return h, w, c
+
 
     def darknetConstructor(self, filePath):
         cc_file = open(filePath, 'rb')
@@ -151,7 +169,6 @@ class _GoldContent():
 
         cc_file.close()
 
-
     def pyFasterConstructor(self, filepath):
         try:
             f = open(filepath, "rb")
@@ -162,12 +179,10 @@ class _GoldContent():
             raise
         self.__pyFasterGold = tempGold
 
-
-
     def __copy__(self):
         return copy.deepcopy(self)
 
-    def readBoxes(self,cc_file, n):
+    def readBoxes(self, cc_file, n):
         i = 0
         boxes = np.empty(n, dtype=object)
         while i < n:
@@ -207,12 +222,12 @@ class _GoldContent():
     about an indexed img detection
     the index is the name o the image itself
     """
+
     def darknetV2Constructor(self, filePath):
         csvfile = open(filePath, 'rb')
 
         spamreader = csv.reader(csvfile, delimiter=';')
         header = next(spamreader)
-        print "ate aqui", header
         # args->thresh,
         #  args->hier_thresh, img_list_size, args->img_list_path,
         #  args->config_file, args->cfg_data, args->model, args->weights,
@@ -220,7 +235,7 @@ class _GoldContent():
         self.__thesh = float(header[0])
         self.__hierThresh = float(header[1])
         self.__plistSize = int(header[2])
-        #ignore img_list_path header[3]
+        # ignore img_list_path header[3]
         self.__configFile = str(header[4])
         self.__cfgData = str(header[5])
         self.__model = str(header[6])
@@ -228,12 +243,14 @@ class _GoldContent():
         self.__totalSize = int(header[8])
         self.__classes = int(header[9])
 
-        for i, row in enumerate(spamreader):
-            print row
+        for row in spamreader:
             probRes, boxRes = self.readProbsAndBoxesV2(spamreader)
             self.__prob_array[str(row[0])] = {}
             self.__prob_array[str(row[0])]['probs'] = probRes
             self.__prob_array[str(row[0])]['boxes'] = boxRes
+            self.__prob_array[str(row[0])]['h'] = int(row[1])
+            self.__prob_array[str(row[0])]['w'] = int(row[2])
+            self.__prob_array[str(row[0])]['c'] = int(row[3])
 
         csvfile.close()
 
@@ -241,8 +258,7 @@ class _GoldContent():
         prob = np.empty((self.__totalSize, self.__classes), dtype=float)
         boxes = np.empty(self.__totalSize, dtype=object)
 
-
-        for i in xrange(0,self.__totalSize):
+        for i in xrange(0, self.__totalSize):
             line = next(spamreader)
             left = float(line[1])
             bottom = float(line[2])
@@ -250,11 +266,10 @@ class _GoldContent():
             w = float(line[4])
             class_ = int(line[5])
 
-            prob[i][class_] = float(line[0]);
+            prob[i][class_] = float(line[0])
             boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
 
         return prob, boxes
-
 
 # temp = _GoldContent(nn='darknetv2', filepath='/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/darknet_v2/temp.csv')
 #

@@ -20,7 +20,6 @@ class DarknetV2Parser(ObjectDetectionParser):
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
-
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
                   "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
@@ -30,6 +29,7 @@ class DarknetV2Parser(ObjectDetectionParser):
     _parseLayers = False
     __layersGoldPath = ""
     __layersPath = ""
+    _failed_layer = ""
 
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
@@ -81,7 +81,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         except:
             print "\n Crash on log ", self._logFileName
-            # raise
+            raise
 
     def setSize(self, header):
         sizeM = re.match(".*gold_file\: (\S+).*", header)
@@ -126,15 +126,15 @@ class DarknetV2Parser(ObjectDetectionParser):
             i = err["prob_i"]
             class_ = err["prob_j"]
 
-            lr = int(err["x_r"])
-            br = int(err["y_r"])
-            hr = abs(int(err["h_r"]))
-            wr = abs(int(err["w_r"]))
+            lr = err["x_r"]
+            br = err["y_r"]
+            hr = err["h_r"]
+            wr = err["w_r"]
             # gold correct
-            le = int(err["x_e"])
-            be = int(err["y_e"])
-            he = int(err["h_e"])
-            we = int(err["w_e"])
+            le = err["x_e"]
+            be = err["y_e"]
+            he = err["h_e"]
+            we = err["w_e"]
 
             foundRt[i] = Rectangle.Rectangle(lr, br, wr, hr)
             # t = goldRt[rectPos].deepcopy()
@@ -143,12 +143,17 @@ class DarknetV2Parser(ObjectDetectionParser):
             foundPb[i][class_] = err["prob_r"]
             goldPb[i][class_] = err["prob_e"]
 
-
         #############
         # before keep going is necessary to filter the results
-        gValidRects, gValidProbs, gValidClasses = self.__filterResults(goldRt, goldPb)
-        fValidRects, fValidProbs, fValidClasses = self.__filterResults(foundRt, foundPb)
+        h, w, c = gold.getImgDim(imgPath=imgFilename)
+        gValidRects, gValidProbs, gValidClasses = self.__filterResults(rectangles=goldRt, probabilites=goldPb,
+                                                                       total=gold.getTotalSize(),
+                                                                       classes=gold.getClasses(), h=h, w=w)
+        fValidRects, fValidProbs, fValidClasses = self.__filterResults(rectangles=foundRt, probabilites=foundPb,
+                                                                       total=gold.getTotalSize(),
+                                                                       classes=gold.getClasses(), h=h, w=w)
 
+        self._prThreshold = gold.getThresh
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
@@ -161,7 +166,10 @@ class DarknetV2Parser(ObjectDetectionParser):
             raise NotImplementedError
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
-            self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
+            drawImgFileName = "/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-benchmarks/data/CALTECH/" \
+            + os.path.basename(imgFilename.rstrip())
+
+            self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
@@ -171,31 +179,29 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
 
-
-
-    def __filterResults(self, rectangles, probabilites, total, classes):
+    def __filterResults(self, rectangles, probabilites, total, classes, h, w):
         validRectangles = []
         validProbs = []
         validClasses = []
 
         for i in range(0, total):
             box = rectangles[i]
-            xmin = max(box.left - box.width / 2.0, 0)
-            ymin = max(box.bottom - box.height / 2.0, 0)
+            # Keep in mind that it is not the left and botton
+            # it is the CENTER of darknet box
+            bX = box.left
+            bY = box.bottom
 
-            # if xmin < 0:
-            #     xmin = 0
-            # if ymin < 0:
-            #     ymin = 0
+            left = int(max((bX - box.width / 2.) * w, 0))
+            bot = int(max((bY - box.height / 2.) * h, 0))
+            bW = min(int(w * box.width), w)
+            bH = min(int(h * box.height), h)
 
             for j in range(0, classes):
                 if probabilites[i][j] >= self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    # check image bounds
-                    rect = Rectangle.Rectangle(int(xmin), int(ymin), box.width, box.height)
+                    rect = Rectangle.Rectangle(left, bot, bW, bH)
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
-                    # print self._classes[j]
 
         return validRectangles, validProbs, validClasses
 
