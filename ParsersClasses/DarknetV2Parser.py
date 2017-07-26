@@ -1,3 +1,4 @@
+import numpy
 import sys
 from ObjectDetectionParser import ObjectDetectionParser
 import re
@@ -12,30 +13,13 @@ from SupportClasses import _GoldContent
 class DarknetV2Parser(ObjectDetectionParser):
     __executionType = None
     __executionModel = None
-
     __weights = None
     __configFile = None
-    _extendedHeader = False
 
     __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
-    # _numMaskableErrors = [0 for i in xrange(32)]
-
-    _smallestError = None
-    _biggestError = None
-    _numErrors = None
-    _errorsAverage = None
-    _errorsStdDeviation = None
-    _numMaskableErrors = None
-
-    _failed_layer = None
-    _errorTypeList = None
-
-    # these vars will turn writetocsv easier to implement
-    _sizeOfDNN = 0
-    _allProperties = None
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
@@ -51,13 +35,11 @@ class DarknetV2Parser(ObjectDetectionParser):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
-        self._sizeOfDNN = 32
-
         try:
             if self._parseLayers:
                 self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
                 self.__layersPath = str(kwargs.pop("layersPath"))
-                self._extendedHeader = True
+
                 raise NotImplementedError
 
         except:
@@ -131,31 +113,36 @@ class DarknetV2Parser(ObjectDetectionParser):
         # this is possible since errList has at least 1 element, due verification
         imgFilename = errList[0]["img"]
         goldPb = gold.getProbArray(imgPath=imgFilename)
-        goldRt = gold.getRectArray()
+        goldRt = gold.getRectArray(imgPath=imgFilename)
 
-        # NEED A DEEP COPY
-        foundPb = goldPb
-        foundRt = goldRt
+        foundPb = numpy.empty_like(goldPb)
+        foundPb[:] = goldPb
 
+        foundRt = numpy.empty_like(goldRt)
+        foundRt[:] = goldRt
 
         for err in errList:
             # NEED TO BE CHECK
             i = err["prob_i"]
             class_ = err["prob_j"]
 
-            lr = int(float(err["x_r"]))
-            br = int((float(err["y_r"])))
-            hr = abs(int(float(err["h_r"])))
-            wr = abs(int(float(err["w_r"])))
+            lr = int(err["x_r"])
+            br = int(err["y_r"])
+            hr = abs(int(err["h_r"]))
+            wr = abs(int(err["w_r"]))
             # gold correct
-            le = int(float(err["x_e"]))
-            be = int(float(err["y_e"]))
-            he = int(float(err["h_e"]))
-            we = int(float(err["w_e"]))
+            le = int(err["x_e"])
+            be = int(err["y_e"])
+            he = int(err["h_e"])
+            we = int(err["w_e"])
 
             foundRt[i] = Rectangle.Rectangle(lr, br, wr, hr)
             # t = goldRt[rectPos].deepcopy()
             goldRt[i] = Rectangle.Rectangle(le, be, we, he)
+
+            foundPb[i][class_] = err["prob_r"]
+            goldPb[i][class_] = err["prob_e"]
+
 
         #############
         # before keep going is necessary to filter the results
@@ -186,8 +173,31 @@ class DarknetV2Parser(ObjectDetectionParser):
 
 
 
-    def __filterResults(self, rectangles, probabilites):
-        return [], [], []
+    def __filterResults(self, rectangles, probabilites, total, classes):
+        validRectangles = []
+        validProbs = []
+        validClasses = []
+
+        for i in range(0, total):
+            box = rectangles[i]
+            xmin = max(box.left - box.width / 2.0, 0)
+            ymin = max(box.bottom - box.height / 2.0, 0)
+
+            # if xmin < 0:
+            #     xmin = 0
+            # if ymin < 0:
+            #     ymin = 0
+
+            for j in range(0, classes):
+                if probabilites[i][j] >= self._detectionThreshold:
+                    validProbs.append(probabilites[i][j])
+                    # check image bounds
+                    rect = Rectangle.Rectangle(int(xmin), int(ymin), box.width, box.height)
+                    validRectangles.append(rect)
+                    validClasses.append(self._classes[j])
+                    # print self._classes[j]
+
+        return validRectangles, validProbs, validClasses
 
     # parse Darknet
     # returns a dictionary

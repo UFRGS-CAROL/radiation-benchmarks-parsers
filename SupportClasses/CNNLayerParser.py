@@ -8,6 +8,19 @@ class CNNLayerParser():
     __layerDimentions = {}
     __layersGoldPath = ""
     __layersPath = ""
+    _smallestError = None
+    _biggestError = None
+    _numErrors = None
+    _errorsAverage = None
+    _errorsStdDeviation = None
+    _numMaskableErrors = None
+    _failed_layer = None
+    _errorTypeList = None
+    _sizeOfDNN = 0
+    _allProperties = None
+
+
+
 
     """
     Constructor

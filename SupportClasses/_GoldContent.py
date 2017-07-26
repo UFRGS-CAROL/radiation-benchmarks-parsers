@@ -100,13 +100,17 @@ class _GoldContent():
     def getPlistSize(self): return self.__plistSize
     def getPyFasterGold(self): return self.__pyFasterGold
 
-    def getRectArray(self):
+    def getRectArray(self, **kwargs):
+        if self.__nn == 'darknetv2':
+            imgPath = kwargs.pop('imgPath')
+            return self.__prob_array[imgPath]['boxes']
+
         return self.__prob_array['boxes']
 
     def getProbArray(self, **kwargs):
         if self.__nn == 'darknetv2':
             imgPath = kwargs.pop('imgPath')
-            return self.__prob_array[imgPath]
+            return self.__prob_array[imgPath]['probs']
 
         return self.__prob_array['probs']
 
@@ -226,7 +230,10 @@ class _GoldContent():
 
         for i, row in enumerate(spamreader):
             print row
-            self.__prob_array[str(row[0])] = self.readProbsAndBoxesV2(spamreader)
+            probRes, boxRes = self.readProbsAndBoxesV2(spamreader)
+            self.__prob_array[str(row[0])] = {}
+            self.__prob_array[str(row[0])]['probs'] = probRes
+            self.__prob_array[str(row[0])]['boxes'] = boxRes
 
         csvfile.close()
 

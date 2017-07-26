@@ -44,16 +44,26 @@ class Rectangle():
         copy_obj.top = self.top
         return copy_obj
 
-    # def __deepcopy__(self):
-    #     # print "passou no deepcopy"
-    #     copy_obj = Rectangle(0, 0, 0, 0)
-    #     copy_obj.left = self.left
-    #     copy_obj.bottom = self.bottom
-    #     copy_obj.height = self.height
-    #     copy_obj.width = self.width
-    #     copy_obj.right = self.right
-    #     copy_obj.top = self.top
-    #     return copy_obj
+    def __deepcopy__(self):
+        # print "passou no deepcopy"
+        copy_obj = Rectangle(0, 0, 0, 0)
+        copy_obj.left = self.left
+        copy_obj.bottom = self.bottom
+        copy_obj.height = self.height
+        copy_obj.width = self.width
+        copy_obj.right = self.right
+        copy_obj.top = self.top
+        return copy_obj
+
+    def __copy__(self):
+        copy_obj = Rectangle(0, 0, 0, 0)
+        copy_obj.left = self.left
+        copy_obj.bottom = self.bottom
+        copy_obj.height = self.height
+        copy_obj.width = self.width
+        copy_obj.right = self.right
+        copy_obj.top = self.top
+        return copy_obj
 
     def intersection(self, other):
         # if self.isdisjoint(other):
