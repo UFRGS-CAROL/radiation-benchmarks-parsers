@@ -4,6 +4,10 @@ import re
 import csv
 import os
 
+from SupportClasses import PrecisionAndRecall
+from SupportClasses import Rectangle
+from SupportClasses import _GoldContent
+
 
 class DarknetV2Parser(ObjectDetectionParser):
     __executionType = None
@@ -100,29 +104,102 @@ class DarknetV2Parser(ObjectDetectionParser):
     def setSize(self, header):
         sizeM = re.match(".*gold_file\: (\S+).*", header)
         if sizeM:
-            print sizeM.group(1)
+            self._goldFileName = sizeM.group(1)
 
-        self._size = str(self._goldFileName)
+        self._size = os.path.basename(self._goldFileName)
 
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
             return
+        # ---------------------------------------------------------------------------------------------------------------
+        # open and load gold
+        goldKey = self._machine + "_" + self._benchmark + "_" + self._size
 
-        print self._goldFileName
-        for i in errList:
-            pass
+        if self._machine in self._goldBaseDir:
+            goldPath = self._goldBaseDir[self._machine] + "/darknetv2/" + self._goldFileName
+        else:
+            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
+            return
+
+        if goldKey not in self._goldDatasetArray:
+            g = _GoldContent._GoldContent(nn='darknetv2', filepath=goldPath)
+            self._goldDatasetArray[goldKey] = g
+
+        gold = self._goldDatasetArray[goldKey]
+        # ---------------------------------------------------------------------------------------------------------------
+        # img path
+        # this is possible since errList has at least 1 element, due verification
+        imgFilename = errList[0]["img"]
+        goldPb = gold.getProbArray(imgPath=imgFilename)
+        goldRt = gold.getRectArray()
+
+        # NEED A DEEP COPY
+        foundPb = goldPb
+        foundRt = goldRt
+
+
+        for err in errList:
+            # NEED TO BE CHECK
+            i = err["prob_i"]
+            class_ = err["prob_j"]
+
+            lr = int(float(err["x_r"]))
+            br = int((float(err["y_r"])))
+            hr = abs(int(float(err["h_r"])))
+            wr = abs(int(float(err["w_r"])))
+            # gold correct
+            le = int(float(err["x_e"]))
+            be = int(float(err["y_e"]))
+            he = int(float(err["h_e"]))
+            we = int(float(err["w_e"]))
+
+            foundRt[i] = Rectangle.Rectangle(lr, br, wr, hr)
+            # t = goldRt[rectPos].deepcopy()
+            goldRt[i] = Rectangle.Rectangle(le, be, we, he)
+
+        #############
+        # before keep going is necessary to filter the results
+        gValidRects, gValidProbs, gValidClasses = self.__filterResults(goldRt, goldPb)
+        fValidRects, fValidProbs, fValidClasses = self.__filterResults(foundRt, foundPb)
+
+        precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
+        gValidSize = len(gValidRects)
+        fValidSize = len(fValidRects)
+
+        precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
+        self._precision = precisionRecallObj.getPrecision()
+        self._recall = precisionRecallObj.getRecall()
+
+        if self._parseLayers:
+            raise NotImplementedError
+
+        if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
+            self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
+                                  + '_' + self._logFileName, self._imgOutputDir)
+
+        self._falseNegative = precisionRecallObj.getFalseNegative()
+        self._falsePositive = precisionRecallObj.getFalsePositive()
+        self._truePositive = precisionRecallObj.getTruePositive()
+        # set all
+        self._goldLines = gValidSize
+        self._detectedLines = fValidSize
+
+
+
+    def __filterResults(self, rectangles, probabilites):
+        return [], [], []
 
     # parse Darknet
     # returns a dictionary
     def parseErrMethod(self, errString):
         ret = {}
         darknetM = re.match(
-            ".*img\: \[(\d+)\].*prob\[(\d+)\]\[(\d+)\].*r\:(\S+).*e\:(\S+).*x_r\: (\S+).*x_e\: "
+            ".*img\: \[(\S+)\].*prob\[(\d+)\]\[(\d+)\].*r\:(\S+).*e\:(\S+).*x_r\: (\S+).*x_e\: "
             "(\S+).*y_r\: (\S+).*y_e\: (\S+).*w_r\: (\S+).*w_e\: (\S+).*h_r\: (\S+).*h_e\: (\S+).*",
             errString)
 
         if darknetM:
-            ret["img"] = int(darknetM.group(1))
+            ret["img"] = str(darknetM.group(1))
             # ERR img: [0] prob[60][0] r:0.0000000000000000e+00 e:0.0000000000000000e+00
             ret["prob_i"] = int(darknetM.group(2))
             ret["prob_j"] = int(darknetM.group(3))

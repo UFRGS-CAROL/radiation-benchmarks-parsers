@@ -197,7 +197,12 @@ class _GoldContent():
 
         return prob
 
-
+    """
+    This method reads a csv file and stores it into
+    __prob_array, where it is filled with all data
+    about an indexed img detection
+    the index is the name o the image itself
+    """
     def darknetV2Constructor(self, filePath):
         csvfile = open(filePath, 'rb')
 
