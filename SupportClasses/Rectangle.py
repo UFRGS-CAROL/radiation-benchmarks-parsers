@@ -25,8 +25,8 @@ class Rectangle():
         self.bottom = bottom
         self.width = width
         self.height = height
-        self.right = min(self.left + self.width, self.width - 1)
-        self.top = min(self.bottom + self.height, self.height - 1)
+        self.right = min(self.left + self.width, self.width)
+        self.top = min(self.bottom + self.height, self.height)
 
     def __repr__(self):
         return "left " + str(self.left) + " bottom " + str(self.bottom) + " width " + str(

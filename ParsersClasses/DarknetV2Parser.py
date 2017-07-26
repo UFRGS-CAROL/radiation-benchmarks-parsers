@@ -162,6 +162,9 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
+        print self._precision, self._recall, gValidSize, fValidSize
+        print h, w
+
         if self._parseLayers:
             raise NotImplementedError
 
@@ -191,15 +194,16 @@ class DarknetV2Parser(ObjectDetectionParser):
             bX = box.left
             bY = box.bottom
 
-            left = int(max((bX - box.width / 2.) * w, 0))
-            bot = int(max((bY - box.height / 2.) * h, 0))
-            bW = min(int(w * box.width), w)
-            bH = min(int(h * box.height), h)
+            left = max(bX - box.width / 2., 0.0)
+            bot = max(bY - box.height / 2., 0.0)
+
+            width = box.width
+            height = box.height
 
             for j in range(0, classes):
                 if probabilites[i][j] >= self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(left, bot, bW, bH)
+                    rect = Rectangle.Rectangle(left, bot, width, height)
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
 
