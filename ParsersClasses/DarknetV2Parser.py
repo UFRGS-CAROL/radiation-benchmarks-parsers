@@ -8,6 +8,7 @@ import os
 from SupportClasses import PrecisionAndRecall
 from SupportClasses import Rectangle
 from SupportClasses import _GoldContent
+from SupportClasses.CNNLayerParser import CNNLayerParser
 
 
 class DarknetV2Parser(ObjectDetectionParser):
@@ -25,26 +26,60 @@ class DarknetV2Parser(ObjectDetectionParser):
                   "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
                   "col_detected_errors", "failed_layer", "header"]
 
+    __layerDimentions = {
+        0: [224, 224, 64],
+        1: [112, 112, 64],
+        2: [112, 112, 192],
+        3: [56, 56, 192],
+        4: [56, 56, 128],
+        5: [56, 56, 256],
+        6: [56, 56, 256],
+        7: [56, 56, 512],
+        8: [28, 28, 512],
+        9: [28, 28, 256],
+        10: [28, 28, 512],
+        11: [28, 28, 256],
+        12: [28, 28, 512],
+        13: [28, 28, 256],
+        14: [28, 28, 512],
+        15: [28, 28, 256],
+        16: [28, 28, 512],
+        17: [28, 28, 512],
+        18: [28, 28, 1024],
+        19: [14, 14, 1024],
+        20: [14, 14, 512],
+        21: [14, 14, 1024],
+        22: [14, 14, 512],
+        23: [14, 14, 1024],
+        24: [14, 14, 1024],
+        25: [7, 7, 1024],
+        26: [7, 7, 1024],
+        27: [7, 7, 1024],
+        28: [7, 7, 256],
+        29: [12544, 1, 1],
+        30: [1175, 0, 0],
+        31: [1175, 0, 0]}
+
     # it is only for darknet for a while
     _parseLayers = False
     __layersGoldPath = ""
     __layersPath = ""
     _failed_layer = ""
+    _cnnParser = None
 
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
-        try:
-            if self._parseLayers:
-                self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
-                self.__layersPath = str(kwargs.pop("layersPath"))
+        if self._parseLayers:
+            self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
+            self.__layersPath = str(kwargs.pop("layersPath"))
+            self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimentions,
+                                             layerGoldPath=self.__layersGoldPath,
+                                             layerPath=self.__layersPath, dnnSize=32, correctableLayers=[])
 
-                raise NotImplementedError
 
-        except:
-            print "\n Crash on create parse layers parameters"
-            sys.exit(-1)
+
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -74,7 +109,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                           self._header]
 
             if (self._parseLayers):
-                raise NotImplementedError
+                outputList.extend(self._cnnParser.getOutputToCsv())
 
             writer.writerow(outputList)
             csvWFP.close()
@@ -153,7 +188,6 @@ class DarknetV2Parser(ObjectDetectionParser):
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
-
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
@@ -162,13 +196,11 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-
-
         if self._parseLayers:
-            raise NotImplementedError
+            self._cnnParser.parseLayers(self._sdcIteration, self._logFileName, 'CALTECH', self._machine)
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
-            drawImgFileName =  self._localRadiationBench + "/data/CALTECH/" \
+            drawImgFileName = self._localRadiationBench + "/data/CALTECH/" \
                               + os.path.basename(imgFilename.rstrip())
 
             self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
