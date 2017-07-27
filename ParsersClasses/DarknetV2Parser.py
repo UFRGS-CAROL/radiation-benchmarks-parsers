@@ -153,7 +153,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
-        self._prThreshold = gold.getThresh
+
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
@@ -162,15 +162,14 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        print self._precision, self._recall, gValidSize, fValidSize
-        print h, w
+
 
         if self._parseLayers:
             raise NotImplementedError
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
-            drawImgFileName = "/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-benchmarks/data/CALTECH/" \
-            + os.path.basename(imgFilename.rstrip())
+            drawImgFileName =  self._localRadiationBench + "/data/CALTECH/" \
+                              + os.path.basename(imgFilename.rstrip())
 
             self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
@@ -194,16 +193,18 @@ class DarknetV2Parser(ObjectDetectionParser):
             bX = box.left
             bY = box.bottom
 
-            left = max(bX - box.width / 2., 0.0)
-            bot = max(bY - box.height / 2., 0.0)
+            left = (bX - box.width / 2.) * w
+            right = (bX + box.width / 2.) * w
+            top = (bY + box.height / 2.) * h
+            bot = (bY - box.height / 2.) * h
 
-            width = box.width
-            height = box.height
+            width = box.width * w
+            height = box.height * h
 
             for j in range(0, classes):
                 if probabilites[i][j] >= self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(left, bot, width, height)
+                    rect = Rectangle.Rectangle(int(left), int(bot), int(width), int(height))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
 

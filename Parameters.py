@@ -21,7 +21,7 @@ LAYERS_GOLD_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/golds/'  # '/home/pf
 LAYERS_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/data_inst_16_03_2017/'  # '/home/pfpimenta/darknetLayers/layers/'
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
-IMG_OUTPUT_DIR = './'
+IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
     # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_K40'
@@ -79,7 +79,7 @@ LENET_DATASETS = {
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
-LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa'
+LOCAL_RADIATION_BENCH = '~/git_pesquisa'
 
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory

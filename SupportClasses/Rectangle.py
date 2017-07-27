@@ -20,13 +20,15 @@ class Rectangle():
     width = 0
 
     # self._left, self._top, self._right, self._bottom
-    def __init__(self, left, bottom, width, height):
-        self.left = left
-        self.bottom = bottom
-        self.width = width
-        self.height = height
-        self.right = min(self.left + self.width, self.width)
-        self.top = min(self.bottom + self.height, self.height)
+    def __init__(self, *args, **kwargs):
+        self.left, self.bottom, self.width, self.height = args
+
+        if kwargs.get('right') and kwargs.get('top'):
+            self.right =  kwargs.get('right')
+            self.top = kwargs.get('top')
+        else:
+            self.right = self.left + self.width
+            self.top = self.bottom + self.height
 
     def __repr__(self):
         return "left " + str(self.left) + " bottom " + str(self.bottom) + " width " + str(
