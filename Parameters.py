@@ -17,8 +17,8 @@ from ParsersClasses import LenetParser
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
 ############################################################################################
 
-LAYERS_GOLD_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/golds/'  # '/home/pfpimenta/darknetLayers/golds/'
-LAYERS_PATH = '/mnt/jetson/sda1/layers_sassifi_darknet/data_inst_16_03_2017/'  # '/home/pfpimenta/darknetLayers/layers/'
+LAYERS_GOLD_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/gold_layers/'
+LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/found_layers/'  # '/home/pfpimenta/darknetLayers/layers/'
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
 IMG_OUTPUT_DIR = ''

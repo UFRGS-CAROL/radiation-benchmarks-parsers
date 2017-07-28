@@ -29,8 +29,8 @@ class CNNLayerParser():
     _allProperties = None
 
     __threeLevelFiltered = [2, 5, 50]
-    __errorTypes = ['allLayers', 'filtered' + str(__threeLevelFiltered[0]), 'filtered' + str(__threeLevelFiltered[1]),
-                    'filtered' + str(__threeLevelFiltered[2])]
+    __errorTypes = ['allLayers'] + ['filtered' + str(i) for i in __threeLevelFiltered]
+
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
@@ -137,27 +137,11 @@ class CNNLayerParser():
     assumes that layers which have 1D will be declared as [layer_n:[n, 1, 1]]
     """
 
-    def getSizeOfLayer(self, layerNum):
+    def _getSizeOfLayer(self, layerNum):
         dim = self.__layerDimentions[layerNum]
         layerSize = dim[0] * dim[1] * dim[2]
         return layerSize
 
-    def tupleToArray(self, layerContents, layerNum):
-        size = self.__layerDimentions[layerNum][0]
-        layer = [0 for i in xrange(0, size)]
-        for i in range(0, size):
-            layer[i] = layerContents[i]
-        return layer
-
-    def tupleTo3DMatrix(self, layerContents, layerNum):
-        dim = self.__layerDimentions[layerNum]  # width,height,depth
-        layer = [[[0 for k in xrange(dim[2])] for j in xrange(dim[1])] for i in xrange(dim[0])]
-        for i in range(0, dim[0]):
-            for j in range(0, dim[1]):
-                for k in range(0, dim[2]):
-                    contentsIndex = (i * dim[1] + j) * dim[2] + k
-                    layer[i][j][k] = layerContents[contentsIndex]
-        return layer
 
     def printLayersSizes(self):
         layerSize = [0 for k in xrange(self._sizeOfDNN)]
@@ -165,7 +149,7 @@ class CNNLayerParser():
             contentsLen = 0
             for filename in glob.glob(self.__layersPath + '*_' + str(i)):
                 if (layerSize[i] == 0):
-                    layerSize[i] = self.getSizeOfLayer(filename)
+                    layerSize[i] = self._getSizeOfLayer(filename)
 
                 layerFile = open(filename, "rb")
                 numItens = layerSize[i] / 4  # float size = 4bytes
@@ -289,65 +273,7 @@ class CNNLayerParser():
 
         return width, height, depth
 
-    # carrega de um log para uma matriz
-    def loadLayer(self, layerNum):
-        layerFilename = self.__layersPath + self._logFileName + "_it_" + self._sdcIteration + "_layer_" + str(layerNum)
 
-        filenames = glob.glob(layerFilename)
-
-        if (len(filenames) == 0):
-            return None
-        elif (len(filenames) > 1):
-            print('+de 1 log encontrado para \'' + layerFilename + '\'')
-
-        filename = filenames[0]
-        layerSize = self.getSizeOfLayer(layerNum)
-
-        layerFile = open(filename, "rb")
-        numItens = layerSize  # float size = 4bytes
-
-        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
-        # botar em matriz 3D
-        if (layerNum < 29):
-            layer = self.tupleTo3DMatrix(layerContents, layerNum)
-        else:
-            layer = self.tupleToArray(layerContents, layerNum)
-        layerFile.close()
-        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
-        return layer
-
-
-    def loadGoldLayer(self, layerNum, datasetName):
-        # carrega de um log para uma matriz
-        # datasetName = self.getDatasetName()
-        goldIteration = str(int(self._sdcIteration) % self._imgListSize)
-        # print 'dataset? ' + self._goldFileName + '  it ' + self._sdcIteration + '  abft: ' + self._abftType
-        layerFilename = self.__layersGoldPath + "gold_" + self._machine + datasetName + '_it_' + goldIteration + '_layer_' + str(
-            layerNum)
-        # layerFilename = self.__layersGoldPath + '2017_02_22_09_08_51_cudaDarknet_carol-k402.log_it_64_layer_' + str(layerNum)
-        # print layerFilename
-        filenames = glob.glob(layerFilename)
-        # print str(filenames)
-        if (len(filenames) == 0):
-            return None
-        elif (len(filenames) > 1):
-            print('+de 1 gold encontrado para \'' + layerFilename + str(layerNum) + '\'')
-
-        layerSize = self.getSizeOfLayer(layerNum)
-
-        layerFile = open(filenames[0], "rb")
-        numItens = layerSize  # float size = 4bytes
-
-        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
-
-        # botar em matriz 3D
-        if (layerNum < 29):
-            layer = self.tupleTo3DMatrix(layerContents, layerNum)
-        else:
-            layer = self.tupleToArray(layerContents, layerNum)
-        layerFile.close()
-        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
-        return layer
 
     """
     errorType :: cubic, square, colOrRow, single, random
@@ -410,7 +336,7 @@ class CNNLayerParser():
 
     def layer3DToArray(self, layer, layerNum):
         width, height, depth = self.__layerDimentions[layerNum]
-        layerSize = self.getSizeOfLayer(layerNum)
+        layerSize = self._getSizeOfLayer(layerNum)
         layerArray = [0 for k in xrange(layerSize)]
         for i in range(0, width):
             for j in range(0, height):
@@ -534,12 +460,17 @@ class CNNLayerParser():
     kernelTime = int(self._accIteErrors) // int(self._sdcIteration)
     print '\nkerneltime: ' + str(kernelTime)
     """
-    def parseLayers(self, sdcIteration, logFilename, datasetName, machine, imgListSize=2):
-        self._sdcIteration = sdcIteration
-        self._logFileName = logFilename
-        self._imgListSize = imgListSize
-        self._machine = machine
+    def parseLayers(self, **kwargs):
+        self._sdcIteration = kwargs.get('sdcIteration')
+        self._logFileName = kwargs.get('logFilename')
+        self._imgListSize = kwargs.get('imgListSize')
+        self._machine = kwargs.get('machine')
+        datasetName = kwargs.get('datasetName')
+        loadLayer = kwargs.get('loadLayerMethod')
+        loadGoldLayer = kwargs.get('loadGoldLayerMethod')
 
+
+        # default for most of all CNNs
         self._smallestError = {filterName: [0.0 for i in xrange(self._sizeOfDNN)] for filterName in self.__filterNames}
         self._biggestError = {filterName: [0.0 for i in xrange(self._sizeOfDNN)] for filterName in self.__filterNames}
         self._numErrors = {filterName: [0 for i in xrange(self._sizeOfDNN)] for filterName in self.__filterNames}
@@ -555,8 +486,10 @@ class CNNLayerParser():
 
         for i in range(0, self._sizeOfDNN):
             # print '\n----layer ' + str(i) + ' :'
-            layer = self.loadLayer(i)
-            gold = self.loadGoldLayer(i, datasetName)
+            layerFilename = self.__layersGoldPath + "gold_" + self._machine + datasetName + '_it_' + goldIteration + '_layer_' + str(
+                layerNum)
+            layer = loadLayer(i)
+            gold = loadGoldLayer(i, datasetName)
             if (layer is None):
                 print(self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found')
                 logsNotFound = True
@@ -576,7 +509,7 @@ class CNNLayerParser():
                 self._errorsStdDeviation['allErrors'][i] = stdDeviation
                 self._numMaskableErrors[i] = numMaskableErrors
                 self._numCorrectableErrors[i] = numCorrectableErrors
-                if i in [0, 2, 7, 18]:
+                if i in self._correctableLayers:
                     print ("\nDEBUG\ncamada: " + str(i) + "\nnumCorrectableErrors: " + str(numCorrectableErrors) + " / " + str(self._numErrors['allErrors'][i]) )
                 #print('\n numMaskableErrors: ' + str(numMaskableErrors) + ' :: ' + str(self._numMaskableErrors[i]))
                 if (self._errorFound):
@@ -601,7 +534,10 @@ class CNNLayerParser():
                     print('errorsStdDeviation camada ' + str(i) + ' :: ' + str(stdDeviation))
                     print('ja deu erro? ' + str(self._errorFound))
                     # print('Precision: ' + str(self._precision) + '  Recall: ' + str(self._recall) + '\n')
-                if (i < 29):
+
+                # check if it is a 3D Layer or it is a 1D one
+
+                if self.__layerDimentions[i][1] != 0 and self.__layerDimentions[i][2] != 0:
                     # layer 3D
                     self.errorTypeList[i] = self._localityParser3D(layerErrorList)
                     if (self.errorTypeList[i] != [0, 0, 0, 0, 0]):
@@ -615,7 +551,8 @@ class CNNLayerParser():
                     else:
                         # nao teve nenhum erro
                         jaccardCoef = 1
-                else:
+
+                elif self.__layerDimentions[i][1] == 0 and self.__layerDimentions[i][2] == 0:
                     # layer 1D
                     self.errorTypeList[i] = self._localityParser1D(layerErrorList)
                     if (self.errorTypeList[i] != [0, 0, 0, 0, 0]):
@@ -628,6 +565,10 @@ class CNNLayerParser():
                         # nao teve nenhum erro
                         jaccardCoef = 1
                         # print('jaccard = ' + str(jaccardCoef))
+
+                else:
+                    # 2D layer
+                    raise NotImplementedError
 
         #print('\n numMaskableErrors: ' + str(self._numMaskableErrors))
         if logsNotFound and goldsNotFound:

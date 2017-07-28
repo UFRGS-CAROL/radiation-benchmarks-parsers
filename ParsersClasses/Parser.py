@@ -200,7 +200,7 @@ class Parser():
     """
 
     @abstractmethod
-    def buildImageMethod(self):
+    def buildImageMethod(self, *args):
         raise NotImplementedError()
 
     @abstractmethod

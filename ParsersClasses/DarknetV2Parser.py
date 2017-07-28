@@ -1,5 +1,10 @@
+import glob
+
 import numpy
 import sys
+
+import struct
+
 from ObjectDetectionParser import ObjectDetectionParser
 import re
 import csv
@@ -27,38 +32,39 @@ class DarknetV2Parser(ObjectDetectionParser):
                   "col_detected_errors", "failed_layer", "header"]
 
     __layerDimentions = {
-        0: [224, 224, 64],
-        1: [112, 112, 64],
-        2: [112, 112, 192],
-        3: [56, 56, 192],
-        4: [56, 56, 128],
-        5: [56, 56, 256],
-        6: [56, 56, 256],
-        7: [56, 56, 512],
-        8: [28, 28, 512],
-        9: [28, 28, 256],
-        10: [28, 28, 512],
-        11: [28, 28, 256],
-        12: [28, 28, 512],
-        13: [28, 28, 256],
-        14: [28, 28, 512],
-        15: [28, 28, 256],
-        16: [28, 28, 512],
-        17: [28, 28, 512],
-        18: [28, 28, 1024],
-        19: [14, 14, 1024],
-        20: [14, 14, 512],
-        21: [14, 14, 1024],
-        22: [14, 14, 512],
-        23: [14, 14, 1024],
-        24: [14, 14, 1024],
-        25: [7, 7, 1024],
-        26: [7, 7, 1024],
-        27: [7, 7, 1024],
-        28: [7, 7, 256],
-        29: [12544, 1, 1],
-        30: [1175, 0, 0],
-        31: [1175, 0, 0]}
+        0: [608, 608, 3],
+        1: [608, 608, 32],
+        2: [304, 304, 32],
+        3: [304, 304, 64],
+        4: [152, 152, 64],
+        5: [152, 152, 128],
+        6: [152, 152, 64],
+        7: [152, 152, 128],
+        8: [76, 76, 128],
+        9: [76, 76, 256],
+        10: [76, 76, 128],
+        11: [76, 76, 256],
+        12: [38, 38, 256],
+        13: [38, 38, 512],
+        14: [38, 38, 256],
+        15: [38, 38, 512],
+        16: [38, 38, 256],
+        17: [38, 38, 512],
+        18: [19, 19, 512],
+        19: [19, 19, 1024],
+        20: [19, 19, 512],
+        21: [19, 19, 1024],
+        22: [19, 19, 512],
+        23: [19, 19, 1024],
+        24: [19, 19, 1024],
+        25: [0, 0, 0],
+        26: [38, 38, 512],
+        27: [38, 38, 64],
+        28: [0, 0, 0],
+        29: [19, 19, 1280],
+        30: [19, 19, 1024],
+        31: [1, 1, 1]
+    }
 
     # it is only for darknet for a while
     _parseLayers = False
@@ -77,9 +83,6 @@ class DarknetV2Parser(ObjectDetectionParser):
             self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimentions,
                                              layerGoldPath=self.__layersGoldPath,
                                              layerPath=self.__layersPath, dnnSize=32, correctableLayers=[])
-
-
-
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -314,3 +317,117 @@ class DarknetV2Parser(ObjectDetectionParser):
             return ret
 
         return None
+
+    # ---------------------------------------------------------------------------------------------------------------------
+    """
+    loadLayer
+    THIS function WILL only be used inside CNNLayerParser class
+    DO NOT USE THIS OUTSIDE
+    """
+
+    # carrega de um log para uma matriz
+    def loadLayer(self, layerNum, layerFilename):
+        # layerFilename = self.__layersPath + self._logFileName + "_it_" + self._sdcIteration + "_layer_" + str(layerNum)
+
+        filenames = glob.glob(layerFilename)
+
+        if (len(filenames) == 0):
+            return None
+        elif (len(filenames) > 1):
+            print('+de 1 log encontrado para \'' + layerFilename + '\'')
+
+        filename = filenames[0]
+        layerSize = self.getSizeOfLayer(layerNum)
+
+        layerFile = open(filename, "rb")
+        numItens = layerSize  # float size = 4bytes
+
+        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
+        # botar em matriz 3D
+        if (layerNum < 29):
+            layer = self.tupleTo3DMatrix(layerContents, layerNum)
+        else:
+            layer = self.tupleToArray(layerContents, layerNum)
+        layerFile.close()
+        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
+        return layer
+
+    """
+    loadGoldLayer
+    THIS function WILL only be used inside CNNLayerParser class
+    DO NOT USE THIS OUTSIDE
+    """
+
+    def loadGoldLayer(self, layerNum, layerFilename):
+        # carrega de um log para uma matriz
+        # datasetName = self.getDatasetName()
+        goldIteration = str(int(self._sdcIteration) % self._imgListSize)
+        # print 'dataset? ' + self._goldFileName + '  it ' + self._sdcIteration + '  abft: ' + self._abftType
+        # layerFilename = self.__layersGoldPath + "gold_" + self._machine + datasetName + '_it_' + goldIteration + '_layer_' + str(
+        #     layerNum)
+        # layerFilename = self.__layersGoldPath + '2017_02_22_09_08_51_cudaDarknet_carol-k402.log_it_64_layer_' + str(layerNum)
+        # print layerFilename
+        filenames = glob.glob(layerFilename)
+        # print str(filenames)
+        if (len(filenames) == 0):
+            return None
+        elif (len(filenames) > 1):
+            print('+de 1 gold encontrado para \'' + layerFilename + str(layerNum) + '\'')
+
+        layerSize = self.getSizeOfLayer(layerNum)
+
+        layerFile = open(filenames[0], "rb")
+        numItens = layerSize  # float size = 4bytes
+
+        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
+
+        # botar em matriz 3D
+        if (layerNum < 29):
+            layer = self.tupleTo3DMatrix(layerContents, layerNum)
+        else:
+            layer = self.tupleToArray(layerContents, layerNum)
+        layerFile.close()
+        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
+        return layer
+
+    """
+    tupleTo3DMatrix
+    THIS function WILL only be used inside CNNLayerParser class
+    DO NOT USE THIS OUTSIDE
+    """
+
+    def tupleTo3DMatrix(self, layerContents, layerNum):
+        dim = self.__layerDimentions[layerNum]  # width,height,depth
+        layer = [[[0 for k in xrange(dim[2])] for j in xrange(dim[1])] for i in xrange(dim[0])]
+        for i in range(0, dim[0]):
+            for j in range(0, dim[1]):
+                for k in range(0, dim[2]):
+                    contentsIndex = (i * dim[1] + j) * dim[2] + k
+                    layer[i][j][k] = layerContents[contentsIndex]
+        return layer
+
+    """
+    tupleToArray
+    THIS function WILL only be used inside CNNLayerParser class
+    DO NOT USE THIS OUTSIDE
+    """
+
+    def tupleToArray(self, layerContents, layerNum):
+        size = self.__layerDimentions[layerNum][0]
+        layer = [0 for i in xrange(0, size)]
+        for i in range(0, size):
+            layer[i] = layerContents[i]
+        return layer
+
+    """
+    getSizeOfLayer
+    THIS function WILL only be used inside CNNLayerParser class
+    DO NOT USE THIS OUTSIDE
+    """
+
+    def getSizeOfLayer(self, layerNum):
+        dim = self.__layerDimentions[layerNum]
+        layerSize = dim[0] * dim[1] * dim[2]
+        return layerSize
+
+    # ---------------------------------------------------------------------------------------------------------------------
