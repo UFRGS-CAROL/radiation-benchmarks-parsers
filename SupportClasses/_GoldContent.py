@@ -97,6 +97,9 @@ class _GoldContent():
     def getThresh(self):
         return self.__thesh
 
+    def getPlistSize(self):
+        return self.__plistSize
+
     def getClasses(self):
         return self.__classes
 

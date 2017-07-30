@@ -31,40 +31,38 @@ class DarknetV2Parser(ObjectDetectionParser):
                   "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
                   "col_detected_errors", "failed_layer", "header"]
 
-    __layerDimentions = {
-        0: [608, 608, 3],
-        1: [608, 608, 32],
-        2: [304, 304, 32],
-        3: [304, 304, 64],
-        4: [152, 152, 64],
-        5: [152, 152, 128],
-        6: [152, 152, 64],
-        7: [152, 152, 128],
-        8: [76, 76, 128],
-        9: [76, 76, 256],
-        10: [76, 76, 128],
-        11: [76, 76, 256],
-        12: [38, 38, 256],
-        13: [38, 38, 512],
-        14: [38, 38, 256],
-        15: [38, 38, 512],
-        16: [38, 38, 256],
-        17: [38, 38, 512],
-        18: [19, 19, 512],
-        19: [19, 19, 1024],
-        20: [19, 19, 512],
-        21: [19, 19, 1024],
-        22: [19, 19, 512],
-        23: [19, 19, 1024],
-        24: [19, 19, 1024],
-        25: [0, 0, 0],
-        26: [38, 38, 512],
-        27: [38, 38, 64],
-        28: [0, 0, 0],
-        29: [19, 19, 1280],
-        30: [19, 19, 1024],
-        31: [1, 1, 1]
-    }
+    __layerDimentions = {0: [608, 608, 32],
+                         1: [304, 304, 32],
+                         2: [304, 304, 64],
+                         3: [152, 152, 64],
+                         4: [152, 152, 128],
+                         5: [152, 152, 64],
+                         6: [152, 152, 128],
+                         7: [76, 76, 128],
+                         8: [76, 76, 256],
+                         9: [76, 76, 128],
+                         10: [76, 76, 256],
+                         11: [38, 38, 256],
+                         12: [38, 38, 512],
+                         13: [38, 38, 256],
+                         14: [38, 38, 512],
+                         15: [38, 38, 256],
+                         16: [38, 38, 512],
+                         17: [19, 19, 512],
+                         18: [19, 19, 1024],
+                         19: [19, 19, 512],
+                         20: [19, 19, 1024],
+                         21: [19, 19, 512],
+                         22: [19, 19, 1024],
+                         23: [19, 19, 1024],
+                         24: [19, 19, 1024],
+                         25: [],
+                         26: [38, 38, 64],
+                         27: [19, 19, 256],
+                         28: [],
+                         29: [19, 19, 1024],
+                         30: [19, 19, 425],
+                         31: []}
 
     # it is only for darknet for a while
     _parseLayers = False
@@ -84,42 +82,39 @@ class DarknetV2Parser(ObjectDetectionParser):
                                              layerGoldPath=self.__layersGoldPath,
                                              layerPath=self.__layersPath, dnnSize=32, correctableLayers=[])
 
+            self._csvHeader.extend(self._cnnParser.genCsvHeader())
+
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
-        try:
-            csvWFP = open(csvFileName, "a")
-            writer = csv.writer(csvWFP, delimiter=';')
+        csvWFP = open(csvFileName, "a")
+        writer = csv.writer(csvWFP, delimiter=';')
 
-            outputList = [self._logFileName,
-                          self._machine,
-                          self._benchmark,
-                          self._sdcIteration,
-                          self._accIteErrors,
-                          self._iteErrors,
-                          self._goldLines,
-                          self._detectedLines,
-                          self._wrongElements,
-                          self._precision,
-                          self._recall,
-                          self._falseNegative,
-                          self._falsePositive,
-                          self._truePositive,
-                          self._abftType,
-                          self._rowDetErrors,
-                          self._colDetErrors,
-                          self._failed_layer,
-                          self._header]
+        outputList = [self._logFileName,
+                      self._machine,
+                      self._benchmark,
+                      self._sdcIteration,
+                      self._accIteErrors,
+                      self._iteErrors,
+                      self._goldLines,
+                      self._detectedLines,
+                      self._wrongElements,
+                      self._precision,
+                      self._recall,
+                      self._falseNegative,
+                      self._falsePositive,
+                      self._truePositive,
+                      self._abftType,
+                      self._rowDetErrors,
+                      self._colDetErrors,
+                      self._failed_layer,
+                      self._header]
 
-            if (self._parseLayers):
-                outputList.extend(self._cnnParser.getOutputToCsv())
+        if (self._parseLayers):
+            outputList.extend(self._cnnParser.getOutputToCsv())
 
-            writer.writerow(outputList)
-            csvWFP.close()
-
-        except:
-            print "\n Crash on log ", self._logFileName
-            raise
+        writer.writerow(outputList)
+        csvWFP.close()
 
     def setSize(self, header):
         sizeM = re.match(".*gold_file\: (\S+).*", header)
@@ -146,6 +141,9 @@ class DarknetV2Parser(ObjectDetectionParser):
             self._goldDatasetArray[goldKey] = g
 
         gold = self._goldDatasetArray[goldKey]
+
+        # for layers parser
+        self._imgListSize = gold.getPlistSize()
         # ---------------------------------------------------------------------------------------------------------------
         # img path
         # this is possible since errList has at least 1 element, due verification
@@ -200,7 +198,20 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._recall = precisionRecallObj.getRecall()
 
         if self._parseLayers:
-            self._cnnParser.parseLayers(self._sdcIteration, self._logFileName, 'CALTECH', self._machine)
+            """
+            self._sdcIteration = kwargs.get('sdcIteration')
+            self._logFileName = kwargs.get('logFilename')
+            self._imgListSize = kwargs.get('imgListSize')
+            self._machine = kwargs.get('machine')
+            datasetName = kwargs.get('datasetName')
+            loadLayer = kwargs.get('loadLayerMethod')
+            loadGoldLayer = kwargs.get('loadGoldLayerMethod')
+            """
+            self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
+                                        logFilename=self._logFileName,
+                                        imgListSize=1,
+                                        machine=self._machine,
+                                        loadLayerMethod=self.loadLayer)
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + "/data/CALTECH/" \
@@ -326,15 +337,26 @@ class DarknetV2Parser(ObjectDetectionParser):
     """
 
     # carrega de um log para uma matriz
-    def loadLayer(self, layerNum, layerFilename):
-        # layerFilename = self.__layersPath + self._logFileName + "_it_" + self._sdcIteration + "_layer_" + str(layerNum)
+    def loadLayer(self, layerNum, isGold = False):
+        # it is better to programing one function only than two almost equal
+        imgListpos = int(self._sdcIteration) % self._imgListSize
+        if isGold:
+            # 2017_07_28_19_21_26_cudaDarknetv2_ECC_ON_carol.log_layer_0_img_0_test_it_0.layer
+            layerFilename = self.__layersPath + self._logFileName + "_layer_" + str(layerNum) + "_img_" + str(
+                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
+        else:
+            # carrega de um log para uma matriz
+            # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
+            # gold_layers/gold_layer_0_img_0_test_it_0.layer
+            layerFilename = self.__layersGoldPath + "gold_layer_" + str(layerNum) + "_img_" + str(
+                imgListpos) + "_test_it_0.layer"
 
         filenames = glob.glob(layerFilename)
 
         if (len(filenames) == 0):
             return None
         elif (len(filenames) > 1):
-            print('+de 1 log encontrado para \'' + layerFilename + '\'')
+            print('+de 1 layer encontrada para \'' + layerFilename + '\'')
 
         filename = filenames[0]
         layerSize = self.getSizeOfLayer(layerNum)
@@ -343,52 +365,51 @@ class DarknetV2Parser(ObjectDetectionParser):
         numItens = layerSize  # float size = 4bytes
 
         layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
+        layer = None
         # botar em matriz 3D
-        if (layerNum < 29):
+        if len(self.__layerDimentions[layerNum]) == 3 :
             layer = self.tupleTo3DMatrix(layerContents, layerNum)
-        else:
+        elif len(self.__layerDimentions[layerNum]) == 1:
             layer = self.tupleToArray(layerContents, layerNum)
+
         layerFile.close()
-        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
+
         return layer
 
-    """
-    loadGoldLayer
-    THIS function WILL only be used inside CNNLayerParser class
-    DO NOT USE THIS OUTSIDE
-    """
-
-    def loadGoldLayer(self, layerNum, layerFilename):
-        # carrega de um log para uma matriz
-        # datasetName = self.getDatasetName()
-        goldIteration = str(int(self._sdcIteration) % self._imgListSize)
-        # print 'dataset? ' + self._goldFileName + '  it ' + self._sdcIteration + '  abft: ' + self._abftType
-        # layerFilename = self.__layersGoldPath + "gold_" + self._machine + datasetName + '_it_' + goldIteration + '_layer_' + str(
-        #     layerNum)
-        # layerFilename = self.__layersGoldPath + '2017_02_22_09_08_51_cudaDarknet_carol-k402.log_it_64_layer_' + str(layerNum)
-        # print layerFilename
-        filenames = glob.glob(layerFilename)
-        # print str(filenames)
-        if (len(filenames) == 0):
-            return None
-        elif (len(filenames) > 1):
-            print('+de 1 gold encontrado para \'' + layerFilename + str(layerNum) + '\'')
-
-        layerSize = self.getSizeOfLayer(layerNum)
-
-        layerFile = open(filenames[0], "rb")
-        numItens = layerSize  # float size = 4bytes
-
-        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
-
-        # botar em matriz 3D
-        if (layerNum < 29):
-            layer = self.tupleTo3DMatrix(layerContents, layerNum)
-        else:
-            layer = self.tupleToArray(layerContents, layerNum)
-        layerFile.close()
-        # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
-        return layer
+    # """
+    # loadGoldLayer
+    # THIS function WILL only be used inside CNNLayerParser class
+    # DO NOT USE THIS OUTSIDE
+    # """
+    #
+    # def loadGoldLayer(self, layerNum):
+    #
+    #
+    #     filenames = glob.glob(layerFilename)
+    #     # print str(filenames)
+    #     if (len(filenames) == 0):
+    #         return None
+    #     elif (len(filenames) > 1):
+    #         print('+de 1 gold encontrado para \'' + layerFilename + str(layerNum) + '\'')
+    #
+    #     layerSize = self.getSizeOfLayer(layerNum)
+    #
+    #     layerFile = open(filenames[0], "rb")
+    #     numItens = layerSize  # float size = 4bytes
+    #
+    #     fileData = layerFile.read(4 * numItens)
+    #     layerContents = struct.unpack('f' * numItens, fileData)
+    #
+    #     layer = None
+    #
+    #     # botar em matriz 3D
+    #     if len(self.__layerDimentions[layerNum]) == 3:
+    #         layer = self.tupleTo3DMatrix(layerContents, layerNum)
+    #     elif len(self.__layerDimentions[layerNum]) == 1:
+    #         layer = self.tupleToArray(layerContents, layerNum)
+    #     layerFile.close()
+    #     # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
+    #     return layer
 
     """
     tupleTo3DMatrix
@@ -427,7 +448,11 @@ class DarknetV2Parser(ObjectDetectionParser):
 
     def getSizeOfLayer(self, layerNum):
         dim = self.__layerDimentions[layerNum]
-        layerSize = dim[0] * dim[1] * dim[2]
-        return layerSize
+        if len(dim) == 3:
+            return dim[0] * dim[1] * dim[2]
+        elif len(dim) == 1:
+            return dim[0]
+        elif len(dim) == 0:
+            return 0
 
-    # ---------------------------------------------------------------------------------------------------------------------
+        # ---------------------------------------------------------------------------------------------------------------------
