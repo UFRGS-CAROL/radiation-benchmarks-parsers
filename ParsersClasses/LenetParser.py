@@ -1,6 +1,9 @@
-from ObjectDetectionParser import ObjectDetectionParser, ImageRaw
+from ObjectDetectionParser import ObjectDetectionParser
 import re
 import csv
+
+
+from SupportClasses.CNNLayerParser import CNNLayerParser
 
 # 0 to 9 digits
 MAX_LENET_ELEMENT = 9.0
@@ -31,16 +34,18 @@ class LenetParser(ObjectDetectionParser):
 
     # these vars will turn writetocsv easier to implement
     _sizeOfDNN = 0
-    _allProperties = None
 
-    # __layerDimentions = {
-    #     0: [32, 32, 1],
-    #     1: [28, 28, 6],
-    #     2: [14, 14, 6],
-    #     3: [10, 10, 16],
-    #     4: [5, 5, 16],
-    #     5: [100, 10, 1],
-    # }
+    # for CNNLayer Parser
+    _cnnParser = None
+
+    __layerDimensions = {
+        0: [32, 32, 1],
+        1: [28, 28, 6],
+        2: [14, 14, 6],
+        3: [10, 10, 16],
+        4: [5, 5, 16],
+        5: [100, 10, 1],
+    }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "precision",
@@ -56,8 +61,16 @@ class LenetParser(ObjectDetectionParser):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
-        self._sizeOfDNN = 5
-        # raise NotImplementedError
+        self._sizeOfDNN = len(self.__layerDimensions)
+        if self._parseLayers:
+            self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
+            self.__layersPath = str(kwargs.pop("layersPath"))
+            self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
+                                             layerGoldPath=self.__layersGoldPath,
+                                             layerPath=self.__layersPath, dnnSize=self._sizeOfDNN, correctableLayers=[])
+
+            self._csvHeader.extend(self._cnnParser.genCsvHeader())
+
 
 
     def _writeToCSV(self, csvFileName):
@@ -82,16 +95,7 @@ class LenetParser(ObjectDetectionParser):
                           self._header]
 
             if (self._parseLayers):
-                # for i in xrange(32): #debug
-                # print(str(self._numMaskableErrors[i]))
-                for filterName in self.__filterNames:
-                    outputList.extend([self._smallestError[filterName][i] for i in xrange(32)])
-                    outputList.extend([self._biggestError[filterName][i] for i in xrange(32)])
-                    outputList.extend([self._numErrors[filterName][i] for i in xrange(32)])
-                    outputList.extend([self._errorsAverage[filterName][i] for i in xrange(32)])
-                    outputList.extend([self._errorsStdDeviation[filterName][i] for i in xrange(32)])
-                outputList.extend(self.errorTypeToString(self._errorTypeList[i]) for i in xrange(32))
-                outputList.extend(self._numMaskableErrors[i] for i in xrange(32))
+                outputList.extend(self._cnnParser.getOutputToCsv())
 
             writer.writerow(outputList)
             csvWFP.close()
@@ -182,5 +186,17 @@ class LenetParser(ObjectDetectionParser):
         self._rowDetErrors = 0
         self._colDetErrors = 0
 
+
         if self._parseLayers:
-            raise  NotImplemented
+            """
+             sdcIteration = which iteration SDC appeared
+             logFilename = the name of the log file
+             imgListSize = size of images dataset
+             machine = testing device
+             loadLayerMethod = an external method which open an specific layer on an external class
+            """
+            self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
+                                        logFilename=self._logFileName,
+                                        imgListSize=1,
+                                        machine=self._machine,
+                                        loadLayerMethod=self.loadLayer)

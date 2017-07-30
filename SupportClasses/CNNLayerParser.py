@@ -22,7 +22,6 @@ class CNNLayerParser():
     _sdcIteration = None
     _logFileName = None
 
-    _imgListSize = None
     _machine = None
 
     _sizeOfDNN = 0
@@ -425,7 +424,6 @@ class CNNLayerParser():
     Parameters:
      sdcIteration = which iteration SDC appeared
      logFilename = the name of the log file
-     imgListSize = size of images dataset
      machine = testing device
      loadLayerMethod = an external method which open an specific layer on an external class
 
@@ -438,7 +436,6 @@ class CNNLayerParser():
     def parseLayers(self, **kwargs):
         self._sdcIteration = kwargs.get('sdcIteration')
         self._logFileName = kwargs.get('logFilename')
-        self._imgListSize = kwargs.get('imgListSize')
         self._machine = kwargs.get('machine')
         loadLayer = kwargs.get('loadLayerMethod')
 
