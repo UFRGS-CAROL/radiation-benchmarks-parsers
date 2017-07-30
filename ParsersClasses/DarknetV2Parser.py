@@ -128,7 +128,6 @@ class DarknetV2Parser(ObjectDetectionParser):
             self._saveLayer = sizeM.group(2)
             self._abftType = sizeM.group(3)
             self._iterations = sizeM.group(4)
-        print self._goldFileName
         self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
