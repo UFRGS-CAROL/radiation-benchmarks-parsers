@@ -352,7 +352,7 @@ class DarknetV2Parser(ObjectDetectionParser):
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # gold_layers/gold_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersGoldPath + "gold_layer_" + str(layerNum) + "_img_" + str(
+            layerFilename = self.__layersGoldPath + "gold_layer_darknet_v2_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
         filenames = glob.glob(layerFilename)
@@ -379,41 +379,6 @@ class DarknetV2Parser(ObjectDetectionParser):
         layerFile.close()
 
         return layer
-
-    # """
-    # loadGoldLayer
-    # THIS function WILL only be used inside CNNLayerParser class
-    # DO NOT USE THIS OUTSIDE
-    # """
-    #
-    # def loadGoldLayer(self, layerNum):
-    #
-    #
-    #     filenames = glob.glob(layerFilename)
-    #     # print str(filenames)
-    #     if (len(filenames) == 0):
-    #         return None
-    #     elif (len(filenames) > 1):
-    #         print('+de 1 gold encontrado para \'' + layerFilename + str(layerNum) + '\'')
-    #
-    #     layerSize = self.getSizeOfLayer(layerNum)
-    #
-    #     layerFile = open(filenames[0], "rb")
-    #     numItens = layerSize  # float size = 4bytes
-    #
-    #     fileData = layerFile.read(4 * numItens)
-    #     layerContents = struct.unpack('f' * numItens, fileData)
-    #
-    #     layer = None
-    #
-    #     # botar em matriz 3D
-    #     if len(self.__layerDimentions[layerNum]) == 3:
-    #         layer = self.tupleTo3DMatrix(layerContents, layerNum)
-    #     elif len(self.__layerDimentions[layerNum]) == 1:
-    #         layer = self.tupleToArray(layerContents, layerNum)
-    #     layerFile.close()
-    #     # print("load layer " + str(layerNum) + " size = " + str(layerSize) + " filename: " + filename + " len(layer) = " + str(len(layer)))
-    #     return layer
 
     """
     tupleTo3DMatrix

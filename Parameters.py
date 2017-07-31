@@ -76,6 +76,9 @@ LENET_DATASETS = {
     'test': 'foi',
 }
 
+LAYERS_GOLD_PATH_LENET = "/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
+LAYERS_PATH_LENET = "/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
+
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
@@ -192,8 +195,8 @@ def setBenchmarks(**kwargs):
         elif i == 'lenet':
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
                                                prThreshold=pr_threshold,
-                                               layersGoldPath=LAYERS_GOLD_PATH,
-                                               layersPath=LAYERS_PATH,
+                                               layersGoldPath=LAYERS_GOLD_PATH_LENET,
+                                               layersPath=LAYERS_PATH_LENET,
                                                imgOutputDir=IMG_OUTPUT_DIR,
                                                localRadiationBench=LOCAL_RADIATION_BENCH,
                                                check_csv=checkCsv,
