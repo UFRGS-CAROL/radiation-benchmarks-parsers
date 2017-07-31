@@ -265,8 +265,9 @@ class LenetParser(ObjectDetectionParser):
 
                     # fully connected
                     elif i == 5:
+                        pass
 
         else:
-
+            pass
 
         return None
