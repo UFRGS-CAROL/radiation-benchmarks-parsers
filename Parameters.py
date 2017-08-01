@@ -76,8 +76,8 @@ LENET_DATASETS = {
     'test': 'foi',
 }
 
-LAYERS_GOLD_PATH_LENET = "/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
-LAYERS_PATH_LENET = "/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
+LAYERS_GOLD_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
+LAYERS_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
 
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
