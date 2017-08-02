@@ -41,12 +41,11 @@ class LenetParser(ObjectDetectionParser):
     _cnnParser = None
 
     __layerDimensions = {
-        0: [32, 32, 1],
-        1: [28, 28, 6],
-        2: [14, 14, 6],
-        3: [10, 10, 16],
-        4: [5, 5, 16],
-        5: [100, 10, 1],
+        0: [28, 28, 6],
+        1: [14, 14, 6],
+        2: [10, 10, 16],
+        3: [5, 5, 16],
+        4: [100, 1, 1]
     }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
@@ -225,8 +224,8 @@ class LenetParser(ObjectDetectionParser):
 
     def loadLayer(self, layerNum, isGold=False):
         imgListpos = self._img
-
-        layerFilename = self.__layersPath + "/" + self._logFileName + "_it_" + str(self._sdcIteration) + "_img_" + str(
+        realIteration = imgListpos - int(self._sdcIteration)
+        layerFilename = self.__layersPath + "/" + self._logFileName + "_it_" + str(realIteration) + "_img_" + str(
             imgListpos) + "_layer_" + str(layerNum) + ".layer"
 
         if isGold:
@@ -236,11 +235,10 @@ class LenetParser(ObjectDetectionParser):
         layerFile = open(layerFilename, "rb")
         layerDim = struct.unpack('I', layerFile.read(4))[0]
 
-        dim = self.__layerDimensions[layerNum + 1 if layerNum + 1 < len(self.__layerDimensions) else layerNum]
-
+        dim = self.__layerDimensions[layerNum]
 
         assert layerDim == (dim[0] * dim[1] * dim[2])
-        print layerDim , dim[0] * dim[1] * dim[2]
+
         layerContents = struct.unpack('f' * layerDim, layerFile.read(4 * layerDim))
 
         layer = None
@@ -257,7 +255,6 @@ class LenetParser(ObjectDetectionParser):
     THIS function WILL only be used inside CNNLayerParser class
     DO NOT USE THIS OUTSIDE
     """
-
     def tupleTo3DMatrix(self, layerContents, dim):
         layer = [[[0] * (dim[2] + 1)] * (dim[1] + 1)] * (dim[0] + 1)
         for i in range(0, dim[0]):
