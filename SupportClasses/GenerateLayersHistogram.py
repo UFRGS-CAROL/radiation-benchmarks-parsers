@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 import csv
-
 import numpy as np
 import struct
 import os
 
-class GenerateLayersHistogram():
 
+class GenerateLayersHistogram():
     csvFilePath = ""
     csvFile = None
     writer = None
     finalInfo = []
+    __layerDimentions = None
 
     def __init__(self, **kwargs):
         self.csvFilePath = kwargs.pop("csvFile")
         fieldnames = kwargs.pop("fieldnames")
+        self.__layerDimentions = kwargs.pop("layerDim")
         fileExists = os.path.isfile(self.csvFilePath)
 
         self.csvFile = open(self.csvFilePath, "a")
@@ -25,41 +26,6 @@ class GenerateLayersHistogram():
 
     def closeCsv(self):
         self.csvFile.close()
-
-    __layerDimentions = {
-        0: [608, 608, 32],
-        1: [304, 304, 32],
-        2: [304, 304, 64],
-        3: [152, 152, 64],
-        4: [152, 152, 128],
-        5: [152, 152, 64],
-        6: [152, 152, 128],
-        7: [76, 76, 128],
-        8: [76, 76, 256],
-        9: [76, 76, 128],
-        10: [76, 76, 256],
-        11: [38, 38, 256],
-        12: [38, 38, 512],
-        13: [38, 38, 256],
-        14: [38, 38, 512],
-        15: [38, 38, 256],
-        16: [38, 38, 512],
-        17: [19, 19, 512],
-        18: [19, 19, 1024],
-        19: [19, 19, 512],
-        20: [19, 19, 1024],
-        21: [19, 19, 512],
-        22: [19, 19, 1024],
-        23: [19, 19, 1024],
-        24: [19, 19, 1024],
-        25: [0, 0, 0],
-        26: [38, 38, 64],
-        27: [19, 19, 256],
-        28: [0, 0, 0],
-        29: [19, 19, 1024],
-        30: [19, 19, 425],
-        31: [0, 0, 0]
-    }
 
     def tupleToArray(self, layerContents, layerSize):
         layer = np.ndarray(shape=(layerSize), dtype=float)
@@ -72,22 +38,29 @@ class GenerateLayersHistogram():
     def openLayersImg(self, imgNumber, layersFilePath, imgName):
         lineDict = {}
         for i in self.__layerDimentions:
-            goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
+            # V1
+            # goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
+            # V2
+            # gold_layer_darknet_v2_14_img_1_test_it_0.layer
+            goldName = layersFilePath + "gold_layer_darknet_v2_" + str(i) + "_img_" + str(
+                imgNumber) + "_test_it_0.layer"
             width, height, depth = self.__layerDimentions[i]
             layerSize = width * height * depth
 
             fi = open(goldName, "rb")
-            logLayerContents = struct.unpack('f' * layerSize, fi.read(4 * layerSize))
-            logLayerArray = self.tupleToArray(layerContents=logLayerContents, layerSize=layerSize)
+            # logLayerContents = struct.unpack('f' * layerSize, fi.read(4 * layerSize))
+            # logLayerArray = self.tupleToArray(layerContents=logLayerContents, layerSize=layerSize)
+            logLayerArray = np.fromfile(fi, dtype='float32', count=layerSize)
             fi.close()
 
             # calculate the min an max values
             sortedArray = np.sort(logLayerArray, kind='mergesort')
 
             if layerSize > 0:
-                lineDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
+                lineDict[i] = {'min': sortedArray[0], 'max': sortedArray[len(sortedArray) - 1], 'imgNumber': imgNumber,
+                               'imgName': imgName.rstrip(), 'layer': i}
             else:
-                lineDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName':imgName.rstrip(), 'layer':i}
+                lineDict[i] = {'min': 0, 'max': 0, 'imgNumber': imgNumber, 'imgName': imgName.rstrip(), 'layer': i}
 
         return lineDict
 
@@ -99,7 +72,7 @@ class GenerateLayersHistogram():
         localMax = [0] * 32
 
         for i in self.finalInfo:
-            for j in xrange(0,32):
+            for j in self.__layerDimentions:
                 min_l = i[j]['min']
                 max_l = i[j]['max']
 
@@ -111,15 +84,12 @@ class GenerateLayersHistogram():
                 if new_max < max_l:
                     localMax[j] = max_l
 
-
-        for i in xrange(0,32):
-            self.writer.writerow({'min': localMin[i], 'max': localMax[i], 'imgNumber': "", 'imgName': "", 'layer':""})
-
-
+        for i in xrange(0, 32):
+            self.writer.writerow({'min': localMin[i], 'max': localMax[i], 'imgNumber': "", 'imgName': "", 'layer': ""})
 
     def generateInfo(self, lines, layers):
         for i, line in enumerate(lines):
-            print "Processing layers from img:", line.rstrip() , "i:", i
+            print "Processing layers from img:", line.rstrip(), "i:", i
             # hist.writeToCSV(i, layersPath, line)
             self.finalInfo.append(hist.openLayersImg(i, layers, line))
 
@@ -127,19 +97,47 @@ class GenerateLayersHistogram():
 ###########################################
 # MAIN
 ###########################################'
-
 if __name__ == '__main__':
+    cnnDim = {0: [608, 608, 32],
+              1: [304, 304, 32],
+              2: [304, 304, 64],
+              3: [152, 152, 64],
+              4: [152, 152, 128],
+              5: [152, 152, 64],
+              6: [152, 152, 128],
+              7: [76, 76, 128],
+              8: [76, 76, 256],
+              9: [76, 76, 128],
+              10: [76, 76, 256],
+              11: [38, 38, 256],
+              12: [38, 38, 512],
+              13: [38, 38, 256],
+              14: [38, 38, 512],
+              15: [38, 38, 256],
+              16: [38, 38, 512],
+              17: [19, 19, 512],
+              18: [19, 19, 1024],
+              19: [19, 19, 512],
+              20: [19, 19, 1024],
+              21: [19, 19, 512],
+              22: [19, 19, 1024],
+              23: [19, 19, 1024],
+              24: [19, 19, 1024],
+              25: [0,0,0],
+              26: [38, 38, 64],
+              27: [19, 19, 256],
+              28: [0,0,0],
+              29: [19, 19, 1024],
+              30: [19, 19, 425],
+              31: [0,0,0]}
     # to set vars
     csvFilePath = "temp.csv"
-    layersPath = "temp_layers/"
-    texts = ["temp.txt"]
-            # "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.1K.txt",]
-             # "/home/carol/radiation-benchmarks/data/networks_img_list/voc.2012.1K.txt",
-             # "/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.critical.1K.txt"]
+    layersPath = "/var/radiation-benchmarks/data/"
+    texts = ["/home/fernando/git_pesquisa/radiation-benchmarks/data/networks_img_list/fault_injection.txt"]
 
     ##################
     fieldnames = ['min', 'max', 'imgNumber', 'imgName', 'layer']
-    hist = GenerateLayersHistogram(csvFile=csvFilePath, fieldnames=fieldnames)
+    hist = GenerateLayersHistogram(csvFile=csvFilePath, fieldnames=fieldnames, layerDim=cnnDim)
 
     for txtList in texts:
         # read lines
