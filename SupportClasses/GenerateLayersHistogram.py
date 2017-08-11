@@ -42,7 +42,7 @@ class GenerateLayersHistogram():
             # goldName = layersFilePath + "gold_layer_" + str(i) + "_img_" + str(imgNumber) + "_test_it_0.layer"
             # V2
             # gold_layer_darknet_v2_14_img_1_test_it_0.layer
-            goldName = layersFilePath + "gold_layer_darknet_v2_" + str(i) + "_img_" + str(
+            goldName = layersFilePath + os.path.basename(self._txtList) + "_gold_layer_darknet_v2_" + str(i) + "_img_" + str(
                 imgNumber) + "_test_it_0.layer"
             width, height, depth = self.__layerDimentions[i]
             layerSize = width * height * depth
@@ -87,10 +87,11 @@ class GenerateLayersHistogram():
         for i in xrange(0, 32):
             self.writer.writerow({'min': localMin[i], 'max': localMax[i], 'imgNumber': "", 'imgName': "", 'layer': ""})
 
-    def generateInfo(self, lines, layers):
+    def generateInfo(self, lines, layers, txtList):
         for i, line in enumerate(lines):
             print "Processing layers from img:", line.rstrip(), "i:", i
             # hist.writeToCSV(i, layersPath, line)
+            self._txtList = txtList
             self.finalInfo.append(hist.openLayersImg(i, layers, line))
 
 
@@ -142,7 +143,7 @@ if __name__ == '__main__':
     for txtList in texts:
         # read lines
         lines = open(txtList, "r").readlines()
-        hist.generateInfo(lines, layersPath)
+        hist.generateInfo(lines, layersPath, txtList)
 
     hist.writeToCSV()
 
