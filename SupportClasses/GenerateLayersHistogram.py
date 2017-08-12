@@ -134,7 +134,10 @@ if __name__ == '__main__':
     # to set vars
     csvFilePath = "temp.csv"
     layersPath = "/var/radiation-benchmarks/data/"
-    texts = ["/home/fernando/git_pesquisa/radiation-benchmarks/data/networks_img_list/fault_injection.txt"]
+    texts = ["/home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.100.txt",
+            "/home/carol/radiation-benchmarks/data/networks_img_list/urban.street.100.txt",
+            "/home/carol/radiation-benchmarks/data/networks_img_list/voc.2012.100.txt"
+    ]
 
     ##################
     fieldnames = ['min', 'max', 'imgNumber', 'imgName', 'layer']
