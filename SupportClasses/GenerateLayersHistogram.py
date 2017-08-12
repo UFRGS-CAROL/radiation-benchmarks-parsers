@@ -70,6 +70,9 @@ class GenerateLayersHistogram():
         #     self.writer.writerow(self.lineDict[i])
         localMin = [0] * 32
         localMax = [0] * 32
+        localMaxImg = [0] * 32
+        localMaxImgPath = [""] * 32
+        localLayer = [0] * 32
 
         for i in self.finalInfo:
             for j in self.__layerDimentions:
@@ -80,12 +83,18 @@ class GenerateLayersHistogram():
                 new_max = localMax[j]
                 if new_min > min_l:
                     localMin[j] = min_l
+                    localMaxImg[j] = i[j]['imgNumber']
+                    localMaxImgPath[j] = i[j]['imgName']
+                    localLayer[j] = i[j]['layer']
 
                 if new_max < max_l:
                     localMax[j] = max_l
+                    localMaxImg[j] = i[j]['imgNumber']
+                    localMaxImgPath[j] = i[j]['imgName']
+                    localLayer[j] = i[j]['layer']
 
         for i in xrange(0, 32):
-            self.writer.writerow({'min': localMin[i], 'max': localMax[i], 'imgNumber': "", 'imgName': "", 'layer': ""})
+            self.writer.writerow({'min': localMin[i], 'max': localMax[i], 'imgNumber': localMaxImg[i], 'imgName': localMaxImgPath[i], 'layer': localLayer[i]})
 
     def generateInfo(self, lines, layers, txtList):
         for i, line in enumerate(lines):
