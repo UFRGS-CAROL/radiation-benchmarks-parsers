@@ -88,25 +88,32 @@ LOCAL_RADIATION_BENCH = '~/git_pesquisa'
 # _ecc_on is mandatory only for boards that have ecc memory
 SUMMARIES_FILES = {
     'carol-k402_ecc_on': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
-    'carol-k402': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data': None},
-    'carol-tx': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_titan_ecc_off/summaries_titan.csv', 'data': None},
-
-    'carolx1a': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
-
-    'carolx1b': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
-    'carolx1c': {
-        'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
+        'csv': #'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+               '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
+               # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
+               'k402_ecc_on.csv', 'data':None},
+    'carol-k401_ecc_on': {
+        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
+            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
+            'k402_ecc_on.csv', 'data': None},
+    # 'carol-k402': {
+    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+    #            'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data': None},
+    # 'carol-tx': {
+    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+    #            'logs_parsed_titan_ecc_off/summaries_titan.csv', 'data': None},
+    #
+    # 'carolx1a': {
+    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
+    #
+    # 'carolx1b': {
+    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
+    # 'carolx1c': {
+    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
 }
 
 ###############################################################################################
@@ -154,7 +161,9 @@ def setBenchmarks(**kwargs):
                                                        )
 
         elif i == 'hotspot':
-            benchObj = HotspotParser.HotspotParser()
+            benchObj = HotspotParser.HotspotParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'hog':
             benchObj = HogParser.HogParser(
                 prThreshold=pr_threshold,
@@ -166,15 +175,25 @@ def setBenchmarks(**kwargs):
                 datasets=HOG_DATASETS
             )
         elif i == 'lavamd':
-            benchObj = LavaMDParser.LavaMDParser()
+            benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'mergesort':
-            benchObj = MergesortParser.MergesortParser()
+            benchObj = MergesortParser.MergesortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'nw':
-            benchObj = NWParser.NWParser()
+            benchObj = NWParser.NWParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'quicksort':
-            benchObj = QuicksortParser.QuicksortParser()
+            benchObj = QuicksortParser.QuicksortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'accl':
-            benchObj = ACCLParser.ACCLParser()
+            benchObj = ACCLParser.ACCLParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'pyfasterrcnn':
             benchObj = FasterRcnnParser.FasterRcnnParser(
                 prThreshold=pr_threshold,
@@ -187,11 +206,17 @@ def setBenchmarks(**kwargs):
                 datasets=FASTER_RCNN_DATASETS
             )
         elif i == 'lulesh':
-            benchObj = LuleshParser.LuleshParser()
+            benchObj = LuleshParser.LuleshParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'lud':
-            benchObj = LudParser.LudParser()
+            benchObj = LudParser.LudParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'gemm':
-            benchObj = GemmParser.GemmParser()
+            benchObj = GemmParser.GemmParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                check_csv=checkCsv,
+                ecc=ecc)
         elif i == 'lenet':
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
                                                prThreshold=pr_threshold,

@@ -51,12 +51,18 @@ class Parser():
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
+        except:
+            self._isFaultInjection = False
+
+        try:
             self._checkRunsCsv = kwargs.pop("check_csv")
+        except:
+            self._checkRunsCsv = None
+
+        try:
             self._ecc = bool(kwargs.pop("ecc"))
         except:
             self._ecc = False
-            self._checkRunsCsv = None
-            self._isFaultInjection = False
 
 
     _toleratedRelErr = 2.0  # minimum relative error to be considered, in percentage
@@ -145,7 +151,7 @@ class Parser():
 
         self._makeDirName()
 
-        #for csv run check
+        # for csv run check
         if self._checkRunsCsv:
             for i in self._checkRunsCsv:
                 board_key = str(self._machine) + ("_ecc_on" if self._ecc else '')
@@ -158,7 +164,6 @@ class Parser():
                 readerTwo = csv.DictReader(csvObjFile, dialect=dialect)
                 self._checkRunsCsv[board_key]["data"] = [i for i in readerTwo]
                 csvObjFile.close()
-
                 # ----------------
 
     def getHasThirdDimention(self):
@@ -455,52 +460,42 @@ class Parser():
             self._headerWriten = True
 
         try:
+            if self._isLogValid:
+                csvWFP = open(csvFileName, "a")
+                writer = csv.writer(csvWFP, delimiter=';')
+                outputList = [self._logFileName,
+                              self._machine,
+                              self._benchmark,
+                              self._header,
+                              self._sdcIteration,
+                              self._accIteErrors,
+                              self._iteErrors,
+                              self._relErrLowerLimit,
+                              self._relErrLowerLimit2]
 
-            csvWFP = open(csvFileName, "a")
-            writer = csv.writer(csvWFP, delimiter=';')
-            outputList = [self._logFileName,
-                          self._machine,
-                          self._benchmark,
-                          self._header,
-                          self._sdcIteration,
-                          self._accIteErrors,
-                          self._iteErrors,
-                          self._relErrLowerLimit,
-                          self._relErrLowerLimit2]
+                # self.__jaccard,
+                # self.__jaccardF,
+                # self.__jaccardF2,
+                for i in self.__keys:
+                    outputList.append(self._jaccardCoefficientDict[i])
 
-            # self.__jaccard,
-            # self.__jaccardF,
-            # self.__jaccardF2,
-            for i in self.__keys:
-                outputList.append(self._jaccardCoefficientDict[i])
+                # self.__cubic, self.__square, self.__colRow,
+                # self.__single, self.__random,  self.__cubicF,
+                # self.__squareF, self.__colRowF, self.__singleF, self.__randomF,
+                # self.__cubicF2, self.__squareF2, self.__colRowF2,
+                # self.__singleF2, self.__randomF2,
+                for i in self.__keys:
+                    outputList.extend(self._locality[i])
 
-            # self.__cubic,
-            # self.__square,
-            # self.__colRow,
-            # self.__single,
-            # self.__random,
-            # self.__cubicF,
-            # self.__squareF,
-            # self.__colRowF,
-            # self.__singleF,
-            # self.__randomF,
-            # self.__cubicF2,
-            # self.__squareF2,
-            # self.__colRowF2,
-            # self.__singleF2,
-            # self.__randomF2,
-            for i in self.__keys:
-                outputList.extend(self._locality[i])
+                outputList.extend([self._maxRelErr,
+                                   self._minRelErr,
 
-            outputList.extend([self._maxRelErr,
-                               self._minRelErr,
+                                   self._avgRelErr,
+                                   self._zeroOut,
+                                   self._zeroGold])
 
-                               self._avgRelErr,
-                               self._zeroOut,
-                               self._zeroGold])
-
-            writer.writerow(outputList)
-            csvWFP.close()
+                writer.writerow(outputList)
+                csvWFP.close()
 
         except:
             # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
