@@ -542,7 +542,7 @@ class Parser():
 
     @property
     def _isLogValid(self):
-        if self._isFaultInjection or self._checkRunsCsv == None:
+        if self._isFaultInjection or self._checkRunsCsv is None:
             return True
         board_key = str(self._machine) + ("_ecc_on" if self._ecc else '')
         currentData = self._checkRunsCsv[board_key]["data"]
