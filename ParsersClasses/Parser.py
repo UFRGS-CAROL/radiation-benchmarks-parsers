@@ -460,42 +460,41 @@ class Parser():
             self._headerWriten = True
 
         try:
-            if self._isLogValid:
-                csvWFP = open(csvFileName, "a")
-                writer = csv.writer(csvWFP, delimiter=';')
-                outputList = [self._logFileName,
-                              self._machine,
-                              self._benchmark,
-                              self._header,
-                              self._sdcIteration,
-                              self._accIteErrors,
-                              self._iteErrors,
-                              self._relErrLowerLimit,
-                              self._relErrLowerLimit2]
+            csvWFP = open(csvFileName, "a")
+            writer = csv.writer(csvWFP, delimiter=';')
+            outputList = [self._logFileName,
+                          self._machine,
+                          self._benchmark,
+                          self._header,
+                          self._sdcIteration,
+                          self._accIteErrors,
+                          self._iteErrors,
+                          self._relErrLowerLimit,
+                          self._relErrLowerLimit2]
 
-                # self.__jaccard,
-                # self.__jaccardF,
-                # self.__jaccardF2,
-                for i in self.__keys:
-                    outputList.append(self._jaccardCoefficientDict[i])
+            # self.__jaccard,
+            # self.__jaccardF,
+            # self.__jaccardF2,
+            for i in self.__keys:
+                outputList.append(self._jaccardCoefficientDict[i])
 
-                # self.__cubic, self.__square, self.__colRow,
-                # self.__single, self.__random,  self.__cubicF,
-                # self.__squareF, self.__colRowF, self.__singleF, self.__randomF,
-                # self.__cubicF2, self.__squareF2, self.__colRowF2,
-                # self.__singleF2, self.__randomF2,
-                for i in self.__keys:
-                    outputList.extend(self._locality[i])
+            # self.__cubic, self.__square, self.__colRow,
+            # self.__single, self.__random,  self.__cubicF,
+            # self.__squareF, self.__colRowF, self.__singleF, self.__randomF,
+            # self.__cubicF2, self.__squareF2, self.__colRowF2,
+            # self.__singleF2, self.__randomF2,
+            for i in self.__keys:
+                outputList.extend(self._locality[i])
 
-                outputList.extend([self._maxRelErr,
-                                   self._minRelErr,
+            outputList.extend([self._maxRelErr,
+                               self._minRelErr,
 
-                                   self._avgRelErr,
-                                   self._zeroOut,
-                                   self._zeroGold])
+                               self._avgRelErr,
+                               self._zeroOut,
+                               self._zeroGold])
 
-                writer.writerow(outputList)
-                csvWFP.close()
+            writer.writerow(outputList)
+            csvWFP.close()
 
         except:
             # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
