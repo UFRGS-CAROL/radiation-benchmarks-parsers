@@ -1,78 +1,87 @@
-import glob
-
 import numpy
 import sys
-
-import struct
-
-from ObjectDetectionParser import ObjectDetectionParser
-import re
 import csv
-import os
-
-from SupportClasses import PrecisionAndRecall
+from math import *
 from SupportClasses import Rectangle
+import os
+import re
+import glob, struct
+from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import _GoldContent
-from SupportClasses.CNNLayerParser import CNNLayerParser
+from ObjectDetectionParser import ImageRaw
+from SupportClasses import PrecisionAndRecall
+from SupportClasses import CNNLayerParser.CNNLayerParser
 
 
-class DarknetV2Parser(ObjectDetectionParser):
+class DarknetParser(ObjectDetectionParser):
     __executionType = None
     __executionModel = None
+
     __weights = None
     __configFile = None
+    _extendedHeader = False
 
     __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
+    # _numMaskableErrors = [0 for i in xrange(32)]
+
+    _smallestError = None
+    _biggestError = None
+    _numErrors = None
+    _errorsAverage = None
+    _errorsStdDeviation = None
+    _numMaskableErrors = None
+    _numCorrectableErrors = None
+
+    __layerDimensions = {
+        0: [224, 224, 64],
+        1: [112, 112, 64],
+        2: [112, 112, 192],
+        3: [56, 56, 192],
+        4: [56, 56, 128],
+        5: [56, 56, 256],
+        6: [56, 56, 256],
+        7: [56, 56, 512],
+        8: [28, 28, 512],
+        9: [28, 28, 256],
+        10: [28, 28, 512],
+        11: [28, 28, 256],
+        12: [28, 28, 512],
+        13: [28, 28, 256],
+        14: [28, 28, 512],
+        15: [28, 28, 256],
+        16: [28, 28, 512],
+        17: [28, 28, 512],
+        18: [28, 28, 1024],
+        19: [14, 14, 1024],
+        20: [14, 14, 512],
+        21: [14, 14, 1024],
+        22: [14, 14, 512],
+        23: [14, 14, 1024],
+        24: [14, 14, 1024],
+        25: [7, 7, 1024],
+        26: [7, 7, 1024],
+        27: [7, 7, 1024],
+        28: [7, 7, 256],
+        29: [12544],
+        30: [1175],
+        31: [1175]}
+
+    _sizeOfDnn = len(__layerDimensions)
+    _failedLayer = -1
+    _smartPooling = None
+
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "detected_lines", "wrong_elements", "precision",
+                  "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass", "y_center_of_mass", "precision",
                   "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
                   "col_detected_errors", "failed_layer", "header"]
-
-    __layerDimensions = {0: [608, 608, 32],
-                         1: [304, 304, 32],
-                         2: [304, 304, 64],
-                         3: [152, 152, 64],
-                         4: [152, 152, 128],
-                         5: [152, 152, 64],
-                         6: [152, 152, 128],
-                         7: [76, 76, 128],
-                         8: [76, 76, 256],
-                         9: [76, 76, 128],
-                         10: [76, 76, 256],
-                         11: [38, 38, 256],
-                         12: [38, 38, 512],
-                         13: [38, 38, 256],
-                         14: [38, 38, 512],
-                         15: [38, 38, 256],
-                         16: [38, 38, 512],
-                         17: [19, 19, 512],
-                         18: [19, 19, 1024],
-                         19: [19, 19, 512],
-                         20: [19, 19, 1024],
-                         21: [19, 19, 512],
-                         22: [19, 19, 1024],
-                         23: [19, 19, 1024],
-                         24: [19, 19, 1024],
-                         25: [],
-                         26: [38, 38, 64],
-                         27: [19, 19, 256],
-                         28: [],
-                         29: [19, 19, 1024],
-                         30: [19, 19, 425],
-                         31: []}
 
     # it is only for darknet for a while
     _parseLayers = False
     __layersGoldPath = ""
     __layersPath = ""
-
-    _sizeOfDnn = len(__layerDimensions)
-    _smartPooling = None
-
-    _failedLayer = -1
 
     _cnnParser = None
 
@@ -80,81 +89,100 @@ class DarknetV2Parser(ObjectDetectionParser):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
-        self._sizeOfDnn = len(self.__layerDimensions)
+        try:
+            if self._smartPooling:
+                for i in self._smartPooling:
+                    self._csvHeader.append("smartpooling_" + str(i))
 
-        if self._smartPooling:
-            for i in self._smartPooling:
-                self._csvHeader.append("smartpooling_" + str(i))
+            if self._parseLayers:
+                self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
+                self.__layersPath = str(kwargs.pop("layersPath"))
+                self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
+                                                 layerGoldPath=self.__layersGoldPath,
+                                                 layerPath=self.__layersPath, dnnSize=self._sizeOfDnn,
+                                                 correctableLayers=[])
 
-        if self._parseLayers:
-            self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
-            self.__layersPath = str(kwargs.pop("layersPath"))
-            self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
-                                             layerGoldPath=self.__layersGoldPath,
-                                             layerPath=self.__layersPath, dnnSize=self._sizeOfDnn, correctableLayers=[])
+                self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
-            self._csvHeader.extend(self._cnnParser.genCsvHeader())
+        except:
+            print "\n Crash on create parse layers parameters"
+            sys.exit(-1)
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
-        csvWFP = open(csvFileName, "a")
-        writer = csv.writer(csvWFP, delimiter=';')
+        try:
+            csvWFP = open(csvFileName, "a")
+            writer = csv.writer(csvWFP, delimiter=';')
+            # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
+            #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
+            #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
+            #     "precision", "recall", "false_negative", "false_positive",
+            #     "true_positive", "abft_type", "row_detected_errors",
+            #     "col_detected_errors", "failed_layer", "header"]
+            outputList = [self._logFileName,
+                          self._machine,
+                          self._benchmark,
+                          self._sdcIteration,
+                          self._accIteErrors,
+                          self._iteErrors,
+                          self._goldLines,
+                          self._detectedLines,
+                          self._wrongElements,
+                          self._xCenterOfMass,
+                          self._yCenterOfMass,
+                          self._precision,
+                          self._recall,
+                          self._falseNegative,
+                          self._falsePositive,
+                          self._truePositive,
+                          self._abftType,
+                          self._rowDetErrors,
+                          self._colDetErrors,
+                          self._failedLayer,
+                          self._header]
 
-        outputList = [self._logFileName,
-                      self._machine,
-                      self._benchmark,
-                      self._sdcIteration,
-                      self._accIteErrors,
-                      self._iteErrors,
-                      self._goldLines,
-                      self._detectedLines,
-                      self._wrongElements,
-                      self._precision,
-                      self._recall,
-                      self._falseNegative,
-                      self._falsePositive,
-                      self._truePositive,
-                      self._abftType,
-                      self._rowDetErrors,
-                      self._colDetErrors,
-                      self._failedLayer,
-                      self._header]
+            if self._smartPooling:
+                outputList.extend(self._smartPooling)
 
-        if self._smartPooling:
-            outputList.extend(self._smartPooling)
+            if self._parseLayers:
+                outputList.extend(self._cnnParser.getOutputToCsv())
 
-        if (self._parseLayers):
-            outputList.extend(self._cnnParser.getOutputToCsv())
+            writer.writerow(outputList)
+            csvWFP.close()
 
-        writer.writerow(outputList)
-        csvWFP.close()
+        except:
+            print "\n Crash on log ", self._logFileName
+            # raise
 
     def setSize(self, header):
-        ##HEADER gold_file: temp.csv save_layer: 1 abft_type: 0 iterations: 1
-        sizeM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
-        if sizeM:
-            self._goldFileName = sizeM.group(1)
-            self._saveLayer = sizeM.group(2)
-            self._abftType = sizeM.group(3)
-            self._iterations = sizeM.group(4)
+        # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
+        darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
+        if darknetM:
+            self._goldFileName = darknetM.group(1)
+            self._saveLayer = bool(darknetM.group(2))
+            self._abftType = darknetM.group(3)
+            self._iterations = darknetM.group(4)
+
+        # return self.__imgListFile
+        # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
         self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
             return
-        # ---------------------------------------------------------------------------------------------------------------
-        # open and load gold
+            # ---------------------------------------------------------------------------------------------------------------
+            # open and load gold
         goldKey = self._machine + "_" + self._benchmark + "_" + self._size
 
         if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/darknetv2/" + self._goldFileName
+            goldPath = self._goldBaseDir[self._machine] + "/darknetv1/" + self._goldFileName
         else:
             print 'not indexed machine: ', self._machine, " set it on Parameters.py"
             return
 
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknetv2', filepath=goldPath)
+            g = _GoldContent._GoldContent(nn='darknetv1', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
 
         gold = self._goldDatasetArray[goldKey]
@@ -302,8 +330,6 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         return ret if len(ret) > 0 else None
 
-    # parse Darknet
-    # returns a dictionary
     def __processRect(self, errString):
         ret = {}
         darknetM = re.match(
@@ -371,14 +397,12 @@ class DarknetV2Parser(ObjectDetectionParser):
             except:
                 ret["h_e"] = 1e10
 
-            return ret
-
-        return None
+        return ret if len(ret) > 0 else None
 
     def __processAbft(self, errString):
         # #INF error_detected[0]: 0 error_detected[1]: 13588 error_detected[2]: 8650 error_detected[3]: 141366
         m = re.match(
-            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
+            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
         ret = {}
         if m:
@@ -386,7 +410,6 @@ class DarknetV2Parser(ObjectDetectionParser):
             ret[m.group(3)] = m.group(4)
             ret[m.group(5)] = m.group(6)
             ret[m.group(7)] = m.group(8)
-            ret[m.group(9)] = m.group(10)
 
         return ret if len(ret) > 0 else None
 
@@ -409,7 +432,7 @@ class DarknetV2Parser(ObjectDetectionParser):
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # gold_layers/gold_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersGoldPath + "gold_layer_darknet_v2_" + str(layerNum) + "_img_" + str(
+            layerFilename = self.__layersGoldPath + "gold_layer_darknet_v1_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
         filenames = glob.glob(layerFilename)
