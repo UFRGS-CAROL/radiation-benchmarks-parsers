@@ -21,8 +21,8 @@ usage:
 
 \<path\>/ParseBenchmarksCriticality.py
                                      [-h]
-                                     [--gen_database GEN_DATA]
-                                     [--out_database OUT_DATA]
+                                     &nbsp;[--gen_database GEN_DATA]
+                                     &nbsp;[--out_database OUT_DATA]
                                      [--database ERROR_DATABASE]
                                      [--benchmarks BENCHMARKS]
                                      [--parse_layers]
