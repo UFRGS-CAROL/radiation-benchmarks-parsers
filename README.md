@@ -23,11 +23,11 @@ usage:
                                      [-h]
                                      &nbsp;[--gen_database GEN_DATA]
                                      &nbsp;[--out_database OUT_DATA]
-                                     [--database ERROR_DATABASE]
-                                     [--benchmarks BENCHMARKS]
-                                     [--parse_layers]
-                                     [--pr_threshold PR_THRESHOLD]
-                                     [--check_csv] [--ecc] [--is_fi]
+                                     &nbsp;[--database ERROR_DATABASE]
+                                     &nbsp;[--benchmarks BENCHMARKS]
+                                     &nbsp;[--parse_layers]
+                                     &nbsp;[--pr_threshold PR_THRESHOLD]
+                                     &nbsp;[--check_csv] &nbsp;[--ecc] &nbsp;[--is_fi]
 
 Parse logs for Neural Networks
 
