@@ -17,19 +17,21 @@ TODO: Write a project description
 Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py,
 on the contrary, this parser will crash.
 
-usage: /path/ParseBenchmarksCriticality.py
+usage:
+
+<path>/ParseBenchmarksCriticality.py
                                      [-h]
-                                     &nbsp  [--gen_database GEN_DATA]
+                                     &nbsp;  [--gen_database GEN_DATA]
 
-                                     &nbsp  [--out_database OUT_DATA]
+                                     &nbsp;  [--out_database OUT_DATA]
 
-                                     &nbsp  [--database ERROR_DATABASE]
+                                     &nbsp;  [--database ERROR_DATABASE]
 
-                                     &nbsp  [--benchmarks BENCHMARKS]
+                                     &nbsp;  [--benchmarks BENCHMARKS]
 
-                                     &nbsp  [--parse_layers]
+                                     &nbsp;  [--parse_layers]
 
-                                     &nbsp  [--pr_threshold PR_THRESHOLD]
+                                     &nbsp;  [--pr_threshold PR_THRESHOLD]
 
                                        [--check_csv] [--ecc] [--is_fi]
 
