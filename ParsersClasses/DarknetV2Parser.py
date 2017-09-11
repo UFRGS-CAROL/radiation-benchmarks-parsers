@@ -148,7 +148,7 @@ class DarknetV2Parser(ObjectDetectionParser):
         goldKey = self._machine + "_" + self._benchmark + "_" + self._size
 
         if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/darknetv2/" + self._goldFileName
+            goldPath = self._goldBaseDir[self._machine] + "/darknetv2/" + os.path.basename(self._goldFileName)
         else:
             print 'not indexed machine: ', self._machine, " set it on Parameters.py"
             return
@@ -185,8 +185,11 @@ class DarknetV2Parser(ObjectDetectionParser):
             if y["type"] == "err":
                 err = y["rect"]
                 # NEED TO BE CHECK
-                i = err["prob_i"]
-                class_ = err["prob_j"]
+                i_prob_e = err["prob_e_i"]
+                class_e = err["class_e_j"]
+
+                i_prob_r = err["prob_r_i"]
+                class_r = err["class_r_j"]
 
                 lr = err["x_r"]
                 br = err["y_r"]
@@ -197,18 +200,18 @@ class DarknetV2Parser(ObjectDetectionParser):
                 be = err["y_e"]
                 he = err["h_e"]
                 we = err["w_e"]
-                foundRt[i] = Rectangle.Rectangle(lr, br, wr, hr)
+                foundRt[i_prob_r] = Rectangle.Rectangle(lr, br, wr, hr)
                 # t = goldRt[rectPos].deepcopy()
-                goldRt[i] = Rectangle.Rectangle(le, be, we, he)
+                goldRt[i_prob_e] = Rectangle.Rectangle(le, be, we, he)
 
-                foundPb[i][class_] = err["prob_r"]
-                goldPb[i][class_] = err["prob_e"]
+                foundPb[i_prob_r][class_r] = err["prob_r"]
+                goldPb[i_prob_e][class_e] = err["prob_e"]
 
 
             elif y["type"] == "abft":
                 err = y["abft"]
-                for i in xrange(1, 4):
-                    self._smartPooling[i] += err[i]
+                for i_prob_e in xrange(1, 4):
+                    self._smartPooling[i_prob_e] += err[i_prob_e]
 
         #############
         # before keep going is necessary to filter the results
@@ -291,12 +294,12 @@ class DarknetV2Parser(ObjectDetectionParser):
         ret = {}
         if 'ERR' in errString:
             dictRect = self.__processRect(errString)
-            if len(dictRect) > 0:
+            if dictRect:
                 ret["rect"] = dictRect
                 ret["type"] = "rect"
         elif 'INF' in errString:
             dictAbft = self.__processAbft(errString)
-            if len(dictAbft) > 0:
+            if dictAbft:
                 ret["abft_det"] = dictAbft
                 ret["type"] = "abft"
 
@@ -306,70 +309,96 @@ class DarknetV2Parser(ObjectDetectionParser):
     # returns a dictionary
     def __processRect(self, errString):
         ret = {}
+        # ERR img: [/home/carol/radiation-benchmarks/data/URBAN_STREET/sequence01/images_right/cam2-20080702-162456-298.jpg]
+        # prob_r[184][0]: 0.0000000000000000e+00 prob_e[184][0]: 0.0000000000000000e+00 x_r: 7.3684209585189819e-01 x_e: 7.0744901895523071e-01
+        # y_r: 4.4771245121955872e-01 y_e: 4.9482199549674988e-01
+        # w_r: inf w_e: 2.7612999081611633e-02 h_r: inf h_e: 9.3471996486186981e-02
         darknetM = re.match(
-            ".*img\: \[(\S+)\].*prob\[(\d+)\]\[(\d+)\].*r\:(\S+).*e\:(\S+).*x_r\: (\S+).*x_e\: "
-            "(\S+).*y_r\: (\S+).*y_e\: (\S+).*w_r\: (\S+).*w_e\: (\S+).*h_r\: (\S+).*h_e\: (\S+).*",
+            ".*img\: \[(\S+)\].*prob_r\[(\d+)\]\[(\d+)\]\: (\S+).*prob_e\[(\d+)\]\[(\d+)\]\: "
+            "(\S+).*x_r\: (\S+).*x_e\: (\S+).*y_r\: (\S+).*y_e\: (\S+).*w_r\: "
+            "(\S+).*w_e\: (\S+).*h_r\: (\S+).*h_e\: (\S+).*",
             errString)
 
         if darknetM:
-            ret["img"] = str(darknetM.group(1))
+            i = 1
+            ret["img"] = str(darknetM.group(i))
+            i += 1
             # ERR img: [0] prob[60][0] r:0.0000000000000000e+00 e:0.0000000000000000e+00
-            ret["prob_i"] = int(darknetM.group(2))
-            ret["prob_j"] = int(darknetM.group(3))
+            ret["prob_r_i"] = int(darknetM.group(i))
+            i += 1
+            ret["prob_r_j"] = int(darknetM.group(i))
+            i += 1
 
             try:
-                ret["prob_r"] = float(darknetM.group(4))
+                ret["prob_r"] = float(darknetM.group(i))
             except:
                 ret["prob_r"] = 1e10
 
+            i += 1
+
+            ret["prob_e_i"] = int(darknetM.group(i))
+            i += 1
+            ret["prob_e_j"] = int(darknetM.group(i))
+            i += 1
+
             try:
-                ret["prob_e"] = float(darknetM.group(5))
+                ret["prob_e"] = float(darknetM.group(i))
             except:
                 ret["prob_e"] = 1e10
 
+            i += 1
+
             # x_r: 1.7303885519504547e-01 x_e: 3.3303898572921753e-01
             try:
-                ret["x_r"] = float(darknetM.group(6))
+                ret["x_r"] = float(darknetM.group(i))
             except:
                 ret["x_r"] = 1e10
+            i += 1
 
             try:
-                ret["x_e"] = float(darknetM.group(7))
+                ret["x_e"] = float(darknetM.group(i))
             except:
                 ret["x_e"] = 1e10
+            i += 1
 
             # y_r: 1.0350487381219864e-01 y_e: 1.0350500047206879e-01
             try:
-                ret["y_r"] = float(darknetM.group(8))
+                ret["y_r"] = float(darknetM.group(i))
             except:
                 ret["y_r"] = 1e10
+            i += 1
 
             try:
-                ret["y_e"] = float(darknetM.group(9))
+                ret["y_e"] = float(darknetM.group(i))
             except:
                 ret["y_e"] = 1e10
+            i += 1
 
             # w_r: 2.0466668531298637e-02 w_e: 2.0467000082135201e-02
             try:
-                ret["w_r"] = float(darknetM.group(10))
+                ret["w_r"] = float(darknetM.group(i))
             except:
                 ret["w_r"] = 1e10
+            i += 1
 
             try:
-                ret["w_e"] = float(darknetM.group(11))
+                ret["w_e"] = float(darknetM.group(i))
             except:
                 ret["w_e"] = 1e10
+            i += 1
 
             # h_r: 4.1410662233829498e-02 h_e: 4.1411001235246658e-02
             try:
-                ret["h_r"] = float(darknetM.group(12))
+                ret["h_r"] = float(darknetM.group(i))
             except:
                 ret["h_r"] = 1e10
+            i += 1
 
             try:
-                ret["h_e"] = float(darknetM.group(13))
+                ret["h_e"] = float(darknetM.group(i))
             except:
                 ret["h_e"] = 1e10
+            i += 1
 
             return ret
 

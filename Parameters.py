@@ -11,6 +11,7 @@ from ParsersClasses import LuleshParser
 from ParsersClasses import MergesortParser
 from ParsersClasses import QuicksortParser
 from ParsersClasses import DarknetV2Parser
+from ParsersClasses import DarknetV1Parser
 from ParsersClasses import LenetParser
 
 ############################################################################################
@@ -36,7 +37,8 @@ GOLD_BASE_DIR = {
     # 'carolx1c': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1c',
     # fault injection
     'carolk402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Fault_Injections/sassifi_darknet_paper_micro',
-    'carol-ECC-ON' : '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/'
+    'carol-ECC-ON' : '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
+    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/'
 }
 
 ############################################################################################
@@ -97,6 +99,12 @@ SUMMARIES_FILES = {
             '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
             # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
             'k402_ecc_on.csv', 'data': None},
+
+    "carol-k401-ECC-OFF":{
+        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
+            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
+            'k402_ecc_on.csv', 'data': None},
     # 'carol-k402': {
     #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
     #            'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data': None},
@@ -135,6 +143,8 @@ def setBenchmarks(**kwargs):
     for i in benchmarks:
         benchObj = None
         print i,
+
+        # darknet is the first version of tested darknet, until master degree dissertation
         if i == 'darknet':
             benchObj = DarknetParser.DarknetParser(parseLayers=parse_layers,
                                                    prThreshold=pr_threshold,
@@ -148,6 +158,18 @@ def setBenchmarks(**kwargs):
                                                    goldBaseDir=GOLD_BASE_DIR,
                                                    datasets=DARKNET_DATASETS
                                                    )
+
+        if i == 'darknetv1':
+            benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
+                                                       prThreshold=pr_threshold,
+                                                       layersGoldPath=LAYERS_GOLD_PATH,
+                                                       layersPath=LAYERS_PATH,
+                                                       imgOutputDir=IMG_OUTPUT_DIR,
+                                                       localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                       check_csv=checkCsv,
+                                                       goldBaseDir=GOLD_BASE_DIR,
+                                                       datasets=DARKNET_DATASETS
+                                                       )
         if i == 'darknetv2':
             benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
