@@ -38,7 +38,8 @@ GOLD_BASE_DIR = {
     # fault injection
     'carolk402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Fault_Injections/sassifi_darknet_paper_micro',
     'carol-ECC-ON' : '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
-    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/'
+    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
+    'fernando-apu-ECC-OFF': '/home/fernando/git_pesquisa/radiation-benchmarks/data/darknet/'
 }
 
 ############################################################################################

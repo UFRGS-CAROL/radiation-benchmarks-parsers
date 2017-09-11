@@ -164,7 +164,15 @@ class DarknetV2Parser(ObjectDetectionParser):
         # ---------------------------------------------------------------------------------------------------------------
         # img path
         # this is possible since errList has at least 1 element, due verification
-        imgFilename = errList[0]["img"]
+        try:
+            imgFilename = errList[0]["img"]
+            print "first option"
+        except:
+            # if only detection took place
+            lines = open(self._imgListPath, "r").readlines()
+            imgIt = self._sdcIteration % self._imgListSize
+            imgFilename = lines[imgIt]
+
         goldPb = gold.getProbArray(imgPath=imgFilename)
         goldRt = gold.getRectArray(imgPath=imgFilename)
 
@@ -176,7 +184,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         # errors detected on smart pooling
         if self._abftType == "smart_pooling":
-            self._smartPooling = [0] * 4
+            self._smartPooling = [0] * 5
         elif self._abftType == "abraham":
             self._rowDetErrors = 0
             self._colDetErrors = 0
@@ -210,7 +218,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
             elif y["type"] == "abft":
                 err = y["abft"]
-                for i_prob_e in xrange(1, 4):
+                for i_prob_e in xrange(1, 5):
                     self._smartPooling[i_prob_e] += err[i_prob_e]
 
         #############
@@ -295,13 +303,14 @@ class DarknetV2Parser(ObjectDetectionParser):
         if 'ERR' in errString:
             dictRect = self.__processRect(errString)
             if dictRect:
-                ret["rect"] = dictRect
+                ret["rect"], ret['img'] = dictRect
                 ret["type"] = "rect"
         elif 'INF' in errString:
             dictAbft = self.__processAbft(errString)
             if dictAbft:
                 ret["abft_det"] = dictAbft
                 ret["type"] = "abft"
+
 
         return ret if len(ret) > 0 else None
 
@@ -321,7 +330,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         if darknetM:
             i = 1
-            ret["img"] = str(darknetM.group(i))
+            img = str(darknetM.group(i))
             i += 1
             # ERR img: [0] prob[60][0] r:0.0000000000000000e+00 e:0.0000000000000000e+00
             ret["prob_r_i"] = int(darknetM.group(i))
@@ -400,7 +409,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                 ret["h_e"] = 1e10
             i += 1
 
-            return ret
+            return ret, img
 
         return None
 
