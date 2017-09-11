@@ -19,21 +19,15 @@ on the contrary, this parser will crash.
 
 usage:
 
-<path>/ParseBenchmarksCriticality.py
+\<path\>/ParseBenchmarksCriticality.py
                                      [-h]
-                                     &nbsp;  [--gen_database GEN_DATA]
-
-                                     &nbsp;  [--out_database OUT_DATA]
-
-                                     &nbsp;  [--database ERROR_DATABASE]
-
-                                     &nbsp;  [--benchmarks BENCHMARKS]
-
-                                     &nbsp;  [--parse_layers]
-
-                                     &nbsp;  [--pr_threshold PR_THRESHOLD]
-
-                                       [--check_csv] [--ecc] [--is_fi]
+                                     [--gen_database GEN_DATA]
+                                     [--out_database OUT_DATA]
+                                     [--database ERROR_DATABASE]
+                                     [--benchmarks BENCHMARKS]
+                                     [--parse_layers]
+                                     [--pr_threshold PR_THRESHOLD]
+                                     [--check_csv] [--ecc] [--is_fi]
 
 Parse logs for Neural Networks
 
