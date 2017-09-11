@@ -8,8 +8,10 @@ TODO: Write a project description
     Get the repository with git clone https://github.com/fernandoFernandeSantos/radiation-benchmarks-parsers.git
 
 ### 2
-    Set parameters for each particular benchmark available in https://github.com/dagoliveira/radiation-benchmarks.git
-    Note: for some benchmarks such as Py-Faster-Rcnn and Darknet you must have the Golden output for each platform,
+    Set parameters for each particular benchmark available in
+    https://github.com/dagoliveira/radiation-benchmarks.git
+    Note: for some benchmarks such as Py-Faster-Rcnn and Darknet,
+    you must have the Golden output for each platform,
     for error criticality evaluation
 
 ## Usage
@@ -21,13 +23,13 @@ usage:
 
 \<path\>/ParseBenchmarksCriticality.py
                                      [-h]
-                                     &nbsp;[--gen_database GEN_DATA]
-                                     &nbsp;[--out_database OUT_DATA]
-                                     &nbsp;[--database ERROR_DATABASE]
-                                     &nbsp;[--benchmarks BENCHMARKS]
-                                     &nbsp;[--parse_layers]
-                                     &nbsp;[--pr_threshold PR_THRESHOLD]
-                                     &nbsp;[--check_csv] &nbsp;[--ecc] &nbsp;[--is_fi]
+                                     &nbsp;--gen_database [GEN_DATA]
+                                     &nbsp;--out_database [OUT_DATA]
+                                     &nbsp;--database [ERROR_DATABASE]
+                                     &nbsp;--benchmarks [BENCHMARKS]
+                                     &nbsp;--parse_layers
+                                     &nbsp;--pr_threshold [PR_THRESHOLD]
+                                     &nbsp;--check_csv &nbsp;--ecc &nbsp;--is_fi
 
 Parse logs for Neural Networks
 
@@ -40,7 +42,8 @@ arguments:
   --gen_database <GEN_DATA>
 
                         If this flag is passed, the other flags will have no
-effects, despite out_database. --gen_data <path where the parser must search
+                        effects, despite out_database.
+                        --gen_data <path where the parser must search
                         for ALL LOGs FILES
 
   --out_database <OUT_DATA>
