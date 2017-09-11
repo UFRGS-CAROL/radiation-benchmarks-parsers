@@ -22,6 +22,17 @@ class DarknetV2Parser(ObjectDetectionParser):
     __weights = None
     __configFile = None
 
+    _classes = ['person', 'bicycle', 'car', 'motorbike', 'aeroplane', 'bus', 'train', 'truck',
+                'boat', 'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat',
+                'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
+                'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite',
+                'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass',
+                'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange',
+                'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'sofa',
+                'pottedplant', 'bed', 'diningtable', 'toilet', 'tvmonitor', 'laptop', 'mouse', 'remote',
+                'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book',
+                'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+
     __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
@@ -310,7 +321,6 @@ class DarknetV2Parser(ObjectDetectionParser):
             if dictAbft:
                 ret["abft_det"] = dictAbft
                 ret["type"] = "abft"
-
 
         return ret if len(ret) > 0 else None
 

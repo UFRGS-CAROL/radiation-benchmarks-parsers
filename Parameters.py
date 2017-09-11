@@ -25,21 +25,8 @@ LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_da
 IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
-    # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_K40'
-    'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/',
-    # '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_TITAN'
-    'carol-tx': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN/',
-    # # carolx1a
-    # 'carolx1a': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
-    # # carolx1b
-    # 'carolx1b': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1b',
-    # # carolx1c
-    # 'carolx1c': '/home/pfpimenta/Dropbox/ufrgs/bolsaPaolo/GOLD_X1/tx1c',
-    # fault injection
-    'carolk402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Fault_Injections/sassifi_darknet_paper_micro',
     'carol-ECC-ON' : '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
-    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
-    'fernando-apu-ECC-OFF': '/home/fernando/git_pesquisa/radiation-benchmarks/data/darknet/'
+    'carol-k401-ECC-OFF': '/home/fernando/temp/LANSCE2017/gold_K402',
 }
 
 ############################################################################################
@@ -161,7 +148,7 @@ def setBenchmarks(**kwargs):
                                                    )
 
         if i == 'darknetv1':
-            benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
+            benchObj = DarknetV1Parser.DarknetV1Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
                                                        layersGoldPath=LAYERS_GOLD_PATH,
                                                        layersPath=LAYERS_PATH,

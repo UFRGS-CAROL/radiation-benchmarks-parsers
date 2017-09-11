@@ -5,7 +5,8 @@ TODO: Write a project description
 ## Installation
 
 ### 1
-    Get the repository with git clone https://github.com/fernandoFernandeSantos/radiation-benchmarks-parsers.git
+    Get the repository with git clone 
+    https://github.com/fernandoFernandeSantos/radiation-benchmarks-parsers.git
 
 ### 2
     Set parameters for each particular benchmark available in
@@ -23,7 +24,7 @@ usage:
 
 \<path\>/ParseBenchmarksCriticality.py
                                      [-h]
-                                     &nbsp;--gen_database [GEN_DATA]
+                                     &nbsp;--gen_database  [GEN_DATA]
                                      &nbsp;--out_database [OUT_DATA]
                                      &nbsp;--database [ERROR_DATABASE]
                                      &nbsp;--benchmarks [BENCHMARKS]
