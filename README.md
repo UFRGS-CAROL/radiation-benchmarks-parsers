@@ -4,22 +4,27 @@ TODO: Write a project description
 
 ## Installation
 
-TODO: Describe the installation process
+### 1
+    Get the repository with git clone https://github.com/fernandoFernandeSantos/radiation-benchmarks-parsers.git
 
+### 2
+    Set parameters for each particular benchmark available in https://github.com/dagoliveira/radiation-benchmarks.git
+    Note: for some benchmarks such as Py-Faster-Rcnn and Darknet you must have the Golden output for each platform,
+    for error criticality evaluation
 
 ## Usage
 
 Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py,
-on the contrary this parser will crash.
+on the contrary, this parser will crash.
 
 usage: /path/ParseBenchmarksCriticality.py
                                      [-h]
-                                       [--gen_database GEN_DATA]
-                                       [--out_database OUT_DATA]
-                                       [--database ERROR_DATABASE]
-                                       [--benchmarks BENCHMARKS]
-                                       [--parse_layers]
-                                       [--pr_threshold PR_THRESHOLD]
+                                     &nbsp  [--gen_database GEN_DATA]
+                                     &nbsp  [--out_database OUT_DATA]
+                                     &nbsp  [--database ERROR_DATABASE]
+                                     &nbsp  [--benchmarks BENCHMARKS]
+                                     &nbsp  [--parse_layers]
+                                     &nbsp  [--pr_threshold PR_THRESHOLD]
                                        [--check_csv] [--ecc] [--is_fi]
 
 Parse logs for Neural Networks
@@ -32,8 +37,8 @@ arguments:
 
   --gen_database <GEN_DATA>
 
-                        If this flag is passed the other flags will have no
-                        effects, despite out_database. --gen_data <path where the parser must search
+                        If this flag is passed, the other flags will have no
+effects, despite out_database. --gen_data <path where the parser must search
                         for ALL LOGs FILES
 
   --out_database <OUT_DATA>
@@ -51,11 +56,12 @@ arguments:
 
   --benchmarks <BENCHMARKS>
 
-                        A list separated by ',' (commas with no sapace) where
+                        A list separated by ',' (commas with no space) where
                         each item will be the benchmarks that parser will
-                        process. Availiable parsers:
+                        process. Available parsers:
 
-                        * Darknet --> needs --parse_layers and a Precision and Recall threshold value.
+                        * Darknet --> needs --parse_layers and a Precision and Recall threshold value, only for DarknetV1 logs from 2016.
+                        * DarknetV1 -->  needs --parse_layers and a Precision and Recall threshold value. For DarknetV1 logs after 2017
                         * DarknetV2 --> needs --parse_layers and a Precision and Recall threshold value.
                         * Lenet --> needs --parse_layers and a Precision and Recall threshold value.
                         * Hotspot
@@ -73,7 +79,7 @@ arguments:
 
   --parse_layers
 
-                        If you want parse Darknet layers, set it True, default
+                        If you want to parse Darknet layers, set it True, default
                         values is False
 
   --pr_threshold <PR_THRESHOLD>
@@ -85,7 +91,7 @@ arguments:
 
                         This parameter will open a csv file which contains all
                         radiation test runs, then it will check if every SDC
-                        is on a valid run, default is false
+                        is on a valid run, the default is false
 
 
   --ecc
