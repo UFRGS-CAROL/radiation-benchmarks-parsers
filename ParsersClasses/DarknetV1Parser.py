@@ -13,7 +13,7 @@ from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
 
-class DarknetParser(ObjectDetectionParser):
+class DarknetV1Parser(ObjectDetectionParser):
     __executionType = None
     __executionModel = None
 

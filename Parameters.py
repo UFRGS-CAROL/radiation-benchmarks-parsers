@@ -13,6 +13,7 @@ from ParsersClasses import QuicksortParser
 from ParsersClasses import DarknetV2Parser
 from ParsersClasses import DarknetV1Parser
 from ParsersClasses import LenetParser
+from ParsersClasses import ResnetParser
 
 ############################################################################################
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
@@ -25,7 +26,7 @@ LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_da
 IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
-    'carol-ECC-ON' : '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
+    'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
     'carol-k401-ECC-OFF': '/home/fernando/temp/LANSCE2017/gold_K402',
 }
 
@@ -78,17 +79,17 @@ LOCAL_RADIATION_BENCH = '~/git_pesquisa'
 # _ecc_on is mandatory only for boards that have ecc memory
 SUMMARIES_FILES = {
     'carol-k402_ecc_on': {
-        'csv': #'/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-               '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
-               # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
-               'k402_ecc_on.csv', 'data':None},
+        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
+            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
+            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
+            'k402_ecc_on.csv', 'data': None},
     'carol-k401_ecc_on': {
         'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
             '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
             # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
             'k402_ecc_on.csv', 'data': None},
 
-    "carol-k401-ECC-OFF":{
+    "carol-k401-ECC-OFF": {
         'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
             '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
             # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
@@ -170,10 +171,18 @@ def setBenchmarks(**kwargs):
                                                        datasets=DARKNET_DATASETS
                                                        )
 
+        if i == 'resnet':
+            benchObj = ResnetParser.ResnetParser(imgOutputDir=IMG_OUTPUT_DIR,
+                                                 prThreshold=pr_threshold,
+                                                 localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                 check_csv=checkCsv,
+                                                 goldBaseDir=GOLD_BASE_DIR,
+                                                 datasets=DARKNET_DATASETS)
+
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                                   check_csv=checkCsv,
+                                                   ecc=ecc)
         elif i == 'hog':
             benchObj = HogParser.HogParser(
                 prThreshold=pr_threshold,
@@ -186,24 +195,24 @@ def setBenchmarks(**kwargs):
             )
         elif i == 'lavamd':
             benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                                 check_csv=checkCsv,
+                                                 ecc=ecc)
         elif i == 'mergesort':
             benchObj = MergesortParser.MergesortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                                       check_csv=checkCsv,
+                                                       ecc=ecc)
         elif i == 'nw':
             benchObj = NWParser.NWParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                         check_csv=checkCsv,
+                                         ecc=ecc)
         elif i == 'quicksort':
             benchObj = QuicksortParser.QuicksortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                                       check_csv=checkCsv,
+                                                       ecc=ecc)
         elif i == 'accl':
             benchObj = ACCLParser.ACCLParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                             check_csv=checkCsv,
+                                             ecc=ecc)
         elif i == 'pyfasterrcnn':
             benchObj = FasterRcnnParser.FasterRcnnParser(
                 prThreshold=pr_threshold,
@@ -217,16 +226,16 @@ def setBenchmarks(**kwargs):
             )
         elif i == 'lulesh':
             benchObj = LuleshParser.LuleshParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                                 check_csv=checkCsv,
+                                                 ecc=ecc)
         elif i == 'lud':
             benchObj = LudParser.LudParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                           check_csv=checkCsv,
+                                           ecc=ecc)
         elif i == 'gemm':
             benchObj = GemmParser.GemmParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                check_csv=checkCsv,
-                ecc=ecc)
+                                             check_csv=checkCsv,
+                                             ecc=ecc)
         elif i == 'lenet':
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
                                                prThreshold=pr_threshold,

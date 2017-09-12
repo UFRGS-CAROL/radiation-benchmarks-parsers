@@ -114,7 +114,7 @@ class LenetParser(ObjectDetectionParser):
             self.__weights = ""
             self._iterations = ""
 
-    # parse Darknet
+    # parse lenet
     # returns a dictionary
     def parseErrMethod(self, errString):
         if len(errString) == 0:
