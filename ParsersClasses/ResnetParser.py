@@ -150,6 +150,6 @@ class ResnetParser(ObjectDetectionParser):
             foundProbs.append(fpb)
 
 
-        
+
 
 
