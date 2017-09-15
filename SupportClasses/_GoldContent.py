@@ -295,14 +295,14 @@ class _GoldContent():
                 probs.append(line[0])
                 indexes.append(line[1])
 
-            self.__prob_array[img] = [probs, indexes]
+            self.__prob_array[img] = {"probs":probs, "indexes":indexes}
 
         csvfile.close()
 
 temp = _GoldContent(nn='resnet', filepath='../data/resnet_torch/fault_injection_gold.csv')
 #
-print temp
-# prob = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[0]
+
+prob = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_000158.jpg')[0]
 # boxes = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[1]
 # for i in boxes:
 #     print i
