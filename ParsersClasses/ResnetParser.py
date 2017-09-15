@@ -19,7 +19,7 @@ class ResnetParser(ObjectDetectionParser):
                   "recall", "false_negative", "false_positive", "true_positive", "header"]
 
     _classes = None
-
+    _topOnesSize = 5
 
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
@@ -123,6 +123,9 @@ class ResnetParser(ObjectDetectionParser):
 
         return retList
 
+    def __sortTwoLists(self, list1, list2):
+        sorted1, sorted2 = (list(t) for t in zip(*sorted(zip(list1, list2))))
+        return sorted1, sorted2
 
 
     def _relativeErrorParser(self, errList):
@@ -137,7 +140,7 @@ class ResnetParser(ObjectDetectionParser):
         iteration = errList[0]["iteration"]
         img = errList[0]["img"]
 
-        for i, j in enumerate(errList):
+        for j, i in enumerate(errList):
             fpb = i["found_pb"]
             gpb = i["gold_pb"]
             gind = i["gold_index"]
@@ -148,8 +151,6 @@ class ResnetParser(ObjectDetectionParser):
 
             foundClasses.append(self._classes[find] if find > -1 else "radiation_error")
             foundProbs.append(fpb)
-
-
 
 
 
