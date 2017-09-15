@@ -1,5 +1,5 @@
-import struct
-
+import numpy as np
+from sklearn.metrics import precision_recall_curve
 from ObjectDetectionParser import ObjectDetectionParser
 import re
 import csv
@@ -107,15 +107,33 @@ class ResnetParser(ObjectDetectionParser):
 
         return ret if len(ret) > 0 else None
 
+    def __loadClasses(self, path):
+        fileContent = open(path, "r").read()
+        temp = fileContent.replace("return{", "")
+        temp = temp.replace("}", "")
+        classesList = temp.replace("\'", "").split(",")
+        retList = [i.lstrip() for i in classesList]
+
+        return retList
+
+
 
     def _relativeErrorParser(self, errList):
         errListLen = len(errList)
         if errListLen == 0:
             return
 
-        for i in errList:
-            print i
+        goldIndexes = []
+        foundindexes = []
+        goldProbs = []
+        foundProbs = []
+        iteration = errList[0]["iteration"]
+        img = errList[0]["img"]
 
-        raise
+        for i in errList:
+            goldIndexes.append(i["gold_index"])
+            foundindexes.append(i["found_index"])
+            goldProbs.append(i["gold_pb"])
+            foundProbs.append(i["found_pb"])
 
 
