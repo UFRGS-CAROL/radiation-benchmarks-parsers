@@ -72,6 +72,12 @@ LAYERS_GOLD_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections
 LAYERS_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_lenet/"
 
 ############################################################################################
+####################################RESNET PARSER PARAMETERS################################
+############################################################################################
+
+RESNET_CLASSES_PATH = "/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
+
+############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
 LOCAL_RADIATION_BENCH = '~/git_pesquisa'
@@ -178,7 +184,8 @@ def setBenchmarks(**kwargs):
                                                  localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
                                                  goldBaseDir=GOLD_BASE_DIR,
-                                                 datasets=DARKNET_DATASETS)
+                                                 datasets=DARKNET_DATASETS,
+                                                 classes_path=RESNET_CLASSES_PATH)
 
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser(localRadiationBench=LOCAL_RADIATION_BENCH,

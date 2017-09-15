@@ -18,11 +18,15 @@ class ResnetParser(ObjectDetectionParser):
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
                   "recall", "false_negative", "false_positive", "true_positive", "header"]
 
+    _classes = None
+
 
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
 
         self._sizeOfDNN = 200
+        classesPath = kwargs.pop("classes_path")
+        self._classes = self.__loadClasses(classesPath)
 
 
 
@@ -105,6 +109,9 @@ class ResnetParser(ObjectDetectionParser):
             ret["found_index"] = int(resnetM.group(i))
             ret["gold_index"] = int(resnetM.group(i))
 
+            if ret["found_index"] > len(self._classes):
+                ret["found_index"] = -1
+
         return ret if len(ret) > 0 else None
 
     def __loadClasses(self, path):
@@ -123,17 +130,26 @@ class ResnetParser(ObjectDetectionParser):
         if errListLen == 0:
             return
 
-        goldIndexes = []
-        foundindexes = []
+        goldClasses = []
+        foundClasses = []
         goldProbs = []
         foundProbs = []
         iteration = errList[0]["iteration"]
         img = errList[0]["img"]
 
-        for i in errList:
-            goldIndexes.append(i["gold_index"])
-            foundindexes.append(i["found_index"])
-            goldProbs.append(i["gold_pb"])
-            foundProbs.append(i["found_pb"])
+        for i, j in enumerate(errList):
+            fpb = i["found_pb"]
+            gpb = i["gold_pb"]
+            gind = i["gold_index"]
+            find = i["found_index"]
+
+            goldClasses.append(self._classes[gind])
+            goldProbs.append(gpb)
+
+            foundClasses.append(self._classes[find] if find > -1 else "radiation_error")
+            foundProbs.append(fpb)
+
+
+        
 
 
