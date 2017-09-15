@@ -75,7 +75,8 @@ LAYERS_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sass
 ####################################RESNET PARSER PARAMETERS################################
 ############################################################################################
 
-RESNET_CLASSES_PATH = "/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
+RESNET_CLASSES_PATH = "../src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
+#"/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
 
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################

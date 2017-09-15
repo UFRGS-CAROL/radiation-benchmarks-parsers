@@ -8,7 +8,7 @@ import numpy as np
 # from SupportClasses
 import Rectangle
 
-"""Read a darknet Gold content to memory"""
+"""Read a darknet/pyfaster/resnet Gold content to memory"""
 
 
 class Float(Structure):
@@ -82,12 +82,16 @@ class _GoldContent():
             filePath = kwargs.pop("filepath")
 
             if "darknet" == self.__nn:
-                self.darknetConstructor(filePath)
+                self.darknetConstructor(filePath=filePath)
             elif "pyfaster" == self.__nn:
-                self.pyFasterConstructor(filePath)
+                self.pyFasterConstructor(filePath=filePath)
 
             elif "darknetv2" == self.__nn:
-                self.darknetV2Constructor(filePath)
+                self.darknetV2Constructor(filePath=filePath)
+
+            elif "resnet" == self.__nn:
+                self.resnetConstructor(filePath=filePath)
+
         except:
             raise
 
@@ -102,9 +106,6 @@ class _GoldContent():
 
     def getClasses(self):
         return self.__classes
-
-    def getPlistSize(self):
-        return self.__plistSize
 
     def getPyFasterGold(self):
         return self.__pyFasterGold
@@ -172,9 +173,9 @@ class _GoldContent():
 
         cc_file.close()
 
-    def pyFasterConstructor(self, filepath):
+    def pyFasterConstructor(self, filePath):
         try:
-            f = open(filepath, "rb")
+            f = open(filePath, "rb")
             tempGold = pickle.load(f)
             f.close()
 
@@ -274,9 +275,33 @@ class _GoldContent():
 
         return prob, boxes
 
-# temp = _GoldContent(nn='darknetv2', filepath='/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/darknet_v2/temp.csv')
+    # ResNET constructor
+    def resnetConstructor(self, filePath):
+        csvfile = open(filePath, 'rb')
+        spamreader = csv.reader(csvfile, delimiter=';')
+        header = next(spamreader)
+
+        self.__plistSize = int(header[0])
+        for i in xrange(0,self.__plistSize):
+            imgHeader = next(spamreader)
+
+            self.__totalSize = int(imgHeader[0])
+            img = str(imgHeader[1])
+
+            probs = []
+            indexes = []
+            for j in xrange(0,self.__totalSize):
+                line = next(spamreader)
+                probs.append(line[0])
+                indexes.append(line[1])
+
+            self.__prob_array[img] = [probs, indexes]
+
+        csvfile.close()
+
+temp = _GoldContent(nn='resnet', filepath='../data/resnet_torch/fault_injection_gold.csv')
 #
-# # print temp
+print temp
 # prob = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[0]
 # boxes = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[1]
 # for i in boxes:
