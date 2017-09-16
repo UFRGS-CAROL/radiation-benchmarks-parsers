@@ -1,6 +1,9 @@
+import os
+
 import numpy as np
 from sklearn.metrics import precision_recall_curve
 from ObjectDetectionParser import ObjectDetectionParser
+from SupportClasses import _GoldContent
 import re
 import csv
 
@@ -127,6 +130,26 @@ class ResnetParser(ObjectDetectionParser):
         sorted1, sorted2 = (list(t) for t in zip(*sorted(zip(list1, list2))))
         return sorted1, sorted2
 
+
+    def __loadGold(self):
+        # ---------------------------------------------------------------------------------------------------------------
+        # open and load gold
+        goldKey = self._machine + "_" + self._benchmark + "_" + self._size
+
+        if self._machine in self._goldBaseDir:
+            goldPath = self._goldBaseDir[self._machine] + "/resnet_torch/" + os.path.basename(self._goldFileName)
+        else:
+            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
+            return
+
+        if goldKey not in self._goldDatasetArray:
+            g = _GoldContent._GoldContent(nn='resnet', filepath=goldPath)
+            self._goldDatasetArray[goldKey] = g
+
+        gold = self._goldDatasetArray[goldKey]
+
+        # ---------------------------------------------------------------------------------------------------------------
+        return gold
 
     def _relativeErrorParser(self, errList):
         errListLen = len(errList)

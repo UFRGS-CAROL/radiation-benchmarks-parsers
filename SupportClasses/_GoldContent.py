@@ -117,8 +117,16 @@ class _GoldContent():
 
         return self.__prob_array['boxes']
 
+    def getIndexes(self, **kwargs):
+        if self.__nn == 'resnet':
+            imgPath = kwargs.pop('imgPath')
+            return self.__prob_array[imgPath]['indexes']
+
     def getProbArray(self, **kwargs):
         if self.__nn == 'darknetv2':
+            imgPath = kwargs.pop('imgPath')
+            return self.__prob_array[imgPath]['probs']
+        elif self.__nn == 'resnet':
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
 
@@ -299,10 +307,11 @@ class _GoldContent():
 
         csvfile.close()
 
-temp = _GoldContent(nn='resnet', filepath='../data/resnet_torch/fault_injection_gold.csv')
+# temp = _GoldContent(nn='resnet', filepath='/home/fernando/Dropbox/LANSCE2017/K40_gold/resnet_torch/gold.voc.2012.1K.csv')
+# #
 #
+# prob = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_003258.jpg')
 
-prob = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_000158.jpg')[0]
 # boxes = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[1]
 # for i in boxes:
 #     print i
