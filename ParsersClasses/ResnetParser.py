@@ -1,14 +1,13 @@
+import warnings
 from collections import Counter
 import os
 
 import numpy as np
-from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_recall_fscore_support
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import _GoldContent
 import re
 import csv
-
-
 
 # 0 to 9 digits
 MAX_LENET_ELEMENT = 9.0
@@ -32,8 +31,6 @@ class ResnetParser(ObjectDetectionParser):
         classesPath = kwargs.pop("classes_path")
         self._classes = self.__loadClasses(classesPath)
 
-
-
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
@@ -55,7 +52,6 @@ class ResnetParser(ObjectDetectionParser):
                           self._falsePositive,
                           self._truePositive,
                           self._header]
-
 
             writer.writerow(outputList)
             csvWFP.close()
@@ -79,8 +75,8 @@ class ResnetParser(ObjectDetectionParser):
             self._imgListPath = ""
             self._goldFileName = ""
 
-        self._size = self.__weights + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(self._goldFileName)
-
+        self._size = self.__weights + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(
+            self._goldFileName)
 
     # parse Darknet
     # returns a dictionary
@@ -88,7 +84,7 @@ class ResnetParser(ObjectDetectionParser):
         if len(errString) == 0:
             return
         ret = {}
-        #ERR img: [/home/carol/radiation-benchmarks/data/CALTECH/set08_V001_346.jpg]
+        # ERR img: [/home/carol/radiation-benchmarks/data/CALTECH/set08_V001_346.jpg]
         #  iteration: [0] found_prob: [0.000001] gold_prob: [0.000001]
         # found_index: [828] gold_index: [363]
         resnetM = re.match(".*img\: \[(\S+)\].*iteration\: \[(\d+)\].*found_prob\: \[(\S+)\].*gold_prob\: \[(\S+)\].*"
@@ -122,7 +118,6 @@ class ResnetParser(ObjectDetectionParser):
             if ret["gold_index"] > len(self._classes):
                 print self._logFileName
 
-
         return ret if len(ret) > 0 else None
 
     def __loadClasses(self, path):
@@ -143,7 +138,6 @@ class ResnetParser(ObjectDetectionParser):
         # sorted2 = list2[arr1inds[::-1]]
         return sorted1, sorted2
 
-
     def __loadGold(self):
         # ---------------------------------------------------------------------------------------------------------------
         # open and load gold
@@ -161,7 +155,6 @@ class ResnetParser(ObjectDetectionParser):
 
         # ---------------------------------------------------------------------------------------------------------------
         return self._goldDatasetArray[goldKey]
-
 
     def __setFoundListBasedOnTestResult(self, classes, probs, classIndex, probToSet):
         for i, class_ in enumerate(classes):
@@ -182,24 +175,40 @@ class ResnetParser(ObjectDetectionParser):
         goldClasses = list(gold.getIndexes(imgPath=img))
         goldProbs = list(gold.getProbArray(imgPath=img))
 
-
         if len([item for item, count in Counter(goldClasses).items() if count > 1]) > 0:
-            raise ValueError("Some error because list have duplicated elements: " + str([item for item, count in Counter(goldClasses).items() if count > 1]))
-
+            raise ValueError("Some error because list have duplicated elements: " + str(
+                [item for item, count in Counter(goldClasses).items() if count > 1]))
 
         foundClasses = list(gold.getIndexes(imgPath=img))
         foundProbs = list(gold.getProbArray(imgPath=img))
 
         # # first set the errors
-        # for i in errList:
-        #     fIndex = i["found_index"]
-        #     fProb = i["found_pb"]
-        #     self.__setFoundListBasedOnTestResult(foundClasses, foundProbs, fIndex, fProb)
-
+        for i in errList:
+            fIndex = i["found_index"]
+            fProb = i["found_pb"]
+            self.__setFoundListBasedOnTestResult(foundClasses, foundProbs, fIndex, fProb)
 
         # must reorder the found classes and probs
         foundProbsSorted, foundClassesSorted = self.__sortTwoLists(foundProbs, foundClasses)
 
-        if goldProbs != foundProbsSorted or goldClasses != foundClassesSorted:
-            print list(set(foundProbs) - set(foundProbsSorted))
-            print list(set(foundClasses) - set(foundClassesSorted))
+        # if goldProbs != foundProbsSorted or goldClasses != foundClassesSorted:
+        #     t1 = list(set(foundProbsSorted) - set(goldProbs))
+        #     t2 = list(set(foundClassesSorted) - set(goldClasses))
+        #     if len(t1) > 0 or len(t2) > 0:
+        #         print t1, "\n", t2
+        gStrClassFull = [self._classes[i] for i in goldClasses]
+        fStrClassFull = [self._classes[i] for i in foundClassesSorted]
+        goldStrClasses = np.array(gStrClassFull[0:self._topOnesSize])
+        foundStrClasses = np.array(fStrClassFull[0:self._topOnesSize])
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            precision, recall, fscore, support = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
+                                                                            average='macro')
+        # precisionWeighted, recallWeighted, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
+        #                                                                           beta=0.5, average='weighted')
+        # precisionMicro, recallMicro, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
+        #                                                                     average='micro')
+        # precisionSamples, recallSamples, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
+        #                                                                         beta=0.5, average=None)
+
