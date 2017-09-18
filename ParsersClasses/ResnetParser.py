@@ -4,6 +4,7 @@ import os
 
 import numpy as np
 from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import confusion_matrix
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import _GoldContent
 import re
@@ -19,10 +20,14 @@ class ResnetParser(ObjectDetectionParser):
     # overiding csvheader
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "header"]
+                  "recall", 'fscore_0.5',
+                  "false_negative", "false_positive", "true_positive", # "true_negative",
+                  "header"]
 
     _classes = None
     _topOnesSize = 5
+    _fscore = None
+    # _trueNegative = None
 
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
@@ -48,9 +53,11 @@ class ResnetParser(ObjectDetectionParser):
                           self._wrongElements,
                           self._precision,
                           self._recall,
+                          self._fscore,
                           self._falseNegative,
                           self._falsePositive,
                           self._truePositive,
+                          # self._trueNegative,
                           self._header]
 
             writer.writerow(outputList)
@@ -198,17 +205,36 @@ class ResnetParser(ObjectDetectionParser):
         #         print t1, "\n", t2
         gStrClassFull = [self._classes[i] for i in goldClasses]
         fStrClassFull = [self._classes[i] for i in foundClassesSorted]
-        goldStrClasses = np.array(gStrClassFull[0:self._topOnesSize])
-        foundStrClasses = np.array(fStrClassFull[0:self._topOnesSize])
+        goldStrClasses = gStrClassFull[0:self._topOnesSize] #np.array(gStrClassFull[0:self._topOnesSize])
+        foundStrClasses = fStrClassFull[0:self._topOnesSize] #np.array(fStrClassFull[0:self._topOnesSize])
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            precision, recall, fscore, support = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
-                                                                            average='macro')
+            self._precision, self._recall, self._fscore, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
+                                                                            average='micro')
         # precisionWeighted, recallWeighted, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
         #                                                                           beta=0.5, average='weighted')
         # precisionMicro, recallMicro, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
         #                                                                     average='micro')
         # precisionSamples, recallSamples, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
         #                                                                         beta=0.5, average=None)
+
+        diffElements = list(set(goldStrClasses) - set(foundStrClasses))
+        self._goldLines = len(goldStrClasses)
+        self._detectedLines = len(foundStrClasses)
+        self._wrongElements = len(diffElements)
+
+        classesDetected = list(set(goldStrClasses + foundStrClasses))
+        cm = confusion_matrix(goldStrClasses, foundStrClasses, labels=classesDetected)
+        # if self._precision != 1.0 or self._recall != 1.0:
+        #     print  "\n", cm
+        #     print cm.sum(axis=1) - np.diag(cm)
+        #     print cm.sum(axis=0) - np.diag(cm)
+        #     print np.diag(cm)
+        #     print cm.sum() - (self._falsePositive + self._falseNegative + self._truePositive)
+
+        self._falseNegative = np.sum(cm.sum(axis=1) - np.diag(cm))
+        self._falsePositive = np.sum(cm.sum(axis=0) - np.diag(cm))
+        self._truePositive  = np.sum(np.diag(cm))
+        # self._trueNegative = cm.sum() #np.sum(cm.sum() - (self._falsePositive + self._falseNegative + self._truePositive))
 
