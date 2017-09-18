@@ -300,8 +300,8 @@ class _GoldContent():
             indexes = []
             for j in xrange(0,self.__totalSize):
                 line = next(spamreader)
-                probs.append(line[0])
-                indexes.append(line[1])
+                probs.append(float(line[0]))
+                indexes.append(int(line[1]))
 
             self.__prob_array[img] = {"probs":probs, "indexes":indexes}
 

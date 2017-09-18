@@ -28,13 +28,16 @@ IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
     'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
-    'carol-k401-ECC-OFF': '/home/fernando/temp/LANSCE2017/gold_K402',
+    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
+    'carol-k201-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
+    'carol-k401-ECC-ON': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
+    'carol-k201-ECC-ON': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
 }
 
 ############################################################################################
 #################################DARKNET PARSER PARAMETERS##################################
 ############################################################################################
-"""This section MUST, I WRITE MUST, BE SET ACCORDING THE GOLD PATHS"""
+"""This section MUST BE SET ACCORDING THE GOLD PATHS"""
 
 DARKNET_DATASETS = {'caltech.pedestrians.critical.1K.txt': {'dumb_abft': 'gold.caltech.critical.abft.1K.test',
                                                             'no_abft': 'gold.caltech.critical.1K.test'},

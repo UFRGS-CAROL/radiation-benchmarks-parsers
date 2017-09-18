@@ -1,3 +1,4 @@
+from collections import Counter
 import os
 
 import numpy as np
@@ -78,6 +79,8 @@ class ResnetParser(ObjectDetectionParser):
             self._imgListPath = ""
             self._goldFileName = ""
 
+        self._size = self.__weights + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(self._goldFileName)
+
 
     # parse Darknet
     # returns a dictionary
@@ -110,10 +113,15 @@ class ResnetParser(ObjectDetectionParser):
 
             i += 1
             ret["found_index"] = int(resnetM.group(i))
+            i += 1
             ret["gold_index"] = int(resnetM.group(i))
 
             if ret["found_index"] > len(self._classes):
                 ret["found_index"] = -1
+
+            if ret["gold_index"] > len(self._classes):
+                print self._logFileName
+
 
         return ret if len(ret) > 0 else None
 
@@ -127,7 +135,12 @@ class ResnetParser(ObjectDetectionParser):
         return retList
 
     def __sortTwoLists(self, list1, list2):
-        sorted1, sorted2 = (list(t) for t in zip(*sorted(zip(list1, list2))))
+        # for list
+        sorted1, sorted2 = (list(t) for t in zip(*sorted(zip(list1, list2), reverse=True)))
+        # for numpy
+        # arr1inds = list1.argsort()
+        # sorted1 = list1[arr1inds[::-1]]
+        # sorted2 = list2[arr1inds[::-1]]
         return sorted1, sorted2
 
 
@@ -146,34 +159,47 @@ class ResnetParser(ObjectDetectionParser):
             g = _GoldContent._GoldContent(nn='resnet', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
 
-        gold = self._goldDatasetArray[goldKey]
-
         # ---------------------------------------------------------------------------------------------------------------
-        return gold
+        return self._goldDatasetArray[goldKey]
+
+
+    def __setFoundListBasedOnTestResult(self, classes, probs, classIndex, probToSet):
+        for i, class_ in enumerate(classes):
+            if class_ == classIndex:
+                probs[i] = probToSet
+
 
     def _relativeErrorParser(self, errList):
         errListLen = len(errList)
         if errListLen == 0:
             return
 
-        goldClasses = []
-        foundClasses = []
-        goldProbs = []
-        foundProbs = []
-        iteration = errList[0]["iteration"]
         img = errList[0]["img"]
 
-        for j, i in enumerate(errList):
-            fpb = i["found_pb"]
-            gpb = i["gold_pb"]
-            gind = i["gold_index"]
-            find = i["found_index"]
+        # open golds
+        gold = self.__loadGold()
 
-            goldClasses.append(self._classes[gind])
-            goldProbs.append(gpb)
-
-            foundClasses.append(self._classes[find] if find > -1 else "radiation_error")
-            foundProbs.append(fpb)
+        goldClasses = list(gold.getIndexes(imgPath=img))
+        goldProbs = list(gold.getProbArray(imgPath=img))
 
 
+        if len([item for item, count in Counter(goldClasses).items() if count > 1]) > 0:
+            raise ValueError("Some error because list have duplicated elements: " + str([item for item, count in Counter(goldClasses).items() if count > 1]))
 
+
+        foundClasses = list(gold.getIndexes(imgPath=img))
+        foundProbs = list(gold.getProbArray(imgPath=img))
+
+        # # first set the errors
+        # for i in errList:
+        #     fIndex = i["found_index"]
+        #     fProb = i["found_pb"]
+        #     self.__setFoundListBasedOnTestResult(foundClasses, foundProbs, fIndex, fProb)
+
+
+        # must reorder the found classes and probs
+        foundProbsSorted, foundClassesSorted = self.__sortTwoLists(foundProbs, foundClasses)
+
+        if goldProbs != foundProbsSorted or goldClasses != foundClassesSorted:
+            print list(set(foundProbs) - set(foundProbsSorted))
+            print list(set(foundClasses) - set(foundClassesSorted))
