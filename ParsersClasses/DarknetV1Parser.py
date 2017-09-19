@@ -78,7 +78,6 @@ class DarknetV1Parser(ObjectDetectionParser):
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
                   "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]
 
-
     # it is only for darknet for a while
     _parseLayers = False
     __layersGoldPath = ""
@@ -90,10 +89,10 @@ class DarknetV1Parser(ObjectDetectionParser):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
-
-        #I write by default
+        # I write by default
         self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
-        self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in xrange(1, self._smartPoolingSize + 1)]
+        self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
+                                                        xrange(1, self._smartPoolingSize + 1)]
 
         try:
             if self._parseLayers:
@@ -145,8 +144,6 @@ class DarknetV1Parser(ObjectDetectionParser):
             outputList.extend(self._smartPooling)
 
             outputList.append(self._header)
-
-
 
             if self._parseLayers:
                 outputList.extend(self._cnnParser.getOutputToCsv())
@@ -322,10 +319,29 @@ class DarknetV1Parser(ObjectDetectionParser):
             width = box.width * w
             height = box.height * h
 
+            if width > w - 1:
+                width = w - 1
+
+            if height > h - 1:
+                height = h - 1
+
+            if left < 0:
+                left = 0
+
+            if (right > w - 1):
+                right = w - 1
+
+            if (top < 0):
+                top = 0
+
+            if bot > h - 1:
+                bot = h - 1
+
             for j in range(0, classes):
                 if probabilites[i][j] >= self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(int(left), int(bot), int(width), int(height))
+                    rect = Rectangle.Rectangle(left=int(left), bottom=int(bot), width=int(width), height=int(height),
+                                               right=int(right), top=int(top))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
 

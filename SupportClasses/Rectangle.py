@@ -21,14 +21,28 @@ class Rectangle():
 
     # self._left, self._top, self._right, self._bottom
     def __init__(self, *args, **kwargs):
-        self.left, self.bottom, self.width, self.height = args
+        if kwargs.get('right') or kwargs.get('top'):
+            if kwargs.get('right'):
+                self.right = kwargs.get('right')
+            if kwargs.get('top'):
+                self.top = kwargs.get('top')
 
-        if kwargs.get('right') and kwargs.get('top'):
-            self.right =  kwargs.get('right')
-            self.top = kwargs.get('top')
+            if kwargs.get('left'):
+                self.left = kwargs.get('left')
+
+            if kwargs.get('bottom'):
+                self.bottom = kwargs.get('bottom')
+
         else:
+            self.left, self.bottom, self.width, self.height = args
             self.right = self.left + self.width
             self.top = self.bottom + self.height
+
+        if kwargs.get('width'):
+            self.width = kwargs.get('width')
+
+        if kwargs.get('height'):
+            self.height = kwargs.get('height')
 
     def __repr__(self):
         return "left " + str(self.left) + " bottom " + str(self.bottom) + " width " + str(
@@ -96,7 +110,7 @@ class Rectangle():
 
     def area(self):
         return self.width * self.height
-      
+
     def jaccard_similarity(self, other):
         intersection = 0
         for x in xrange(self.left, self.right):
@@ -104,19 +118,20 @@ class Rectangle():
                 if other.left <= x <= other.right and other.bottom <= y <= other.top:
                     intersection += 1
         # total = (self.top - self.bottom) * (self.right - self.left) + (other.top - other.bottom) * (other.right - other.left) - intersection
-        total = self.area()  + other.area() - intersection
+        total = self.area() + other.area() - intersection
 
         try:
             similarity = (float(intersection) / float(total))
             return similarity
         except:
             return 0
+
     def __hash__(self):
         return hash((self.left, self.right, self.top, self.bottom, self.height, self.width))
 
     def __eq__(self, other):
         try:
-            return (self.left,  self.right,  self.top,  self.bottom,  self.height,  self.width)\
-                == (other.left, other.right, other.top, other.bottom, other.height, other.width)
+            return (self.left, self.right, self.top, self.bottom, self.height, self.width) \
+                   == (other.left, other.right, other.top, other.bottom, other.height, other.width)
         except AttributeError:
             return NotImplemented
