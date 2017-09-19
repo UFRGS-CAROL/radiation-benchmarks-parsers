@@ -24,7 +24,7 @@ LAYERS_GOLD_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassi
 LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/found_layers/'
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
-IMG_OUTPUT_DIR = ''
+IMG_OUTPUT_DIR = '/tmp/'
 
 GOLD_BASE_DIR = {
     'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
@@ -84,7 +84,7 @@ RESNET_CLASSES_PATH = "../src/cuda/resnet_torch/fb.resnet.torch/pretrained/image
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
-LOCAL_RADIATION_BENCH = '~/git_pesquisa'
+LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-benchmarks'
 
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory

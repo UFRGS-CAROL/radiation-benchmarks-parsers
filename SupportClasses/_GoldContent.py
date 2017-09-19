@@ -60,9 +60,13 @@ class _GoldContent():
     __cfgData = ''
     __model = ''
     __weights = ''
+    __imgListPath = ''
     __nn = None
 
     pyFasterImgList = ""
+
+    # imgs, doing it there is no need to open img list file
+    __imgsLocationList = []
 
     # return a dict that look like this
     # //to store all gold filenames
@@ -92,6 +96,9 @@ class _GoldContent():
             elif "resnet" == self.__nn:
                 self.resnetConstructor(filePath=filePath)
 
+            elif "darknetv1" == self.__nn:
+                self.darknetV2Constructor(filePath=filePath)
+
         except:
             raise
 
@@ -110,8 +117,14 @@ class _GoldContent():
     def getPyFasterGold(self):
         return self.__pyFasterGold
 
+    def getImgListPath(self):
+        return self.__imgListPath
+
+    def getImgsLocationList(self):
+        return self.__imgsLocationList
+
     def getRectArray(self, **kwargs):
-        if self.__nn == 'darknetv2':
+        if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['boxes']
 
@@ -123,7 +136,7 @@ class _GoldContent():
             return self.__prob_array[imgPath]['indexes']
 
     def getProbArray(self, **kwargs):
-        if self.__nn == 'darknetv2':
+        if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
         elif self.__nn == 'resnet':
@@ -136,13 +149,12 @@ class _GoldContent():
         h = 0
         w = 0
         c = 0
-        if self.__nn == 'darknetv2':
+        if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
             imgPath = kwargs.pop('imgPath')
-            h, w, c = self.__prob_array[imgPath]['h'],\
+            h, w, c = self.__prob_array[imgPath]['h'], \
                       self.__prob_array[imgPath]['w'], self.__prob_array[imgPath]['c']
 
         return h, w, c
-
 
     def darknetConstructor(self, filePath):
         cc_file = open(filePath, 'rb')
@@ -247,7 +259,7 @@ class _GoldContent():
         self.__thesh = float(header[0])
         self.__hierThresh = float(header[1])
         self.__plistSize = int(header[2])
-        # ignore img_list_path header[3]
+        self.__imgListPath = str(header[3])
         self.__configFile = str(header[4])
         self.__cfgData = str(header[5])
         self.__model = str(header[6])
@@ -263,6 +275,7 @@ class _GoldContent():
             self.__prob_array[str(row[0])]['h'] = int(row[1])
             self.__prob_array[str(row[0])]['w'] = int(row[2])
             self.__prob_array[str(row[0])]['c'] = int(row[3])
+            self.__imgsLocationList.append(str(row[0]))
 
         csvfile.close()
 
@@ -290,7 +303,7 @@ class _GoldContent():
         header = next(spamreader)
 
         self.__plistSize = int(header[0])
-        for i in xrange(0,self.__plistSize):
+        for i in xrange(0, self.__plistSize):
             imgHeader = next(spamreader)
 
             self.__totalSize = int(imgHeader[0])
@@ -298,12 +311,12 @@ class _GoldContent():
 
             probs = []
             indexes = []
-            for j in xrange(0,self.__totalSize):
+            for j in xrange(0, self.__totalSize):
                 line = next(spamreader)
                 probs.append(float(line[0]))
                 indexes.append(int(line[1]))
 
-            self.__prob_array[img] = {"probs":probs, "indexes":indexes}
+            self.__prob_array[img] = {"probs": probs, "indexes": indexes}
 
         csvfile.close()
 
