@@ -259,19 +259,9 @@ class DarknetV1Parser(ObjectDetectionParser):
         gValidRects, gValidProbs, gValidClasses = self.__filterResults(rectangles=goldRt, probabilites=goldPb,
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w, img=imgFilename)
-        # if "cam1-20080702-163550-587.jpg" in imgFilename:
-        #     print "\nclasses ", gold.getClasses()
-        #     for i, t in enumerate(gValidRects):
-        #         # left 358 top 186 right 410 bot 324 original width 1024 original height 516
-        #         # print "left ", t.left, " top ", t.top, " right ", t.right, " bot ", t.bottom, " img width ", w, " img height ", h
-        #         print gValidClasses[i], int(gValidProbs[i] * 100.0)
-        #     raise ValueError("Yep")
-
         fValidRects, fValidProbs, fValidClasses = self.__filterResults(rectangles=foundRt, probabilites=foundPb,
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
-
-        # print "\n",  gValidRects, fValidRects
 
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         gValidSize = len(gValidRects)
@@ -296,11 +286,8 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
-
-            if '/home/fernando/git_pesquisa/radiation-benchmarks/data/URBAN_STREET/sequence05/images_left/cam1-20080702-163550-587.jpg' == drawImgFileName:
-                self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
+            self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
                                       + '_' + self._logFileName, self._imgOutputDir)
-                raise ValueError("Yep")
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
@@ -314,7 +301,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         validRectangles = []
         validProbs = []
         validClasses = []
-        if img != "": print "\n"
+
         for i in range(0, total):
             box = rectangles[i]
             # Keep in mind that it is not the left and botton
@@ -358,8 +345,6 @@ class DarknetV1Parser(ObjectDetectionParser):
                                                right=int(right), top=int(bot))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
-                    if "cam1-20080702-163550-587.jpg" in img:
-                        print rect
 
         return validRectangles, validProbs, validClasses
 

@@ -24,7 +24,7 @@ LAYERS_GOLD_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassi
 LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/found_layers/'
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
-IMG_OUTPUT_DIR = '/tmp/'
+IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
     'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
