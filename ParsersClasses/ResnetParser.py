@@ -148,13 +148,13 @@ class ResnetParser(ObjectDetectionParser):
     def __loadGold(self):
         # ---------------------------------------------------------------------------------------------------------------
         # open and load gold
-        goldKey = self._machine + "_" + self._benchmark + "_" + self._size
-
-        if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/resnet_torch/" + os.path.basename(self._goldFileName)
+        pureMachine = self._machine.split('-ECC')[0]
+        goldKey = pureMachine + "_" + self._benchmark + "_" + self._size
+        if pureMachine in self._goldBaseDir:
+            goldPath = self._goldBaseDir[pureMachine] + "/resnet_torch/" + os.path.basename(self._goldFileName)
         else:
-            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
-            return
+            print 'not indexed machine: ', pureMachine, " set it on Parameters.py"
+            return None
 
         if goldKey not in self._goldDatasetArray:
             g = _GoldContent._GoldContent(nn='resnet', filepath=goldPath)
@@ -179,8 +179,8 @@ class ResnetParser(ObjectDetectionParser):
         # open golds
         gold = self.__loadGold()
 
-        goldClasses = list(gold.getIndexes(imgPath=img))
-        goldProbs = list(gold.getProbArray(imgPath=img))
+        goldClasses = gold.getIndexes(imgPath=img)
+        # goldProbs = list(gold.getProbArray(imgPath=img))
 
         if len([item for item, count in Counter(goldClasses).items() if count > 1]) > 0:
             raise ValueError("Some error because list have duplicated elements: " + str(
@@ -198,26 +198,15 @@ class ResnetParser(ObjectDetectionParser):
         # must reorder the found classes and probs
         foundProbsSorted, foundClassesSorted = self.__sortTwoLists(foundProbs, foundClasses)
 
-        # if goldProbs != foundProbsSorted or goldClasses != foundClassesSorted:
-        #     t1 = list(set(foundProbsSorted) - set(goldProbs))
-        #     t2 = list(set(foundClassesSorted) - set(goldClasses))
-        #     if len(t1) > 0 or len(t2) > 0:
-        #         print t1, "\n", t2
         gStrClassFull = [self._classes[i] for i in goldClasses]
         fStrClassFull = [self._classes[i] for i in foundClassesSorted]
-        goldStrClasses = gStrClassFull[0:self._topOnesSize] #np.array(gStrClassFull[0:self._topOnesSize])
-        foundStrClasses = fStrClassFull[0:self._topOnesSize] #np.array(fStrClassFull[0:self._topOnesSize])
+        goldStrClasses = gStrClassFull[0:self._topOnesSize]
+        foundStrClasses = fStrClassFull[0:self._topOnesSize]
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._precision, self._recall, self._fscore, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
                                                                             average='micro')
-        # precisionWeighted, recallWeighted, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
-        #                                                                           beta=0.5, average='weighted')
-        # precisionMicro, recallMicro, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
-        #                                                                     average='micro')
-        # precisionSamples, recallSamples, _, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses,
-        #                                                                         beta=0.5, average=None)
 
         diffElements = list(set(goldStrClasses) - set(foundStrClasses))
         self._goldLines = len(goldStrClasses)
@@ -226,15 +215,9 @@ class ResnetParser(ObjectDetectionParser):
 
         classesDetected = list(set(goldStrClasses + foundStrClasses))
         cm = confusion_matrix(goldStrClasses, foundStrClasses, labels=classesDetected)
-        # if self._precision != 1.0 or self._recall != 1.0:
-        #     print  "\n", cm
-        #     print cm.sum(axis=1) - np.diag(cm)
-        #     print cm.sum(axis=0) - np.diag(cm)
-        #     print np.diag(cm)
-        #     print cm.sum() - (self._falsePositive + self._falseNegative + self._truePositive)
 
         self._falseNegative = np.sum(cm.sum(axis=1) - np.diag(cm))
         self._falsePositive = np.sum(cm.sum(axis=0) - np.diag(cm))
         self._truePositive  = np.sum(np.diag(cm))
-        # self._trueNegative = cm.sum() #np.sum(cm.sum() - (self._falsePositive + self._falseNegative + self._truePositive))
+
 
