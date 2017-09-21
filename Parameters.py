@@ -84,7 +84,7 @@ RESNET_CLASSES_PATH = "../src/cuda/resnet_torch/fb.resnet.torch/pretrained/image
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
-LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-benchmarks'
+LOCAL_RADIATION_BENCH = '/home/fernando/git_pesquisa/radiation-benchmarks'
 
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory

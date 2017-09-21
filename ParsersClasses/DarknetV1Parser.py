@@ -25,7 +25,10 @@ class DarknetV1Parser(ObjectDetectionParser):
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
-    # _numMaskableErrors = [0 for i in xrange(32)]
+    _classes = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus",
+                "car", "cat", "chair", "cow", "diningtable", "dog", "horse",
+                "motorbike", "person", "pottedplant", "sheep", "sofa", "train",
+                "tvmonitor"]
 
     _smallestError = None
     _biggestError = None
@@ -255,7 +258,15 @@ class DarknetV1Parser(ObjectDetectionParser):
         h, w, c = gold.getImgDim(imgPath=imgFilename)
         gValidRects, gValidProbs, gValidClasses = self.__filterResults(rectangles=goldRt, probabilites=goldPb,
                                                                        total=gold.getTotalSize(),
-                                                                       classes=gold.getClasses(), h=h, w=w)
+                                                                       classes=gold.getClasses(), h=h, w=w, img=imgFilename)
+        # if "cam1-20080702-163550-587.jpg" in imgFilename:
+        #     print "\nclasses ", gold.getClasses()
+        #     for i, t in enumerate(gValidRects):
+        #         # left 358 top 186 right 410 bot 324 original width 1024 original height 516
+        #         # print "left ", t.left, " top ", t.top, " right ", t.right, " bot ", t.bottom, " img width ", w, " img height ", h
+        #         print gValidClasses[i], int(gValidProbs[i] * 100.0)
+        #     raise ValueError("Yep")
+
         fValidRects, fValidProbs, fValidClasses = self.__filterResults(rectangles=foundRt, probabilites=foundPb,
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
@@ -286,8 +297,10 @@ class DarknetV1Parser(ObjectDetectionParser):
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
 
-            self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
-                                  + '_' + self._logFileName, self._imgOutputDir)
+            if '/home/fernando/git_pesquisa/radiation-benchmarks/data/URBAN_STREET/sequence05/images_left/cam1-20080702-163550-587.jpg' == drawImgFileName:
+                self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
+                                      + '_' + self._logFileName, self._imgOutputDir)
+                raise ValueError("Yep")
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
@@ -297,11 +310,11 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._detectedLines = fValidSize
         self._wrongElements = abs(gValidSize - fValidSize)
 
-    def __filterResults(self, rectangles, probabilites, total, classes, h, w):
+    def __filterResults(self, rectangles, probabilites, total, classes, h, w, img=""):
         validRectangles = []
         validProbs = []
         validClasses = []
-
+        if img != "": print "\n"
         for i in range(0, total):
             box = rectangles[i]
             # Keep in mind that it is not the left and botton
@@ -316,6 +329,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             top = (bY + box.height / 2.) * h
             bot = (bY - box.height / 2.) * h
 
+
             width = box.width * w
             height = box.height * h
 
@@ -328,22 +342,24 @@ class DarknetV1Parser(ObjectDetectionParser):
             if left < 0:
                 left = 0
 
-            if (right > w - 1):
+            if right > w - 1:
                 right = w - 1
 
-            if (top < 0):
+            if top < 0:
                 top = 0
 
             if bot > h - 1:
                 bot = h - 1
 
             for j in range(0, classes):
-                if probabilites[i][j] >= self._detectionThreshold:
+                if probabilites[i][j] > self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(left=int(left), bottom=int(bot), width=int(width), height=int(height),
-                                               right=int(right), top=int(top))
+                    rect = Rectangle.Rectangle(left=int(left), bottom=int(top), width=int(width), height=int(height),
+                                               right=int(right), top=int(bot))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
+                    if "cam1-20080702-163550-587.jpg" in img:
+                        print rect
 
         return validRectangles, validProbs, validClasses
 

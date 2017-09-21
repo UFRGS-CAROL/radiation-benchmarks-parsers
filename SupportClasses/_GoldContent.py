@@ -284,11 +284,12 @@ class _GoldContent():
         boxes = np.empty(self.__totalSize, dtype=object)
 
         for i in xrange(0, self.__totalSize):
+            #prob, b.x, b.y, b.w, b.h, class_);
             line = next(spamreader)
             left = float(line[1])
             bottom = float(line[2])
-            h = float(line[3])
-            w = float(line[4])
+            w = float(line[3])
+            h = float(line[4])
             class_ = int(line[5])
 
             prob[i][class_] = float(line[0])

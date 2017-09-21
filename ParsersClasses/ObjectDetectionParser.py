@@ -177,10 +177,16 @@ class ObjectDetectionParser(Parser):
         axG.imshow(im)
         axF.imshow(im)
         # Create a Rectangle patch
+        print str(self.__class__)
         for rG in rectanglesGold:
-            rect = patches.Rectangle((rG.left, rG.bottom), rG.width,
-                                     rG.height, linewidth=1, edgecolor='g',
-                                     facecolor='none')
+            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
+                rect = patches.Rectangle((rG.left, rG.top), rG.width,
+                                         rG.height, linewidth=1, edgecolor='g',
+                                         facecolor='none')
+            else:
+                rect = patches.Rectangle((rG.left, rG.bottom), rG.width,
+                                         rG.height, linewidth=1, edgecolor='g',
+                                         facecolor='none')
 
             # Add the patch to the Axes
             axG.add_patch(rect)
@@ -188,9 +194,15 @@ class ObjectDetectionParser(Parser):
         axG.title.set_text("gold")
 
         for rF in rectanglesFound:
-            rectF = patches.Rectangle((rF.left, rF.bottom), rF.width,
-                                      rF.height, linewidth=1, edgecolor='g',
-                                      facecolor='none')
+            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
+                rectF = patches.Rectangle((rF.left, rF.top), rF.width,
+                                          rF.height, linewidth=1, edgecolor='g',
+                                          facecolor='none')
+            else:
+                rectF = patches.Rectangle((rF.left, rF.bottom), rF.width,
+                                          rF.height, linewidth=1, edgecolor='g',
+                                          facecolor='none')
+
             axF.add_patch(rectF)
         axF.title.set_text("found")
 
@@ -198,3 +210,4 @@ class ObjectDetectionParser(Parser):
         saveName = logFileName.split('.')[0] + '.jpg'
         plt.savefig(dir + '/' + saveName)
         plt.cla()
+        plt.close()
