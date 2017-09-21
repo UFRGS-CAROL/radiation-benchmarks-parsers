@@ -1,16 +1,15 @@
+import os
 import struct
-
-from ObjectDetectionParser import ObjectDetectionParser
+from Parser import Parser
 import re
 import csv
-
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
 # 0 to 9 digits
 MAX_LENET_ELEMENT = 9.0
 
 
-class LenetParser(ObjectDetectionParser):
+class LenetParser(Parser):
     __executionType = None
     __executionModel = None
 
@@ -18,9 +17,9 @@ class LenetParser(ObjectDetectionParser):
     __configFile = None
     _extendedHeader = False
 
-    __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
-    __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
-    __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
+    # __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
+    # __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
+    # __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
     # _numMaskableErrors = [0 for i in xrange(32)]
 
@@ -31,8 +30,9 @@ class LenetParser(ObjectDetectionParser):
     _errorsStdDeviation = None
     _numMaskableErrors = None
 
-    _failed_layer = None
+    _failed_layer = -1
     _errorTypeList = None
+    _abftType = 'none'
 
     # these vars will turn writetocsv easier to implement
     _sizeOfDNN = 0
@@ -49,9 +49,8 @@ class LenetParser(ObjectDetectionParser):
     }
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "precision",
-                  "recall", "abft_type", "row_detected_errors",
-                  "col_detected_errors", "failed_layer", "header"]
+                  "relative_error", "abft_type",
+                  "failed_layer", "header"]
 
     # it is only for darknet for a while
     _parseLayers = False
@@ -59,7 +58,8 @@ class LenetParser(ObjectDetectionParser):
     __layersPath = ""
 
     def __init__(self, **kwargs):
-        ObjectDetectionParser.__init__(self, **kwargs)
+        # ObjectDetectionParser.__init__(self, **kwargs)
+        Parser.__init__(self, **kwargs)
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
         self._sizeOfDNN = len(self.__layerDimensions)
@@ -84,12 +84,8 @@ class LenetParser(ObjectDetectionParser):
                           self._sdcIteration,
                           self._accIteErrors,
                           self._iteErrors,
-                          self._goldLines,
-                          self._precision,
-                          self._recall,
+                          self._minRelErr,
                           self._abftType,
-                          self._rowDetErrors,
-                          self._colDetErrors,
                           self._failed_layer,
                           self._header]
 
@@ -103,16 +99,28 @@ class LenetParser(ObjectDetectionParser):
             print "\n Crash on log ", self._logFileName
 
     def setSize(self, header):
-        # gold_file: gold_test weights: ./lenet.weights iterations: 10
-        lenetM = re.match("gold_file\: (\S+).*weights\: (\S+).*iterations\: (\d+).*", header)
+        #  gold_file: /home/carol/radiation-benchmarks/data/lenet/gold_t10k_images.test weights:
+        # /home/carol/radiation-benchmarks/data/lenet/lenet_base.weights iterations: 1000
+        lenetM = re.match(".*gold_file\: (\S+).*weights\: (\S+).*iterations\: (\d+).*", header)
         if lenetM:
-            self._size = str(lenetM.group(1))
+            self._goldFile = str(lenetM.group(1))
             self.__weights = str(lenetM.group(2))
             self._iterations = str(lenetM.group(3))
+            if 'L2' in self.__weights.upper():
+                self._abftType = 'L2'
+            elif 'L1' in self.__weights.upper():
+                self._abftType = 'L1'
+            else:
+                self._abftType = 'none'
+            self._size = os.path.basename(self._goldFile) + "_" + os.path.basename(self.__weights)
+
         else:
             self._size = ""
             self.__weights = ""
             self._iterations = ""
+            self._abftType = ""
+
+
 
     # parse lenet
     # returns a dictionary
@@ -173,17 +181,7 @@ class LenetParser(ObjectDetectionParser):
         read = errList[0]["read_first"]
         gold = errList[0]["expected_first"]
 
-        self._precision = abs(gold - read) / MAX_LENET_ELEMENT
-
-        if read == gold:
-            self._recall = 1.0
-        else:
-            self._recall = 0.0
-
-        self._goldLines = 1
-        self._abftType = "not_implemented"
-        self._rowDetErrors = 0
-        self._colDetErrors = 0
+        relativeError = abs(gold - read) / MAX_LENET_ELEMENT
 
         if self._parseLayers:
             self._img = errList[0]["img"]
@@ -199,6 +197,10 @@ class LenetParser(ObjectDetectionParser):
                                         imgListSize=1,
                                         machine=self._machine,
                                         loadLayerMethod=self.loadLayer)
+
+        return [relativeError, relativeError, relativeError, read or 0, gold or 0,
+         MAX_LENET_ELEMENT,
+         None, None, None]
 
     """
     this->in_width_ = this->load_layer_var<size_t>(in);
@@ -242,19 +244,19 @@ class LenetParser(ObjectDetectionParser):
         layerContents = struct.unpack('f' * layerDim, layerFile.read(4 * layerDim))
 
         layer = None
-        if len(self.__layerDimensions[layerNum]) == 3 :
+        if len(self.__layerDimensions[layerNum]) == 3:
             layer = self.tupleTo3DMatrix(layerContents, dim)
 
         layerFile.close()
 
         return layer
 
-
     """
     tupleTo3DMatrix
     THIS function WILL only be used inside CNNLayerParser class
     DO NOT USE THIS OUTSIDE
     """
+
     def tupleTo3DMatrix(self, layerContents, dim):
         layer = [[[0] * (dim[2] + 1)] * (dim[1] + 1)] * (dim[0] + 1)
         for i in range(0, dim[0]):
@@ -264,3 +266,14 @@ class LenetParser(ObjectDetectionParser):
                     layer[i][j][k] = layerContents[contentsIndex]
 
         return layer
+
+    def buildImageMethod(self, *args): return False
+
+    def getBenchmark(self): return self._benchmark
+
+
+    def localityParser(self):
+        pass
+
+    def jaccardCoefficient(self):
+        pass
