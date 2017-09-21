@@ -177,7 +177,7 @@ class ObjectDetectionParser(Parser):
         axG.imshow(im)
         axF.imshow(im)
         # Create a Rectangle patch
-        print str(self.__class__)
+        # print str(self.__class__)
         for rG in rectanglesGold:
             if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
                 rect = patches.Rectangle((rG.left, rG.top), rG.width,
@@ -194,6 +194,7 @@ class ObjectDetectionParser(Parser):
         axG.title.set_text("gold")
 
         for rF in rectanglesFound:
+            # darknet represents inverted coordinates
             if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
                 rectF = patches.Rectangle((rF.left, rF.top), rF.width,
                                           rF.height, linewidth=1, edgecolor='g',

@@ -258,14 +258,16 @@ class DarknetV1Parser(ObjectDetectionParser):
         h, w, c = gold.getImgDim(imgPath=imgFilename)
         gValidRects, gValidProbs, gValidClasses = self.__filterResults(rectangles=goldRt, probabilites=goldPb,
                                                                        total=gold.getTotalSize(),
-                                                                       classes=gold.getClasses(), h=h, w=w, img=imgFilename)
+                                                                       classes=gold.getClasses(), h=h, w=w)
         fValidRects, fValidProbs, fValidClasses = self.__filterResults(rectangles=foundRt, probabilites=foundPb,
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
+        # print "\nGold ---- ", gValidRects, "\nFound ----- ", fValidRects
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
+        # print "\n", self._precision, self._recall
 
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
@@ -286,8 +288,14 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
-            self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
-                                      + '_' + self._logFileName, self._imgOutputDir)
+            gValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                               right=int(i.right), top=int(i.bottom)) for i in gValidRects]
+
+            fValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                               right=int(i.right), top=int(i.bottom)) for i in fValidRects]
+
+            self.buildImageMethod(drawImgFileName, gValidRectsDraw, fValidRectsDraw, str(self._sdcIteration)
+                                  + '_' + self._logFileName, self._imgOutputDir)
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
@@ -297,7 +305,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._detectedLines = fValidSize
         self._wrongElements = abs(gValidSize - fValidSize)
 
-    def __filterResults(self, rectangles, probabilites, total, classes, h, w, img=""):
+    def __filterResults(self, rectangles, probabilites, total, classes, h, w):
         validRectangles = []
         validProbs = []
         validClasses = []
@@ -315,7 +323,6 @@ class DarknetV1Parser(ObjectDetectionParser):
             right = (bX + box.width / 2.) * w
             top = (bY + box.height / 2.) * h
             bot = (bY - box.height / 2.) * h
-
 
             width = box.width * w
             height = box.height * h
@@ -341,8 +348,8 @@ class DarknetV1Parser(ObjectDetectionParser):
             for j in range(0, classes):
                 if probabilites[i][j] > self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(left=int(left), bottom=int(top), width=int(width), height=int(height),
-                                               right=int(right), top=int(bot))
+                    rect = Rectangle.Rectangle(left=int(left), bottom=int(bot), width=int(width), height=int(height),
+                                               right=int(right), top=int(top))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
 
