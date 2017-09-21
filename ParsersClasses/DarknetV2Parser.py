@@ -1,15 +1,10 @@
 import glob
-
 import numpy
-import sys
-
 import struct
-
 from ObjectDetectionParser import ObjectDetectionParser
 import re
 import csv
 import os
-
 from SupportClasses import PrecisionAndRecall
 from SupportClasses import Rectangle
 from SupportClasses import _GoldContent
@@ -39,8 +34,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
-                  "col_detected_errors", "failed_layer", "header"]
+                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]
 
     __layerDimensions = {0: [608, 608, 32],
                          1: [304, 304, 32],
@@ -81,7 +75,8 @@ class DarknetV2Parser(ObjectDetectionParser):
     __layersPath = ""
 
     _sizeOfDnn = len(__layerDimensions)
-    _smartPooling = None
+    _smartPoolingSize = 5
+    _smartPooling = [0] * _smartPoolingSize
 
     _failedLayer = -1
 
@@ -93,9 +88,10 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         self._sizeOfDnn = len(self.__layerDimensions)
 
-        if self._smartPooling:
-            for i in self._smartPooling:
-                self._csvHeader.append("smartpooling_" + str(i))
+        # I write by default
+        self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
+        self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
+                                                        xrange(1, self._smartPoolingSize + 1)]
 
         if self._parseLayers:
             self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
@@ -127,13 +123,12 @@ class DarknetV2Parser(ObjectDetectionParser):
                       self._falsePositive,
                       self._truePositive,
                       self._abftType,
-                      self._rowDetErrors,
-                      self._colDetErrors,
-                      self._failedLayer,
-                      self._header]
+                      self._failedLayer]
 
-        if self._smartPooling:
-            outputList.extend(self._smartPooling)
+        outputList.extend([self._rowDetErrors, self._colDetErrors])
+        outputList.extend(self._smartPooling)
+
+        outputList.append(self._header)
 
         if (self._parseLayers):
             outputList.extend(self._cnnParser.getOutputToCsv())
@@ -154,21 +149,10 @@ class DarknetV2Parser(ObjectDetectionParser):
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
             return
-        # ---------------------------------------------------------------------------------------------------------------
-        # open and load gold
-        goldKey = self._machine + "_" + self._benchmark + "_" + self._size
+        gold = self._loadGold()
 
-        if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/darknetv2/" + os.path.basename(self._goldFileName)
-        else:
-            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
+        if gold == None:
             return
-
-        if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknetv2', filepath=goldPath)
-            self._goldDatasetArray[goldKey] = g
-
-        gold = self._goldDatasetArray[goldKey]
 
         # for layers parser
         self._imgListSize = gold.getPlistSize()
@@ -177,12 +161,10 @@ class DarknetV2Parser(ObjectDetectionParser):
         # this is possible since errList has at least 1 element, due verification
         try:
             imgFilename = errList[0]["img"]
-            print "first option"
         except:
             # if only detection took place
-            lines = open(self._imgListPath, "r").readlines()
-            imgIt = self._sdcIteration % self._imgListSize
-            imgFilename = lines[imgIt]
+            imgIt = int(self._sdcIteration) % int(self._imgListSize)
+            imgFilename = gold.getImgsLocationList()[imgIt]
 
         goldPb = gold.getProbArray(imgPath=imgFilename)
         goldRt = gold.getRectArray(imgPath=imgFilename)
@@ -193,9 +175,11 @@ class DarknetV2Parser(ObjectDetectionParser):
         foundRt = numpy.empty_like(goldRt)
         foundRt[:] = goldRt
 
+        self._detectionThreshold = gold.getThresh()
+
         # errors detected on smart pooling
         if self._abftType == "smart_pooling":
-            self._smartPooling = [0] * 5
+            self._smartPooling = [0] * self._smartPoolingSize
         elif self._abftType == "abraham":
             self._rowDetErrors = 0
             self._colDetErrors = 0
@@ -228,8 +212,8 @@ class DarknetV2Parser(ObjectDetectionParser):
 
 
             elif y["type"] == "abft":
-                err = y["abft"]
-                for i_prob_e in xrange(1, 5):
+                err = y["abft_det"]
+                for i_prob_e in xrange(1, self._smartPoolingSize):
                     self._smartPooling[i_prob_e] += err[i_prob_e]
 
         #############
@@ -264,11 +248,16 @@ class DarknetV2Parser(ObjectDetectionParser):
                                         loadLayerMethod=self.loadLayer)
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
-            drawImgFileName = self._localRadiationBench + "/data/CALTECH/" \
-                              + os.path.basename(imgFilename.rstrip())
+            drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
+            gValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in gValidRects]
 
-            self.buildImageMethod(drawImgFileName, gValidRects, fValidRects, str(self._sdcIteration)
+            fValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in fValidRects]
+
+            self.buildImageMethod(drawImgFileName, gValidRectsDraw, fValidRectsDraw, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
+
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
@@ -276,6 +265,24 @@ class DarknetV2Parser(ObjectDetectionParser):
         # set all
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
+        self._wrongElements = abs(gValidSize - fValidSize)
+
+    def _loadGold(self):
+        # ---------------------------------------------------------------------------------------------------------------
+        # open and load gold
+        pureMachine = self._machine.split('-ECC')[0]
+        goldKey = pureMachine + "_" + self._benchmark + "_" + self._size
+        if pureMachine in self._goldBaseDir:
+            goldPath = self._goldBaseDir[pureMachine] + "/darknet_v2/" + os.path.basename(self._goldFileName)
+        else:
+            print 'not indexed machine: ', pureMachine, " set it on Parameters.py"
+            return None
+
+        if goldKey not in self._goldDatasetArray:
+            g = _GoldContent._GoldContent(nn='darknetv2', filepath=goldPath)
+            self._goldDatasetArray[goldKey] = g
+        gold = self._goldDatasetArray[goldKey]
+        return gold
 
     def __filterResults(self, rectangles, probabilites, total, classes, h, w):
         validRectangles = []
@@ -297,10 +304,29 @@ class DarknetV2Parser(ObjectDetectionParser):
             width = box.width * w
             height = box.height * h
 
+            if width > w - 1:
+                width = w - 1
+
+            if height > h - 1:
+                height = h - 1
+
+            if left < 0:
+                left = 0
+
+            if right > w - 1:
+                right = w - 1
+
+            if top < 0:
+                top = 0
+
+            if bot > h - 1:
+                bot = h - 1
+
             for j in range(0, classes):
-                if probabilites[i][j] >= self._detectionThreshold:
+                if probabilites[i][j] > self._detectionThreshold:
                     validProbs.append(probabilites[i][j])
-                    rect = Rectangle.Rectangle(int(left), int(bot), int(width), int(height))
+                    rect = Rectangle.Rectangle(left=int(left), bottom=int(bot), width=int(width), height=int(height),
+                                               right=int(right), top=int(top))
                     validRectangles.append(rect)
                     validClasses.append(self._classes[j])
 
@@ -345,7 +371,7 @@ class DarknetV2Parser(ObjectDetectionParser):
             # ERR img: [0] prob[60][0] r:0.0000000000000000e+00 e:0.0000000000000000e+00
             ret["prob_r_i"] = int(darknetM.group(i))
             i += 1
-            ret["prob_r_j"] = int(darknetM.group(i))
+            ret["class_r_j"] = int(darknetM.group(i))
             i += 1
 
             try:
@@ -357,7 +383,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
             ret["prob_e_i"] = int(darknetM.group(i))
             i += 1
-            ret["prob_e_j"] = int(darknetM.group(i))
+            ret["class_e_j"] = int(darknetM.group(i))
             i += 1
 
             try:
@@ -428,13 +454,13 @@ class DarknetV2Parser(ObjectDetectionParser):
         m = re.match(
             ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
-        ret = {}
+        ret = [0] * self._smartPoolingSize
         if m:
-            ret[m.group(1)] = m.group(2)
-            ret[m.group(3)] = m.group(4)
-            ret[m.group(5)] = m.group(6)
-            ret[m.group(7)] = m.group(8)
-            ret[m.group(9)] = m.group(10)
+            ret[int(m.group(1))] = int(m.group(2))
+            ret[int(m.group(3))] = int(m.group(4))
+            ret[int(m.group(5))] = int(m.group(6))
+            ret[int(m.group(7))] = int(m.group(8))
+            ret[int(m.group(9))] = int(m.group(10))
 
         return ret if len(ret) > 0 else None
 

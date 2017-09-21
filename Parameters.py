@@ -27,11 +27,11 @@ LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_da
 IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
-    'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
-    'carol-k401-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
-    'carol-k201-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
-    'carol-k401-ECC-ON': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
-    'carol-k201-ECC-ON': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
+    # 'carol-ECC-ON': '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/',
+    # 'carol-k401-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
+    # 'carol-k201-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
+    'carol-k401': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
+    'carol-k201': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
 }
 
 ############################################################################################

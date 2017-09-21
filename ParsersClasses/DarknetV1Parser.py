@@ -1,14 +1,14 @@
 import numpy
 import sys
 import csv
-from math import *
+# from math import *
 from SupportClasses import Rectangle
 import os
 import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import _GoldContent
-from ObjectDetectionParser import ImageRaw
+# from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
@@ -174,21 +174,10 @@ class DarknetV1Parser(ObjectDetectionParser):
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
             return
-            # ---------------------------------------------------------------------------------------------------------------
-            # open and load gold
-        goldKey = self._machine + "_" + self._benchmark + "_" + self._size
+        gold = self._loadGold()
 
-        if self._machine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[self._machine] + "/darknet_v1/" + os.path.basename(self._goldFileName)
-        else:
-            print 'not indexed machine: ', self._machine, " set it on Parameters.py"
+        if gold == None:
             return
-
-        if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknetv1', filepath=goldPath)
-            self._goldDatasetArray[goldKey] = g
-
-        gold = self._goldDatasetArray[goldKey]
 
         # for layers parser
         self._imgListSize = gold.getPlistSize()
@@ -249,8 +238,7 @@ class DarknetV1Parser(ObjectDetectionParser):
 
             elif y["type"] == "abft":
                 err = y["abft_det"]
-                # print "\n" , err
-                for i_prob_e in xrange(1, 4):
+                for i_prob_e in xrange(1, self._smartPoolingSize):
                     self._smartPooling[i_prob_e] += err[i_prob_e]
 
         #############
@@ -304,6 +292,22 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
         self._wrongElements = abs(gValidSize - fValidSize)
+
+    def _loadGold(self):
+        # ---------------------------------------------------------------------------------------------------------------
+        # open and load gold
+        pureMachine = self._machine.split('-ECC')[0]
+        goldKey = pureMachine + "_" + self._benchmark + "_" + self._size
+        if pureMachine in self._goldBaseDir:
+            goldPath = self._goldBaseDir[pureMachine] + "/darknet_v1/" + os.path.basename(self._goldFileName)
+        else:
+            print 'not indexed machine: ', pureMachine, " set it on Parameters.py"
+            return None
+        if goldKey not in self._goldDatasetArray:
+            g = _GoldContent._GoldContent(nn='darknetv1', filepath=goldPath)
+            self._goldDatasetArray[goldKey] = g
+        gold = self._goldDatasetArray[goldKey]
+        return gold
 
     def __filterResults(self, rectangles, probabilites, total, classes, h, w):
         validRectangles = []
@@ -477,7 +481,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         m = re.match(
             ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
-        ret = [0] * 4
+        ret = [0] * self._smartPoolingSize
         if m:
             ret[int(m.group(1))] = int(m.group(2))
             ret[int(m.group(3))] = int(m.group(4))
