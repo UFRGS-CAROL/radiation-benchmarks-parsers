@@ -7,7 +7,7 @@ import os
 import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
-from SupportClasses import _GoldContent
+from SupportClasses import GoldContent
 # from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
@@ -306,7 +306,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             print 'not indexed machine: ', pureMachine, " set it on Parameters.py"
             return None
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknetv1', filepath=goldPath)
+            g = GoldContent.GoldContent(nn='darknetv1', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
         gold = self._goldDatasetArray[goldKey]
         return gold

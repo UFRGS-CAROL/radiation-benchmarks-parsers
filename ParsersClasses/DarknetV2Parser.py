@@ -7,7 +7,7 @@ import csv
 import os
 from SupportClasses import PrecisionAndRecall
 from SupportClasses import Rectangle
-from SupportClasses import _GoldContent
+from SupportClasses import GoldContent
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
 
@@ -281,7 +281,7 @@ class DarknetV2Parser(ObjectDetectionParser):
             return None
 
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknetv2', filepath=goldPath)
+            g = GoldContent.GoldContent(nn='darknetv2', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
         gold = self._goldDatasetArray[goldKey]
         return gold

@@ -4,7 +4,7 @@ import numpy
 from ObjectDetectionParser import ObjectDetectionParser
 from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
-from SupportClasses import _GoldContent
+from SupportClasses import GoldContent
 from SupportClasses import Rectangle
 
 class FasterRcnnParser(ObjectDetectionParser):
@@ -195,7 +195,7 @@ class FasterRcnnParser(ObjectDetectionParser):
             return
 
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='pyfaster', filepath=goldPath)
+            g = GoldContent.GoldContent(nn='pyfaster', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
         # else:
         #     print '\nnao passou para ', goldKey

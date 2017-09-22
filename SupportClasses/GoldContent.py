@@ -41,7 +41,7 @@ class Point(object):
         self.y = y
 
 
-class _GoldContent():
+class GoldContent():
     __plistSize = 0
     __classes = 0
     __totalSize = 0
@@ -62,8 +62,9 @@ class _GoldContent():
     __weights = ''
     __imgListPath = ''
     __nn = None
+    __csvGoldFilePath = ''
+    __pyFasterImgList = ''
 
-    pyFasterImgList = ""
 
     # imgs, doing it there is no need to open img list file
     __imgsLocationList = []
@@ -83,21 +84,21 @@ class _GoldContent():
         # use keyargs
         try:
             self.__nn = kwargs.pop("nn")
-            filePath = kwargs.pop("filepath")
+            self.__csvGoldFilePath = kwargs.pop("filepath")
 
             if "darknet" == self.__nn:
-                self.darknetConstructor(filePath=filePath)
+                self.darknetConstructor(filePath=self.__csvGoldFilePath)
             elif "pyfaster" == self.__nn:
-                self.pyFasterConstructor(filePath=filePath)
+                self.pyFasterConstructor(filePath=self.__csvGoldFilePath)
 
             elif "darknetv2" == self.__nn:
-                self.darknetV2Constructor(filePath=filePath)
+                self.darknetV2Constructor(filePath=self.__csvGoldFilePath)
 
             elif "resnet" == self.__nn:
-                self.resnetConstructor(filePath=filePath)
+                self.resnetConstructor(filePath=self.__csvGoldFilePath)
 
             elif "darknetv1" == self.__nn:
-                self.darknetV2Constructor(filePath=filePath)
+                self.darknetV2Constructor(filePath=self.__csvGoldFilePath)
 
         except:
             raise
@@ -136,14 +137,14 @@ class _GoldContent():
             return self.__prob_array[imgPath]['indexes']
 
     def getProbArray(self, **kwargs):
-        if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
-            imgPath = kwargs.pop('imgPath')
+        imgPath = kwargs.pop('imgPath')
+        if self.__nn == 'darknetv2':
+            return self.readProbsAndBoxesV2(None, imgPath)
+        elif self.__nn == 'darknetv1':
             return self.__prob_array[imgPath]['probs']
         elif self.__nn == 'resnet':
-            imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
 
-        return self.__prob_array['probs']
 
     def getImgDim(self, **kwargs):
         h = 0
@@ -279,21 +280,49 @@ class _GoldContent():
 
         csvfile.close()
 
-    def readProbsAndBoxesV2(self, spamreader):
-        prob = np.empty((self.__totalSize, self.__classes), dtype=float)
-        boxes = np.empty(self.__totalSize, dtype=object)
+    def readProbsAndBoxesV2(self, spamreader, imgFilename=None):
+        prob, boxes = None, None
+        if self.__nn == 'darknetv2' and imgFilename:
+            csvfile = open(self.__csvGoldFilePath, 'rb')
+            spamreader = csv.reader(csvfile, delimiter=';')
+            for i in spamreader:
+                if imgFilename in i[0]:
+                    break
 
-        for i in xrange(0, self.__totalSize):
-            #prob, b.x, b.y, b.w, b.h, class_);
-            line = next(spamreader)
-            left = float(line[1])
-            bottom = float(line[2])
-            w = float(line[3])
-            h = float(line[4])
-            class_ = int(line[5])
+            prob = np.empty((self.__totalSize, self.__classes), dtype=float)
+            boxes = np.empty(self.__totalSize, dtype=object)
 
-            prob[i][class_] = float(line[0])
-            boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
+            for i in xrange(0, self.__totalSize):
+                # prob, b.x, b.y, b.w, b.h, class_);
+                line = next(spamreader)
+                left = float(line[1])
+                bottom = float(line[2])
+                w = float(line[3])
+                h = float(line[4])
+                class_ = int(line[5])
+
+                prob[i][class_] = float(line[0])
+                boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
+            csvfile.close()
+        elif self.__nn == 'darknetv2' and imgFilename == None:
+            for i in xrange(0, self.__totalSize): next(spamreader)
+
+        elif self.__nn != 'darknetv2':
+            prob = np.empty((self.__totalSize, self.__classes), dtype=float)
+            boxes = np.empty(self.__totalSize, dtype=object)
+
+            for i in xrange(0, self.__totalSize):
+                #prob, b.x, b.y, b.w, b.h, class_);
+                line = next(spamreader)
+                left = float(line[1])
+                bottom = float(line[2])
+                w = float(line[3])
+                h = float(line[4])
+                class_ = int(line[5])
+
+                prob[i][class_] = float(line[0])
+                boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
+
 
         return prob, boxes
 
@@ -321,11 +350,8 @@ class _GoldContent():
 
         csvfile.close()
 
-# temp = _GoldContent(nn='resnet', filepath='/home/fernando/Dropbox/LANSCE2017/K40_gold/resnet_torch/gold.voc.2012.1K.csv')
-# #
-#
-# prob = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_003258.jpg')
 
-# boxes = temp.getProbArray(imgPath='/home/fernando/git_pesquisa/radiation-benchmarks/data/CALTECH_CRITICAL/set06/V001/1351.jpg')[1]
-# for i in boxes:
-#     print i
+#debug
+# temp = GoldContent(nn='darknetv2', filepath='/home/fernando/Dropbox/LANSCE2017/K20_gold/darknet_v2/darknet_v2_gold.voc.2012.1K.csv')
+# prob, boxes = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_003258.jpg')
+# print prob[1], boxes[1]

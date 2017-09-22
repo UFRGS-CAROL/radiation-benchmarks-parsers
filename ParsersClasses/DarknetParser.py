@@ -7,7 +7,7 @@ import os
 import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
-from SupportClasses import _GoldContent
+from SupportClasses import GoldContent
 from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 
@@ -786,7 +786,7 @@ class DarknetParser(ObjectDetectionParser):
             return
 
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='darknet', filepath=goldPath)
+            g = GoldContent.GoldContent(nn='darknet', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
 
         gold = self._goldDatasetArray[goldKey]

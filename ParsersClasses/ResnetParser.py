@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import confusion_matrix
 from ObjectDetectionParser import ObjectDetectionParser
-from SupportClasses import _GoldContent
+from SupportClasses import GoldContent
 import re
 import csv
 
@@ -157,7 +157,7 @@ class ResnetParser(ObjectDetectionParser):
             return None
 
         if goldKey not in self._goldDatasetArray:
-            g = _GoldContent._GoldContent(nn='resnet', filepath=goldPath)
+            g = GoldContent.GoldContent(nn='resnet', filepath=goldPath)
             self._goldDatasetArray[goldKey] = g
 
         # ---------------------------------------------------------------------------------------------------------------
