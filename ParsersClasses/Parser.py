@@ -161,7 +161,7 @@ class Parser():
                 #to check the delimiter
                 dialect = csv.Sniffer().sniff(csvObjFile.read(), delimiters=';,')
                 csvObjFile.seek(0)
-                readerTwo = csv.DictReader(csvObjFile, dialect=dialect)
+                readerTwo = csv.reader(csvObjFile, dialect=dialect)
                 self._checkRunsCsv[board_key]["data"] = [i for i in readerTwo]
                 csvObjFile.close()
                 # ----------------
@@ -559,15 +559,21 @@ class Parser():
             # assuming microsecond = 0
             currDate = datetime(int(year), int(month), int(day), int(hour), int(minutes), int(second))
             for j in currentData:
-                startDate = j["start timestamp"]
-                endDate = j["end timestamp"]
-                validBench = j["benchmark"] in self._benchmark or self._benchmark in j["benchmark"]
+                # startDate = j["start timestamp"]
+                # endDate = j["end timestamp"]
+                # doing it I can use daniel raw summaries-fission.csv file
+                try:
+                    startDate = j[0]
+                    endDate = j[1]
+                    validBench = j[2] in self._benchmark or self._benchmark in j[2]
 
-                startDate = datetime.strptime(startDate, "%c")
-                endDate = datetime.strptime(endDate, "%c")
-                if startDate <= currDate <= endDate and validBench:
-                    # print "\nstart date ", startDate , " enddate ", endDate, " currDate ", currDate
-                    return True
+                    startDate = datetime.strptime(startDate, "%c")
+                    endDate = datetime.strptime(endDate, "%c")
+                    if startDate <= currDate <= endDate and validBench:
+                        # print "\nstart date ", startDate , " enddate ", endDate, " currDate ", currDate
+                        return True
+                except:
+                    pass
 
         return False
 

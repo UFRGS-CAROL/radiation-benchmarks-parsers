@@ -229,6 +229,8 @@ class DarknetV2Parser(ObjectDetectionParser):
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
+        if gValidSize > 200 or fValidSize > 200:
+            return
 
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()

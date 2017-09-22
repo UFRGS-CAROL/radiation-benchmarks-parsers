@@ -89,39 +89,18 @@ LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-b
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory
 SUMMARIES_FILES = {
-    'carol-k402_ecc_on': {
-        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
-            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
-            'k402_ecc_on.csv', 'data': None},
-    'carol-k401_ecc_on': {
-        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
-            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
-            'k402_ecc_on.csv', 'data': None},
-
-    "carol-k401-ECC-OFF": {
-        'csv':  # '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-            '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_10_2016/'
-            # 'logs_parsed_k40_ecc_on/summaries_k40_ecc_on.csv', 'data': None},
-            'k402_ecc_on.csv', 'data': None},
-    # 'carol-k402': {
-    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-    #            'logs_parsed_k40_ecc_off/summaries_k40_ecc_off.csv', 'data': None},
-    # 'carol-tx': {
-    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-    #            'logs_parsed_titan_ecc_off/summaries_titan.csv', 'data': None},
-    #
-    # 'carolx1a': {
-    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
-    #
-    # 'carolx1b': {
-    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
-    # 'carolx1c': {
-    #     'csv': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/DATASHEETS/CROSSECTION_RESULTS/logs_parsed_lanl/'
-    #            'logs_parsed_parsed_x1/summaries_x1.csv', 'data': None},
+    'carol-k401-ECC-OFF': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
+    'carol-k201-ECC-OFF': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
+    'carol-k401-ECC-ON': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
+    'carol-k201-ECC-ON': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
 }
 
 ###############################################################################################

@@ -82,7 +82,7 @@ class ResnetParser(ObjectDetectionParser):
             self._imgListPath = ""
             self._goldFileName = ""
 
-        self._size = self.__weights + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(
+        self._size = os.path.basename(self.__weights) + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(
             self._goldFileName)
 
     # parse Darknet

@@ -251,11 +251,13 @@ class DarknetV1Parser(ObjectDetectionParser):
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
+
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         # print "\nGold ---- ", gValidRects, "\nFound ----- ", fValidRects
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
-        # print "\n", self._precision, self._recall
+        if gValidSize > 200 or fValidSize > 200:
+            return
 
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()

@@ -181,7 +181,7 @@ class LenetParser(Parser):
         read = errList[0]["read_first"]
         gold = errList[0]["expected_first"]
 
-        relativeError = abs(gold - read) / MAX_LENET_ELEMENT
+        self._minRelErr = abs(gold - read) / MAX_LENET_ELEMENT
 
         if self._parseLayers:
             self._img = errList[0]["img"]
@@ -198,9 +198,9 @@ class LenetParser(Parser):
                                         machine=self._machine,
                                         loadLayerMethod=self.loadLayer)
 
-        return [relativeError, relativeError, relativeError, read or 0, gold or 0,
-         MAX_LENET_ELEMENT,
-         None, None, None]
+
+    def relativeErrorParser(self):
+        self._relativeErrorParser(self._errors["errorsParsed"])
 
     """
     this->in_width_ = this->load_layer_var<size_t>(in);
