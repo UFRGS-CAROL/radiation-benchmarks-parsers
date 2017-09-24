@@ -115,48 +115,44 @@ class DarknetV1Parser(ObjectDetectionParser):
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
-        try:
-            csvWFP = open(csvFileName, "a")
-            writer = csv.writer(csvWFP, delimiter=';')
-            # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
-            #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
-            #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
-            #     "precision", "recall", "false_negative", "false_positive",
-            #     "true_positive", "abft_type", "row_detected_errors",
-            #     "col_detected_errors", "failed_layer", "header"]
-            outputList = [self._logFileName,
-                          self._machine,
-                          self._benchmark,
-                          self._sdcIteration,
-                          self._accIteErrors,
-                          self._iteErrors,
-                          self._goldLines,
-                          self._detectedLines,
-                          self._wrongElements,
-                          # self._xCenterOfMass,
-                          # self._yCenterOfMass,
-                          self._precision,
-                          self._recall,
-                          self._falseNegative,
-                          self._falsePositive,
-                          self._truePositive,
-                          self._abftType,
-                          self._failedLayer]
+        csvWFP = open(csvFileName, "a")
+        writer = csv.writer(csvWFP, delimiter=';')
+        # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
+        #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
+        #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
+        #     "precision", "recall", "false_negative", "false_positive",
+        #     "true_positive", "abft_type", "row_detected_errors",
+        #     "col_detected_errors", "failed_layer", "header"]
+        outputList = [self._logFileName,
+                      self._machine,
+                      self._benchmark,
+                      self._sdcIteration,
+                      self._accIteErrors,
+                      self._iteErrors,
+                      self._goldLines,
+                      self._detectedLines,
+                      self._wrongElements,
+                      # self._xCenterOfMass,
+                      # self._yCenterOfMass,
+                      self._precision,
+                      self._recall,
+                      self._falseNegative,
+                      self._falsePositive,
+                      self._truePositive,
+                      self._abftType,
+                      self._failedLayer]
 
-            outputList.extend([self._rowDetErrors, self._colDetErrors])
-            outputList.extend(self._smartPooling)
+        outputList.extend([self._rowDetErrors, self._colDetErrors])
+        outputList.extend(self._smartPooling)
 
-            outputList.append(self._header)
+        outputList.append(self._header)
 
-            if self._parseLayers:
-                outputList.extend(self._cnnParser.getOutputToCsv())
+        if self._parseLayers:
+            outputList.extend(self._cnnParser.getOutputToCsv())
 
-            writer.writerow(outputList)
-            csvWFP.close()
+        writer.writerow(outputList)
+        csvWFP.close()
 
-        except:
-            print "\n Crash on log ", self._logFileName
-            # raise
 
     def setSize(self, header):
         # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
