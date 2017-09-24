@@ -261,7 +261,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
-
+        print "\n", self._saveLayer
         if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
@@ -512,7 +512,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
-            layerFilename = self.__layersGoldPath + os.path.basename(self._imgListPath) + "+_darknet_v1_gold_layer" + str(layerNum) + "_img_" + str(
+            layerFilename = self.__layersGoldPath + os.path.basename(self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
         print "\n", layerFilename
