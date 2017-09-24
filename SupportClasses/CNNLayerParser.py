@@ -37,6 +37,9 @@ class CNNLayerParser():
     _numCorrectableErrors = None
     _errorTypeList = None
 
+    # set to true if you want debug
+    __debug = False
+
     """
     Constructor
     layersDimention : A dict that will have for each layer its 3D dimentions, like this
@@ -94,6 +97,7 @@ class CNNLayerParser():
     def _getNumCorrectableErrorsHeaderName(self, layerNum):
         correctableHeaderName = 'layer' + str(layerNum) + 'CorrectableErrorsNum'
         return correctableHeaderName
+
 
     def _errorTypeToString(self, errorType):
         if len(errorType) == 0:
@@ -462,7 +466,7 @@ class CNNLayerParser():
             if layer is None and len(self.__layerDimentions[i]) != 0:
                 print(self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found')
                 logsNotFound = True
-                break
+                continue
             elif gold is None and len(self.__layerDimentions[i]) != 0:
                 print('gold ' + str(i) + ' log not found')
                 goldsNotFound = True
@@ -498,7 +502,7 @@ class CNNLayerParser():
                     self._biggestError['newErrors'][i] = self._biggestError['allErrors'][i]
                     self._errorsAverage['newErrors'][i] = self._errorsAverage['allErrors'][i]
                     self._errorsStdDeviation['newErrors'][i] = self._errorsStdDeviation['allErrors'][i]
-                if (False):  # i == 31):
+                if (self.__debug):  # i == 31):
                     print('\nlogName : ' + self._logFileName)
                     print('numErrors camada ' + str(i) + ' :: ' + str(len(layerErrorList)))
                     print('smallestError camada ' + str(i) + ' :: ' + str(smallest))
