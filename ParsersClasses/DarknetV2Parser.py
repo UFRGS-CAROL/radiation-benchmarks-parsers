@@ -140,10 +140,10 @@ class DarknetV2Parser(ObjectDetectionParser):
         ##HEADER gold_file: temp.csv save_layer: 1 abft_type: 0 iterations: 1
         sizeM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
         if sizeM:
-            self._goldFileName = sizeM.group(1)
-            self._saveLayer = sizeM.group(2)
-            self._abftType = sizeM.group(3)
-            self._iterations = sizeM.group(4)
+            self._goldFileName = str(sizeM.group(1))
+            self._saveLayer = bool(sizeM.group(2))
+            self._abftType = str(sizeM.group(3))
+            self._iterations = int(sizeM.group(4))
         self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
@@ -239,7 +239,7 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        if self._parseLayers:
+        if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
              logFilename = the name of the log file

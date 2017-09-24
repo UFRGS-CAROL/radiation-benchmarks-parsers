@@ -262,7 +262,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        if self._parseLayers:
+        if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
              logFilename = the name of the log file
