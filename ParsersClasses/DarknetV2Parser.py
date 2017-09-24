@@ -166,8 +166,9 @@ class DarknetV2Parser(ObjectDetectionParser):
             imgIt = int(self._sdcIteration) % int(self._imgListSize)
             imgFilename = gold.getImgsLocationList()[imgIt]
 
-        goldPb = gold.getProbArray(imgPath=imgFilename)
-        goldRt = gold.getRectArray(imgPath=imgFilename)
+        goldPb, goldRt = gold.getProbArray(imgPath=imgFilename)
+        # goldRt = gold.getRectArray(imgPath=imgFilename)
+        # print "Inside relative error parser ", goldPb[0], goldRt[0]
 
         foundPb = numpy.empty_like(goldPb)
         foundPb[:] = goldPb
@@ -178,11 +179,9 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._detectionThreshold = gold.getThresh()
 
         # errors detected on smart pooling
-        if self._abftType == "smart_pooling":
-            self._smartPooling = [0] * self._smartPoolingSize
-        elif self._abftType == "abraham":
-            self._rowDetErrors = 0
-            self._colDetErrors = 0
+        self._smartPooling = [0] * self._smartPoolingSize
+        self._rowDetErrors = 0
+        self._colDetErrors = 0
 
         for y in errList:
             if y["type"] == "err":
@@ -230,6 +229,10 @@ class DarknetV2Parser(ObjectDetectionParser):
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
         if gValidSize > 200 or fValidSize > 200:
+            print "\nFuck, it's here", gValidSize, fValidSize
+            # for i in xrange(1,10):
+            #     print gValidRects[i]
+            print h, w, c
             return
 
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)

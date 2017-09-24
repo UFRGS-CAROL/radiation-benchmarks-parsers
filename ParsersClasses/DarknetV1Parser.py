@@ -203,11 +203,9 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._detectionThreshold = gold.getThresh()
 
         # errors detected on smart pooling
-        if self._abftType == "smart_pooling":
-            self._smartPooling = [0] * self._smartPoolingSize
-        elif self._abftType == "abraham":
-            self._rowDetErrors = 0
-            self._colDetErrors = 0
+        self._smartPooling = [0] * self._smartPoolingSize
+        self._rowDetErrors = 0
+        self._colDetErrors = 0
 
         for y in errList:
             if y["type"] == "err":
@@ -257,6 +255,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
         if gValidSize > 200 or fValidSize > 200:
+            print "\nFuck, it's here"
             return
 
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)

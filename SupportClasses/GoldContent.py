@@ -124,6 +124,9 @@ class GoldContent():
     def getImgsLocationList(self):
         return self.__imgsLocationList
 
+    def getGoldCsvName(self):
+        return self.__csvGoldFilePath
+
     def getRectArray(self, **kwargs):
         if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
             imgPath = kwargs.pop('imgPath')
@@ -287,14 +290,17 @@ class GoldContent():
             spamreader = csv.reader(csvfile, delimiter=';')
             for i in spamreader:
                 if imgFilename in i[0]:
+                    # print imgFilename
                     break
 
             prob = np.empty((self.__totalSize, self.__classes), dtype=float)
             boxes = np.empty(self.__totalSize, dtype=object)
-
+            prob.fill(0)
+            boxes.fill(0)
             for i in xrange(0, self.__totalSize):
                 # prob, b.x, b.y, b.w, b.h, class_);
                 line = next(spamreader)
+
                 left = float(line[1])
                 bottom = float(line[2])
                 w = float(line[3])
@@ -303,6 +309,10 @@ class GoldContent():
 
                 prob[i][class_] = float(line[0])
                 boxes[i] = Rectangle.Rectangle(left, bottom, w, h)
+            #     if i == 0:
+            #         print left, bottom, w, h, class_
+            # print "On read probs and boxes method", prob[0], boxes[0]
+
             csvfile.close()
         elif self.__nn == 'darknetv2' and imgFilename == None:
             for i in xrange(0, self.__totalSize): next(spamreader)
@@ -310,7 +320,8 @@ class GoldContent():
         elif self.__nn != 'darknetv2':
             prob = np.empty((self.__totalSize, self.__classes), dtype=float)
             boxes = np.empty(self.__totalSize, dtype=object)
-
+            prob.fill(0)
+            boxes.fill(0)
             for i in xrange(0, self.__totalSize):
                 #prob, b.x, b.y, b.w, b.h, class_);
                 line = next(spamreader)
@@ -354,4 +365,5 @@ class GoldContent():
 #debug
 # temp = GoldContent(nn='darknetv2', filepath='/home/fernando/Dropbox/LANSCE2017/K20_gold/darknet_v2/darknet_v2_gold.voc.2012.1K.csv')
 # prob, boxes = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_003258.jpg')
-# print prob[1], boxes[1]
+# for i in zip(prob, boxes):
+#     if i[0][0]: print i
