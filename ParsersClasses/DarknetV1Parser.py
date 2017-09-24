@@ -163,7 +163,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
         if darknetM:
             self._goldFileName = darknetM.group(1)
-            self._saveLayer = bool(darknetM.group(2))
+            self._saveLayer = True if darknetM.group(2) == 1 else False
             self._abftType = darknetM.group(3)
             self._iterations = darknetM.group(4)
 
