@@ -513,6 +513,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             layerFilename = self.__layersGoldPath + "gold_layer_darknet_v1_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
+        print layerFilename
         filenames = glob.glob(layerFilename)
 
         if (len(filenames) == 0):
