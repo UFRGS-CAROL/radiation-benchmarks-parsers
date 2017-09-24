@@ -270,6 +270,7 @@ class DarknetV1Parser(ObjectDetectionParser):
              machine = testing device
              loadLayerMethod = an external method which open an specific layer on an external class
             """
+            self._imgListPath = gold.getImgListPath()
             self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
                                         logFilename=self._logFileName,
                                         machine=self._machine,
@@ -502,18 +503,19 @@ class DarknetV1Parser(ObjectDetectionParser):
     def loadLayer(self, layerNum, isGold=False):
         # it is better to programing one function only than two almost equal
         imgListpos = int(self._sdcIteration) % self._imgListSize
+
         if isGold:
-            # 2017_07_28_19_21_26_cudaDarknetv2_ECC_ON_carol.log_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersPath + self._logFileName + "_layer_" + str(layerNum) + "_img_" + str(
+            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
+            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
         else:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
-            # gold_layers/gold_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersGoldPath + "gold_layer_darknet_v1_" + str(layerNum) + "_img_" + str(
+            # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
+            layerFilename = self.__layersGoldPath + os.path.basename(self._imgListPath) + "+_darknet_v1_gold_layer" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
-        print layerFilename
+        print "\n", layerFilename
         filenames = glob.glob(layerFilename)
 
         if (len(filenames) == 0):
