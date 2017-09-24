@@ -147,7 +147,7 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         outputList.append(self._header)
 
-        if self._parseLayers:
+        if self._parseLayers and self._saveLayer:
             outputList.extend(self._cnnParser.getOutputToCsv())
 
         writer.writerow(outputList)
