@@ -130,8 +130,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknet':
             benchObj = DarknetParser.DarknetParser(parseLayers=parse_layers,
                                                    prThreshold=pr_threshold,
-                                                   layersGoldPath=LAYERS_GOLD_PATH,
-                                                   layersPath=LAYERS_PATH,
+                                                   layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
+                                                   layersPath=LAYERS_PATH_DARKNETV1,
                                                    imgOutputDir=IMG_OUTPUT_DIR,
                                                    localRadiationBench=LOCAL_RADIATION_BENCH,
                                                    check_csv=checkCsv,
@@ -144,8 +144,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknetv1':
             benchObj = DarknetV1Parser.DarknetV1Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
-                                                       layersGoldPath=LAYERS_GOLD_PATH,
-                                                       layersPath=LAYERS_PATH,
+                                                       layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
+                                                       layersPath=LAYERS_PATH_DARKNETV1,
                                                        imgOutputDir=IMG_OUTPUT_DIR,
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
@@ -155,8 +155,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknetv2':
             benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
-                                                       layersGoldPath=LAYERS_GOLD_PATH,
-                                                       layersPath=LAYERS_PATH,
+                                                       layersGoldPath=LAYERS_GOLD_PATH_DARKNETV2,
+                                                       layersPath=LAYERS_PATH_DARKNETV2,
                                                        imgOutputDir=IMG_OUTPUT_DIR,
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
