@@ -503,17 +503,17 @@ class DarknetV1Parser(ObjectDetectionParser):
         imgListpos = int(self._sdcIteration) % self._imgListSize
 
         if isGold:
-            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
-            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(
-                layerNum) + "_img_" + str(
-                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
-        else:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
             layerFilename = self.__layersGoldPath + os.path.basename(
                 self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
+        else:
+            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
+            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(
+                layerNum) + "_img_" + str(
+                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
 
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:
@@ -521,7 +521,6 @@ class DarknetV1Parser(ObjectDetectionParser):
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
 
-        print filenames
 
         filename = filenames[0]
         layerSize = self.getSizeOfLayer(layerNum)
