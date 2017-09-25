@@ -517,10 +517,10 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         print "\n", layerFilename
         filenames = glob.glob(layerFilename)
-
-        if (len(filenames) == 0):
+        print filenames
+        if len(filenames) == 0:
             return None
-        elif (len(filenames) > 1):
+        elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
 
         filename = filenames[0]

@@ -469,7 +469,6 @@ class CNNLayerParser():
                 continue
             elif gold is None and len(self.__layerDimentions[i]) != 0:
                 print('gold ' + str(i) + ' log not found')
-                print "Passou aqui"
                 goldsNotFound = True
                 break
             else:
