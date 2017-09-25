@@ -153,7 +153,6 @@ class DarknetV1Parser(ObjectDetectionParser):
         writer.writerow(outputList)
         csvWFP.close()
 
-
     def setSize(self, header):
         # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
         darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
@@ -163,11 +162,12 @@ class DarknetV1Parser(ObjectDetectionParser):
             self._saveLayer = True if darknetM.group(2) == 1 else False
             self._abftType = darknetM.group(3)
             self._iterations = darknetM.group(4)
-
+            print "\n", self._saveLayer, darknetM.group(2)
 
         # return self.__imgListFile
         # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
-        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_save_layer_" + str(self._saveLayer) + "_abft_" + str(self._abftType)
+        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_save_layer_" + str(
+            self._saveLayer) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
@@ -247,7 +247,6 @@ class DarknetV1Parser(ObjectDetectionParser):
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
-
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         # print "\nGold ---- ", gValidRects, "\nFound ----- ", fValidRects
         gValidSize = len(gValidRects)
@@ -276,11 +275,13 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
-            gValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
-                                               right=int(i.right), top=int(i.bottom)) for i in gValidRects]
+            gValidRectsDraw = [
+                Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in gValidRects]
 
-            fValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
-                                               right=int(i.right), top=int(i.bottom)) for i in fValidRects]
+            fValidRectsDraw = [
+                Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in fValidRects]
 
             self.buildImageMethod(drawImgFileName, gValidRectsDraw, fValidRectsDraw, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
@@ -504,13 +505,15 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         if isGold:
             # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
-            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(layerNum) + "_img_" + str(
+            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(
+                layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
         else:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
-            layerFilename = self.__layersGoldPath + os.path.basename(self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
+            layerFilename = self.__layersGoldPath + os.path.basename(
+                self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
         print "\n", layerFilename
