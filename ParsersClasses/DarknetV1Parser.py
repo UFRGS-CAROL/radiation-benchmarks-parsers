@@ -157,15 +157,17 @@ class DarknetV1Parser(ObjectDetectionParser):
     def setSize(self, header):
         # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
         darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
+
         if darknetM:
             self._goldFileName = darknetM.group(1)
             self._saveLayer = True if darknetM.group(2) == 1 else False
             self._abftType = darknetM.group(3)
             self._iterations = darknetM.group(4)
 
+
         # return self.__imgListFile
         # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
-        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
+        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_save_layer_" + str(self._saveLayer) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
@@ -257,7 +259,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
-        print "\n", self._saveLayer
+
         if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
