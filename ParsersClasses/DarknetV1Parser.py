@@ -159,10 +159,9 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         if darknetM:
             self._goldFileName = darknetM.group(1)
-            self._saveLayer = True if darknetM.group(2) == 1 else False
+            self._saveLayer = True if int(darknetM.group(2)) == 1 else False
             self._abftType = darknetM.group(3)
             self._iterations = darknetM.group(4)
-            print "\n", self._saveLayer, darknetM.group(2)
 
         # return self.__imgListFile
         # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
