@@ -515,7 +515,6 @@ class DarknetV1Parser(ObjectDetectionParser):
                 layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
 
-            print "\n", layerFilename
 
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:

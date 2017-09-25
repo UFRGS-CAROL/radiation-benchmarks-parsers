@@ -464,7 +464,7 @@ class CNNLayerParser():
             gold = loadLayer(i, True)
 
             if layer is None and len(self.__layerDimentions[i]) != 0:
-                print "\n", self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found'
+                # print "\n", self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found'
                 logsNotFound = True
                 continue
             elif gold is None and len(self.__layerDimentions[i]) != 0:
