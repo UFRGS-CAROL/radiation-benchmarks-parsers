@@ -515,13 +515,13 @@ class DarknetV1Parser(ObjectDetectionParser):
                 self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
 
-        print "\n", layerFilename
         filenames = glob.glob(layerFilename)
-        print filenames
         if len(filenames) == 0:
             return None
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
+
+        print filenames
 
         filename = filenames[0]
         layerSize = self.getSizeOfLayer(layerNum)
