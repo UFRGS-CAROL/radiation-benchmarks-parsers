@@ -471,7 +471,7 @@ class CNNLayerParser():
         self._errorTypeList = [[] for i in range(0, self._sizeOfDNN)]
 
         for i in range(0, self._sizeOfDNN):
-            print '\n----layer ' + str(i) + ' :'
+            # print '\n----layer ' + str(i) + ' :'
             layer = loadLayer(i)
             gold = loadLayer(i, True)
 
