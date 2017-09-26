@@ -348,7 +348,7 @@ class CNNLayerParser():
     """
 
     def _getGroupedNumCorrectableErrors(self, layerErrorList):
-        print "Passou aqui\n\n\n"
+        # print "Passou aqui\n\n\n"
         tic = time.clock()
         numCorrectableErrors = 0
         for layerError in layerErrorList:
@@ -359,7 +359,7 @@ class CNNLayerParser():
         ##DEBUG
         # print "\nDEBUG\nlayerErrorList:\n" + str(layerErrorList)
         # print "numCorrectableErrors: " + str(numCorrectableErrors)
-        print "IT IS SPENDING FUCKING", time.clock() - tic, "SECONDS"
+        # print "IT IS SPENDING FUCKING", time.clock() - tic, "SECONDS"
         return numCorrectableErrors
 
     # retorna o numero de erros corrigiveis por smartpooling
@@ -367,12 +367,11 @@ class CNNLayerParser():
         tic = time.clock()
         sortedLayerErrorList = sorted(layerErrorList, key=lambda layerError: layerError[2])  # zPos
         numCorrectableErrors = 0
-        print "Sort is spending ", time.clock() - tic, " vector size ", len(sortedLayerErrorList)
+        # print "Sort is spending ", time.clock() - tic, " vector size ", len(sortedLayerErrorList)
         # debug
         currentZ = -20  # iterador
         currentLayerErrorList = [] #numpy.empty(len(sortedLayerErrorList), dtype=list)
         tic = time.clock()
-        i = 0
         for layerError in sortedLayerErrorList:
             if currentZ == -20:  # primeiro item da lista
                 # currentLayerErrorList[i] = layerError
@@ -388,9 +387,8 @@ class CNNLayerParser():
                 currentLayerErrorList = []
                 i = 0
                 currentLayerErrorList.append(layerError)
-            i += 1
         numCorrectableErrors += self._getGroupedNumCorrectableErrors(currentLayerErrorList)
-        print "other procedure is spending", time.clock() - tic
+        # print "other procedure is spending", time.clock() - tic
         return numCorrectableErrors
 
     # layerError :: xPos, yPos, zPos, found(?), expected(?)
