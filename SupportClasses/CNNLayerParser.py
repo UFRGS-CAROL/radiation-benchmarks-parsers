@@ -370,7 +370,7 @@ class CNNLayerParser():
         print "Sort is spending ", time.clock() - tic, " vector size ", len(sortedLayerErrorList)
         # debug
         currentZ = -20  # iterador
-        currentLayerErrorList = numpy.empty(len(sortedLayerErrorList), dtype=None)
+        currentLayerErrorList = numpy.empty(len(sortedLayerErrorList), dtype=list)
         tic = time.clock()
         i = 0
         for layerError in sortedLayerErrorList:
