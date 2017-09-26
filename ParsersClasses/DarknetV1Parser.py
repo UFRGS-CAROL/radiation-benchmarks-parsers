@@ -171,7 +171,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             self._saveLayer) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
-        if len(errList) == 0 or '2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log' not in self._logFileName:
+        if len(errList) == 0:
             return
         gold = self._loadGold()
 
