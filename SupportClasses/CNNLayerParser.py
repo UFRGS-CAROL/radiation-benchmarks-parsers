@@ -42,6 +42,9 @@ class CNNLayerParser():
     # set to true if you want debug
     __debug = False
 
+    # maxpool layers, to check correctable errors
+    __maxpoolLayers = []
+
     """
     Constructor
     layersDimention : A dict that will have for each layer its 3D dimentions, like this
@@ -58,6 +61,7 @@ class CNNLayerParser():
 
         self._sizeOfDNN = kwargs.pop("dnnSize")
         self._correctableLayers = kwargs.pop("correctableLayers")
+        self.__maxpoolLayers  = kwargs.pop("maxPoolLayers")
 
     def genCsvHeader(self):
         csvHeader = []
@@ -428,11 +432,10 @@ class CNNLayerParser():
             stdDeviation = numpy.std(relativeErrorsList)
 
         # calculando numCorrectableErrors:
-        # TODO: it will work only for darknetv1, must change in a generic way
-        if numLayer in [0, 2, 7, 18] and layerErrorList != []:  # layers logo antes dos maxpooling
-            tic = time.clock()
-            numCorrectableErrors = self._getNumCorrectableErrors(layerErrorList)
-            print "getNumCorrectableErrors time ", time.clock() - tic
+        if numLayer in self.__maxpoolLayers and layerErrorList != []:  # layers logo antes dos maxpooling
+            # tic = time.clock()
+            numCorrectableErrors = 0 #self._getNumCorrectableErrors(layerErrorList)
+            # print "getNumCorrectableErrors time ", time.clock() - tic
         # print('debug numMaskableErrors: ' + str(numMaskableErrors))
         return smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors
 
@@ -551,7 +554,7 @@ class CNNLayerParser():
     """
 
     def __localityParser(self, dim, i, layerErrorList):
-        print "inside locality"
+        # print "inside locality"
         # no size
         if dim == 0:
             print "Layer has no size "

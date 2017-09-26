@@ -14,6 +14,9 @@ from SupportClasses import GoldContent
 from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
+from operator import add
+
+MAX_NUM_OF_OBJECTS = 100
 
 class DarknetV1Parser(ObjectDetectionParser):
     __executionType = None
@@ -106,7 +109,8 @@ class DarknetV1Parser(ObjectDetectionParser):
                 self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
                                                  layerGoldPath=self.__layersGoldPath,
                                                  layerPath=self.__layersPath, dnnSize=self._sizeOfDnn,
-                                                 correctableLayers=[])
+                                                 correctableLayers=[],
+                                                 maxPoolLayers=[0, 2, 7, 18])
 
                 self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
@@ -149,8 +153,8 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         outputList.append(self._header)
 
-        # if self._parseLayers and self._saveLayer:
-        #     outputList.extend(self._cnnParser.getOutputToCsv())
+        if self._parseLayers and self._saveLayer:
+            outputList.extend(self._cnnParser.getOutputToCsv())
 
         writer.writerow(outputList)
         csvWFP.close()
@@ -234,9 +238,9 @@ class DarknetV1Parser(ObjectDetectionParser):
 
 
             elif y["type"] == "abft":
-                err = y["abft_det"]
-                for i_prob_e in xrange(1, self._smartPoolingSize):
-                    self._smartPooling[i_prob_e] += err[i_prob_e]
+                # for i_prob_e in xrange(1, self._smartPoolingSize):
+                #     self._smartPooling[i_prob_e] += err[i_prob_e]
+                self._smartPooling = map(add, self._smartPooling, y["abft_det"])
 
         #############
         # before keep going is necessary to filter the results
@@ -252,7 +256,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         # print "\nGold ---- ", gValidRects, "\nFound ----- ", fValidRects
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
-        if gValidSize > 200 or fValidSize > 200:
+        if gValidSize > MAX_NUM_OF_OBJECTS:
             print "\nFuck, it's here"
             return
 
@@ -260,7 +264,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        tic = time.clock()
+        # tic = time.clock()
         if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
@@ -274,8 +278,7 @@ class DarknetV1Parser(ObjectDetectionParser):
                                         logFilename=self._logFileName,
                                         machine=self._machine,
                                         loadLayer=self.loadLayer)
-            print "\nTime spent on parsing layers", time.clock() - tic
-
+            # print "\nTime spent on parsing layers", time.clock() - tic
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
@@ -484,7 +487,8 @@ class DarknetV1Parser(ObjectDetectionParser):
     def __processAbft(self, errString):
         # #INF error_detected[0]: 0 error_detected[1]: 13588 error_detected[2]: 8650 error_detected[3]: 141366
         m = re.match(
-            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
+            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: "
+            "(\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
         ret = [0] * self._smartPoolingSize
         if m:
@@ -493,7 +497,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             ret[int(m.group(5))] = int(m.group(6))
             ret[int(m.group(7))] = int(m.group(8))
 
-        return ret if len(ret) > 0 else None
+        return ret
 
     # ---------------------------------------------------------------------------------------------------------------------
     """
@@ -526,7 +530,6 @@ class DarknetV1Parser(ObjectDetectionParser):
             return None
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
-
 
         filename = filenames[0]
         layerSize = self.getSizeOfLayer(layerNum)
