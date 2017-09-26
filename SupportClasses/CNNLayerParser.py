@@ -370,23 +370,24 @@ class CNNLayerParser():
         print "Sort is spending ", time.clock() - tic, " vector size ", len(sortedLayerErrorList)
         # debug
         currentZ = -20  # iterador
-        currentLayerErrorList = numpy.empty(len(sortedLayerErrorList), dtype=list)
+        currentLayerErrorList = [] #numpy.empty(len(sortedLayerErrorList), dtype=list)
         tic = time.clock()
         i = 0
         for layerError in sortedLayerErrorList:
             if currentZ == -20:  # primeiro item da lista
-                currentLayerErrorList[i] = layerError
+                # currentLayerErrorList[i] = layerError
+                currentLayerErrorList.append(layerError)
                 currentZ = layerError[2]
             elif currentZ > layerError[2]:
                 print "\nERRO que nao era pra acontecer: getNumCorrectableErrors"
             elif currentZ == layerError[2]:
-                currentLayerErrorList[i] = layerError
+                currentLayerErrorList.append(layerError)
             elif currentZ < layerError[2]:
                 numCorrectableErrors += self._getGroupedNumCorrectableErrors(currentLayerErrorList)
                 currentZ = layerError[2]
-                currentLayerErrorList.fill(None)
+                currentLayerErrorList = []
                 i = 0
-                currentLayerErrorList[i] = layerError
+                currentLayerErrorList.append(layerError)
             i += 1
         numCorrectableErrors += self._getGroupedNumCorrectableErrors(currentLayerErrorList)
         print "other procedure is spending", time.clock() - tic
