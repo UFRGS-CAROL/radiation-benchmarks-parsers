@@ -484,12 +484,12 @@ class CNNLayerParser():
                 goldsNotFound = True
                 break
             else:
-                print "getLayerErrorList"
+                # print "getLayerErrorList"
                 layerErrorList = self._getLayerErrorList(layer, gold, i)
                 if len(layerErrorList) > 0:
                     self._numErrors['allErrors'][i] = len(layerErrorList)
 
-                print "getErrorListInfos"
+                # print "getErrorListInfos"
                 smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors = self._getErrorListInfos(
                     layerErrorList, i)
 
@@ -530,11 +530,11 @@ class CNNLayerParser():
                     print('ja deu erro? ' + str(self._errorFound))
                     # print('Precision: ' + str(self._precision) + '  Recall: ' + str(self._recall) + '\n')
 
-                print "\nDebug, passou antes", i
+                # print "\nDebug, passou antes", i
                 # check if it is a 3D Layer or it is a 1D one
                 # parser locality error
                 self.__localityParser(dim=len(self.__layerDimentions[i]), i=i, layerErrorList=layerErrorList)
-                print "depois"
+                # print "depois"
 
         if logsNotFound and goldsNotFound:
             self._failed_layer += 'golds and logs not found'
