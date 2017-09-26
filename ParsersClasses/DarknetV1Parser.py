@@ -2,6 +2,8 @@ import numpy
 import sys
 import csv
 # from math import *
+import time
+
 from SupportClasses import Rectangle
 import os
 import re
@@ -147,8 +149,8 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         outputList.append(self._header)
 
-        if self._parseLayers and self._saveLayer:
-            outputList.extend(self._cnnParser.getOutputToCsv())
+        # if self._parseLayers and self._saveLayer:
+        #     outputList.extend(self._cnnParser.getOutputToCsv())
 
         writer.writerow(outputList)
         csvWFP.close()
@@ -169,7 +171,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             self._saveLayer) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
-        if len(errList) == 0:
+        if len(errList) == 0 or '2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log' not in self._logFileName:
             return
         gold = self._loadGold()
 
@@ -258,6 +260,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
+        tic = time.clock()
         if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
@@ -270,7 +273,9 @@ class DarknetV1Parser(ObjectDetectionParser):
             self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
                                         logFilename=self._logFileName,
                                         machine=self._machine,
-                                        loadLayerMethod=self.loadLayer)
+                                        loadLayer=self.loadLayer)
+            print "\nTime spent on parsing layers", time.clock() - tic
+
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
@@ -515,7 +520,7 @@ class DarknetV1Parser(ObjectDetectionParser):
                 layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
 
-        print "\n", layerFilename
+        print "\nLayerPath", layerFilename
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:
             return None
