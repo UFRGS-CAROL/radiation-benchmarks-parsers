@@ -16,7 +16,7 @@ from SupportClasses.CNNLayerParser import CNNLayerParser
 
 from operator import add
 
-MAX_NUM_OF_OBJECTS = 100
+MAX_NUM_OF_OBJECTS = 200
 
 class DarknetV1Parser(ObjectDetectionParser):
     __executionType = None
