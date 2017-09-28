@@ -47,87 +47,83 @@ def getWenderFactor(startDT):
 		return 21976
 
 fileLines = list()
-def readCountFile():
+def readFissionFile():
 	inFile = open(inFileName, 'r')
         global fileLines
 	for l in inFile:
 		line = l.rstrip()
-		m = re.match("(\d{2,4}-\d{1,2}-\d{1,2}) (\d\d:\d\d:\d\d),(\d{1,3}) (.*)", line)
+		m = re.match("(.* 2017)(.*)", line)
 		if m:
                     fileLines.append(line)
 
 def getFluenceFlux(startDT, endDT):
 
-	#inFile = open(inFileName, 'r')
-	#endDT = startDT + timedelta(minutes=60)
-
 	pulseCount = 0
-	lastCount = None
 	lastDt = startDT
 	timeNoPulse = 0 # in seconds
 
-	#for l in inFile:
 	for l in fileLines:
 
 		line = l.rstrip()
-		m = re.match("(\d{2,4}-\d{1,2}-\d{1,2}) (\d\d:\d\d:\d\d),(\d{1,3}) (.*)", line)
+		m = re.match("(.* 2017)(.*)", line)
 		if m:
-			curDt = getDt(m.group(1), m.group(2), m.group(3))
+			curDt = datetime.strptime(m.group(1), "%b %d %H:%M:%S %Y")
 			if startDT <= curDt and curDt <= endDT:
 				try:
-					curCount = int(m.group(4))
+					curCount = int(m.group(2))
 				except ValueError:
 					continue # Ignore line in case it contain "Start of test"
 
-				if lastCount != None:
-					diffCount = curCount - lastCount
-					if diffCount <= 0 or lastCount <= 0:
-						timeNoPulse += (curDt - lastDt).total_seconds()
-					else:
-						pulseCount += diffCount
-				lastCount = curCount
+				if curCount <= 0:#diffCount <= 0 or lastCount <= 0:
+					timeNoPulse += (curDt - lastDt).total_seconds()
+				else:
+					pulseCount += curCount
 				lastDt = curDt
 			elif curDt > endDT:
-				return [(pulseCount*getWenderFactor(startDT)/((endDT - startDT).total_seconds()))*factor, timeNoPulse]
+				try:
+					#return [(pulseCount*getWenderFactor(startDT)/((endDT - startDT).total_seconds() -timeNoPulse))*factor, timeNoPulse]
+					return [(pulseCount*getWenderFactor(startDT)/((endDT - startDT).total_seconds()))*factor, timeNoPulse]
+				except ZeroDivisionError:
+					return [0,0]
+
         # It should not get out of the loop, but in case there is no pulse data, timeNoPulse is updated
         timeNoPulse += (endDT - curDt).total_seconds()
-	return [(pulseCount*getWenderFactor(startDT)/((endDT - startDT).total_seconds()))*factor, timeNoPulse]
+	try:
+            return [(pulseCount*getWenderFactor(startDT)/((endDT - startDT).total_seconds()))*factor, timeNoPulse]
+	except ZeroDivisionError:
+            return [0,0]
 
 def getFlux(startDT):
 
-	inFile = open(inFileName, 'r')
 	endDT = startDT + timedelta(minutes=60)
 
 	pulseCount = 0
-	lastCount = None
 	lastDt = startDT
 	timeNoPulse = 0 # in seconds
 
-	for l in inFile:
+	for l in fileLines:
 
 		line = l.rstrip()
-		m = re.match("(\d{2,4}-\d{1,2}-\d{1,2}) (\d\d:\d\d:\d\d),(\d{1,3}) (.*)", line)
+		m = re.match("(.* 2017)(.*)", line)
 		if m:
-			curDt = getDt(m.group(1), m.group(2), m.group(3))
+			curDt = datetime.strptime(m.group(1), "%b %d %H:%M:%S %Y")
 			if startDT <= curDt and curDt <= endDT:
 				try:
-					curCount = int(m.group(4))
+					curCount = int(m.group(2))
 				except ValueError:
 					continue # Ignore line in case it contain "Start of test"
 
-				if lastCount != None:
-					diffCount = curCount - lastCount
-					if diffCount <= 0 or lastCount <= 0:
-						timeNoPulse += (curDt - lastDt).total_seconds()
-					else:
-						pulseCount += diffCount
-				lastCount = curCount
+				if curCount <= 0:#diffCount <= 0 or lastCount <= 0:
+					timeNoPulse += (curDt - lastDt).total_seconds()
+				else:
+					pulseCount += curCount
 				lastDt = curDt
 			elif curDt > endDT:
-				return [(pulseCount*getWenderFactor(startDT)/(60*60))*factor, timeNoPulse]
-        # It should not get out of the loop, but in case there is no pulse data, timeNoPulse is updated
-        timeNoPulse += (endDT - curDt).total_seconds()
-	return [(pulseCount*getWenderFactor(startDT)/(60*60))*factor, timeNoPulse]
+				try:
+					#return [(pulseCount*getWenderFactor(startDT)/(60*60 -timeNoPulse))*factor, timeNoPulse]
+					return [(pulseCount*getWenderFactor(startDT)/(60*60))*factor, timeNoPulse]
+				except ZeroDivisionError:
+					return [0,0]
 
 
 #########################################################
@@ -141,7 +137,7 @@ inFileName = sys.argv[1]
 csvFileName = sys.argv[2]
 factor = float(sys.argv[3])
 
-csvOutFileName = csvFileName.replace(".csv", "_cross_section.csv")
+csvOutFileName = csvFileName.replace(".csv", "_cross_section_fission.csv")
 
 print "in: "+csvFileName
 print "out: "+csvOutFileName
@@ -152,7 +148,7 @@ csvWFP = open(csvOutFileName, "w")
 writer = csv.writer(csvWFP, delimiter=';')
 
 ##################summary
-csvWFP2 = open("summaries.csv", "a")
+csvWFP2 = open("summaries-fission.csv", "a")
 writer2 = csv.writer(csvWFP2, delimiter=';')
 writer2.writerow([])
 writer2.writerow([csvFileName])
@@ -178,7 +174,7 @@ writer.writerow(csvHeader)
 lines = list(reader)
 
 # We need to read the neutron count files before calling getFluenceFlux
-readCountFile()
+readFissionFile()
 
 i=0
 size = len(lines)
