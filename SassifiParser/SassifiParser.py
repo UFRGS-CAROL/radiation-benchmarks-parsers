@@ -98,6 +98,7 @@ class SassifiParser:
         total_aborts = 0
         print "Parsing " + csv_input
         # separate the good data
+        copyLogsFolder = ""
         if cp != "":
             copyLogsFolder = str(cp)
             os.system("mkdir -p " + copyLogsFolder)
@@ -277,46 +278,44 @@ class SassifiParser:
         csvfile = open(first_part + 'parse_' + dir_generate, 'w')
         return csvfile
 
-    def process_daniels_and_caios_log(self, csv_input, to_join, key, joined, del1, del2):
+    def get_delimiter(self, csv_file):
+        with open(csv_file) as csvfile:
+            dialect = csv.Sniffer().sniff(csvfile.read(), delimiters=";,")
+        return dialect.delimiter
+
+    def process_daniels_and_caios_log(self, csv_input, to_join, key1, key2, joined):
         # sassifi output
+        del1 = self.get_delimiter(csv_input)
         csvfile = open(csv_input)
         reader = csv.DictReader(csvfile, delimiter=del1)
 
         # file which will be joined
+        del2 = self.get_delimiter(to_join)
         daniel_input = open(to_join)
         reader_daniel = csv.DictReader(daniel_input, delimiter=del2)
 
         # the final header will be input and to_join csv headers
-        fieldnames = []
-        for i in reader.fieldnames:
-            fieldnames.append(i)
-
-        for i in reader_daniel.fieldnames:
-            fieldnames.append(i)
+        fieldnames = [i for i in reader.fieldnames + reader_daniel.fieldnames]
 
         output_csv = open(joined, 'w')
         writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
         writer.writeheader()
 
         # put the content into two list
-        daniel_rows = []
-        logs_rows = []
-        for row in reader_daniel:
-            daniel_rows.append(row)
-        for row in reader:
-            logs_rows.append(row)
+        daniel_rows = [row for row in reader_daniel]
+        logs_rows = [row for row in reader]
 
         # join two csvs
         count_logs = 0
         d = {}
         has_sdc = 'has_sdc'
 
-        if key != 'none':
+        if key1 != 'none':
             for i in logs_rows:
-                log_file = i[key]
+                log_file = i[key1]
                 if '1' in i[has_sdc]:
                     for j in daniel_rows:
-                        logname = j[key]
+                        logname = j[key2]
                         if logname in log_file and log_file not in d.values():
                             z = j.copy()
                             z.update(i)
@@ -356,18 +355,22 @@ def parse_args():
     parser.add_argument('--copy', dest='copy',
                         help='Is necessary to copy logs to another folder, if yes, pass the output directory',
                         default="")
-    parser.add_argument('--join_key', dest='join_key',
-                        help='If you want to join two files that have a collum with header = \'log_filename\' for example, --join_key log_filename must be passed',
-                        default='log_filename')
+    parser.add_argument('--join_key1', dest='join_key1',
+                        help='If you want to join two files that have a collum with header = \'log_filename\' for example, --join_key1 log_filename must be passed',
+                        default='log_file')
+
+    parser.add_argument('--join_key2', dest='join_key2',
+                        help='If you want to join two files that have a collum with header = \'logFileName\' for example, --join_key2 logFileName must be passed',
+                        default='logFileName')
 
     parser.add_argument('--to_join_csv', dest='to_join_csv', help='Other csv to join', default='none')
 
     parser.add_argument('--joined_output', dest='joined', help='Output file which will have two csvs joined',
                         default='joined_logs.csv')
 
-    parser.add_argument('--del1', dest='del1', help='Delimiter csv <--csv_input>', default=',')
-
-    parser.add_argument('--del2', dest='del2', help='Delimiter csv <--to_join_csv>', default=';')
+    # parser.add_argument('--del1', dest='del1', help='Delimiter csv <--csv_input>', default=',')
+    #
+    # parser.add_argument('--del2', dest='del2', help='Delimiter csv <--to_join_csv>', default=';')
 
     args = parser.parse_args()
 
@@ -386,8 +389,7 @@ if __name__ == "__main__":
     if args.to_join_csv == 'none':
         sassiParse.parse_csv(args.csv_input, args.logs_dir, args.copy)
     else:
-        sassiParse.process_daniels_and_caios_log(args.csv_input, args.to_join_csv, args.join_key, args.joined,
-                                                 args.del1, args.del2)
+        sassiParse.process_daniels_and_caios_log(args.csv_input, args.to_join_csv, args.join_key1, args.join_key2, args.joined)
         # ():
         # else:
         #     process_daniels_and_caios_log(parameter[0], parameter[1],

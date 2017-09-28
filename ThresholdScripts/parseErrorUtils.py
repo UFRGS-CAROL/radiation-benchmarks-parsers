@@ -126,9 +126,11 @@ def getParserFunction(benchmark):
 	isLavaMD = re.search("lavamd",benchmark,flags=re.IGNORECASE)
 	isCLAMR = re.search("clamr",benchmark,flags=re.IGNORECASE)
 	isLUD = re.search("lud",benchmark,flags=re.IGNORECASE)
+	isGaussian = re.search("gaussian",benchmark,flags=re.IGNORECASE)
+	isNW = re.search("NW",benchmark,flags=re.IGNORECASE)
 	errorsParsed = []
         parseFunc = None
-	if isGEMM or isLUD:
+	if isGEMM or isLUD or isGaussian or isNW:
             parseFunc = parseErrMethod1
         elif isHotspot:
             parseFunc = parseErrMethod2

@@ -20,9 +20,6 @@ from ParsersClasses import BezierSurfaceParser
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
 ############################################################################################
 
-LAYERS_GOLD_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/gold_layers/'
-LAYERS_PATH = '/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sassifi_darknet_v2/found_layers/'
-
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
 IMG_OUTPUT_DIR = ''
 
@@ -44,6 +41,12 @@ DARKNET_DATASETS = {'caltech.pedestrians.critical.1K.txt': {'dumb_abft': 'gold.c
                     'caltech.pedestrians.1K.txt': {'dumb_abft': 'gold.caltech.abft.1K.test',
                                                    'no_abft': 'gold.caltech.1K.test'},
                     'voc.2012.1K.txt': {'dumb_abft': 'gold.voc.2012.abft.1K.test', 'no_abft': 'gold.voc.2012.1K.test'}}
+
+LAYERS_GOLD_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
+LAYERS_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
+
+LAYERS_GOLD_PATH_DARKNETV2 = '/media/fernando/U/data_K40_1309/'
+LAYERS_PATH_DARKNETV2 = '/media/fernando/U/data_K40_1309/'
 
 ############################################################################################
 ###############################FASTER RCNN PARSER PARAMETERS################################
@@ -127,8 +130,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknet':
             benchObj = DarknetParser.DarknetParser(parseLayers=parse_layers,
                                                    prThreshold=pr_threshold,
-                                                   layersGoldPath=LAYERS_GOLD_PATH,
-                                                   layersPath=LAYERS_PATH,
+                                                   layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
+                                                   layersPath=LAYERS_PATH_DARKNETV1,
                                                    imgOutputDir=IMG_OUTPUT_DIR,
                                                    localRadiationBench=LOCAL_RADIATION_BENCH,
                                                    check_csv=checkCsv,
@@ -141,8 +144,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknetv1':
             benchObj = DarknetV1Parser.DarknetV1Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
-                                                       layersGoldPath=LAYERS_GOLD_PATH,
-                                                       layersPath=LAYERS_PATH,
+                                                       layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
+                                                       layersPath=LAYERS_PATH_DARKNETV1,
                                                        imgOutputDir=IMG_OUTPUT_DIR,
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
@@ -152,8 +155,8 @@ def setBenchmarks(**kwargs):
         if i == 'darknetv2':
             benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
-                                                       layersGoldPath=LAYERS_GOLD_PATH,
-                                                       layersPath=LAYERS_PATH,
+                                                       layersGoldPath=LAYERS_GOLD_PATH_DARKNETV2,
+                                                       layersPath=LAYERS_PATH_DARKNETV2,
                                                        imgOutputDir=IMG_OUTPUT_DIR,
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,

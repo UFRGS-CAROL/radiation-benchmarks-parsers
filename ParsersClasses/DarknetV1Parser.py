@@ -2,6 +2,8 @@ import numpy
 import sys
 import csv
 # from math import *
+import time
+
 from SupportClasses import Rectangle
 import os
 import re
@@ -12,6 +14,9 @@ from SupportClasses import GoldContent
 from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
+from operator import add
+
+MAX_NUM_OF_OBJECTS = 200
 
 class DarknetV1Parser(ObjectDetectionParser):
     __executionType = None
@@ -104,7 +109,8 @@ class DarknetV1Parser(ObjectDetectionParser):
                 self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
                                                  layerGoldPath=self.__layersGoldPath,
                                                  layerPath=self.__layersPath, dnnSize=self._sizeOfDnn,
-                                                 correctableLayers=[])
+                                                 correctableLayers=[],
+                                                 maxPoolLayers=[0, 2, 7, 18])
 
                 self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
@@ -115,61 +121,58 @@ class DarknetV1Parser(ObjectDetectionParser):
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
-        try:
-            csvWFP = open(csvFileName, "a")
-            writer = csv.writer(csvWFP, delimiter=';')
-            # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
-            #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
-            #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
-            #     "precision", "recall", "false_negative", "false_positive",
-            #     "true_positive", "abft_type", "row_detected_errors",
-            #     "col_detected_errors", "failed_layer", "header"]
-            outputList = [self._logFileName,
-                          self._machine,
-                          self._benchmark,
-                          self._sdcIteration,
-                          self._accIteErrors,
-                          self._iteErrors,
-                          self._goldLines,
-                          self._detectedLines,
-                          self._wrongElements,
-                          # self._xCenterOfMass,
-                          # self._yCenterOfMass,
-                          self._precision,
-                          self._recall,
-                          self._falseNegative,
-                          self._falsePositive,
-                          self._truePositive,
-                          self._abftType,
-                          self._failedLayer]
+        csvWFP = open(csvFileName, "a")
+        writer = csv.writer(csvWFP, delimiter=';')
+        # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
+        #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
+        #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
+        #     "precision", "recall", "false_negative", "false_positive",
+        #     "true_positive", "abft_type", "row_detected_errors",
+        #     "col_detected_errors", "failed_layer", "header"]
+        outputList = [self._logFileName,
+                      self._machine,
+                      self._benchmark,
+                      self._sdcIteration,
+                      self._accIteErrors,
+                      self._iteErrors,
+                      self._goldLines,
+                      self._detectedLines,
+                      self._wrongElements,
+                      # self._xCenterOfMass,
+                      # self._yCenterOfMass,
+                      self._precision,
+                      self._recall,
+                      self._falseNegative,
+                      self._falsePositive,
+                      self._truePositive,
+                      self._abftType,
+                      self._failedLayer]
 
-            outputList.extend([self._rowDetErrors, self._colDetErrors])
-            outputList.extend(self._smartPooling)
+        outputList.extend([self._rowDetErrors, self._colDetErrors])
+        outputList.extend(self._smartPooling)
 
-            outputList.append(self._header)
+        outputList.append(self._header)
 
-            if self._parseLayers:
-                outputList.extend(self._cnnParser.getOutputToCsv())
+        if self._parseLayers and self._saveLayer:
+            outputList.extend(self._cnnParser.getOutputToCsv())
 
-            writer.writerow(outputList)
-            csvWFP.close()
-
-        except:
-            print "\n Crash on log ", self._logFileName
-            # raise
+        writer.writerow(outputList)
+        csvWFP.close()
 
     def setSize(self, header):
         # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
         darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
+
         if darknetM:
             self._goldFileName = darknetM.group(1)
-            self._saveLayer = bool(darknetM.group(2))
+            self._saveLayer = True if int(darknetM.group(2)) == 1 else False
             self._abftType = darknetM.group(3)
             self._iterations = darknetM.group(4)
 
         # return self.__imgListFile
         # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
-        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
+        self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_save_layer_" + str(
+            self._saveLayer) + "_abft_" + str(self._abftType)
 
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
@@ -235,9 +238,9 @@ class DarknetV1Parser(ObjectDetectionParser):
 
 
             elif y["type"] == "abft":
-                err = y["abft_det"]
-                for i_prob_e in xrange(1, self._smartPoolingSize):
-                    self._smartPooling[i_prob_e] += err[i_prob_e]
+                # for i_prob_e in xrange(1, self._smartPoolingSize):
+                #     self._smartPooling[i_prob_e] += err[i_prob_e]
+                self._smartPooling = map(add, self._smartPooling, y["abft_det"])
 
         #############
         # before keep going is necessary to filter the results
@@ -249,12 +252,11 @@ class DarknetV1Parser(ObjectDetectionParser):
                                                                        total=gold.getTotalSize(),
                                                                        classes=gold.getClasses(), h=h, w=w)
 
-
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
         # print "\nGold ---- ", gValidRects, "\nFound ----- ", fValidRects
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
-        if gValidSize > 200 or fValidSize > 200:
+        if gValidSize > MAX_NUM_OF_OBJECTS:
             print "\nFuck, it's here"
             return
 
@@ -262,7 +264,8 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        if self._parseLayers:
+        # tic = time.clock()
+        if self._parseLayers and self._saveLayer:
             """
              sdcIteration = which iteration SDC appeared
              logFilename = the name of the log file
@@ -270,18 +273,22 @@ class DarknetV1Parser(ObjectDetectionParser):
              machine = testing device
              loadLayerMethod = an external method which open an specific layer on an external class
             """
+            self._imgListPath = gold.getImgListPath()
             self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
                                         logFilename=self._logFileName,
                                         machine=self._machine,
-                                        loadLayerMethod=self.loadLayer)
+                                        loadLayer=self.loadLayer)
+            # print "\nTime spent on parsing layers", time.clock() - tic
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
-            gValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
-                                               right=int(i.right), top=int(i.bottom)) for i in gValidRects]
+            gValidRectsDraw = [
+                Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in gValidRects]
 
-            fValidRectsDraw = [Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
-                                               right=int(i.right), top=int(i.bottom)) for i in fValidRects]
+            fValidRectsDraw = [
+                Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
+                                    right=int(i.right), top=int(i.bottom)) for i in fValidRects]
 
             self.buildImageMethod(drawImgFileName, gValidRectsDraw, fValidRectsDraw, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
@@ -480,7 +487,8 @@ class DarknetV1Parser(ObjectDetectionParser):
     def __processAbft(self, errString):
         # #INF error_detected[0]: 0 error_detected[1]: 13588 error_detected[2]: 8650 error_detected[3]: 141366
         m = re.match(
-            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
+            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: "
+            "(\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
         ret = [0] * self._smartPoolingSize
         if m:
@@ -489,7 +497,7 @@ class DarknetV1Parser(ObjectDetectionParser):
             ret[int(m.group(5))] = int(m.group(6))
             ret[int(m.group(7))] = int(m.group(8))
 
-        return ret if len(ret) > 0 else None
+        return ret
 
     # ---------------------------------------------------------------------------------------------------------------------
     """
@@ -502,22 +510,25 @@ class DarknetV1Parser(ObjectDetectionParser):
     def loadLayer(self, layerNum, isGold=False):
         # it is better to programing one function only than two almost equal
         imgListpos = int(self._sdcIteration) % self._imgListSize
+
         if isGold:
-            # 2017_07_28_19_21_26_cudaDarknetv2_ECC_ON_carol.log_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersPath + self._logFileName + "_layer_" + str(layerNum) + "_img_" + str(
-                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
-        else:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
-            # gold_layers/gold_layer_0_img_0_test_it_0.layer
-            layerFilename = self.__layersGoldPath + "gold_layer_darknet_v1_" + str(layerNum) + "_img_" + str(
+            # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
+            layerFilename = self.__layersGoldPath + os.path.basename(
+                self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
+        else:
+            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
+            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(
+                layerNum) + "_img_" + str(
+                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
 
+        # print "\nLayerPath", layerFilename
         filenames = glob.glob(layerFilename)
-
-        if (len(filenames) == 0):
+        if len(filenames) == 0:
             return None
-        elif (len(filenames) > 1):
+        elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
 
         filename = filenames[0]

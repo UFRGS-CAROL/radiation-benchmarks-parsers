@@ -7,6 +7,8 @@ import glob
 import numpy
 import struct
 
+import time
+
 
 class CNNLayerParser():
     __layerDimentions = {}
@@ -37,6 +39,12 @@ class CNNLayerParser():
     _numCorrectableErrors = None
     _errorTypeList = None
 
+    # set to true if you want debug
+    __debug = False
+
+    # maxpool layers, to check correctable errors
+    __maxpoolLayers = []
+
     """
     Constructor
     layersDimention : A dict that will have for each layer its 3D dimentions, like this
@@ -53,6 +61,7 @@ class CNNLayerParser():
 
         self._sizeOfDNN = kwargs.pop("dnnSize")
         self._correctableLayers = kwargs.pop("correctableLayers")
+        self.__maxpoolLayers  = kwargs.pop("maxPoolLayers")
 
     def genCsvHeader(self):
         csvHeader = []
@@ -183,7 +192,7 @@ class CNNLayerParser():
         layerErrorList = []
         for i in range(0, size):
             if (layerArray[i] != goldArray[i]):
-                relativeError = self._getRelativeError(goldArray[i], layerArray[i])
+                # relativeError = self._getRelativeError(goldArray[i], layerArray[i])
                 layerError = [i, -1, -1, layerArray[i], goldArray[i]]
                 layerErrorList.append(layerError)
 
@@ -198,7 +207,7 @@ class CNNLayerParser():
     def _get1DLayerErrorLists(self, layerArray, goldArray, size):
         layerErrorLists = {errorTypeString: [] for errorTypeString in self.__errorTypes}
         for i in range(0, size):
-            if (layerArray[i] != goldArray[i]):
+            if layerArray[i] != goldArray[i]:
                 relativeError = self._getRelativeError(goldArray[i], layerArray[i])
                 layerError = [i, -1, -1, layerArray[i], goldArray[i]]
                 layerErrorLists['allLayers'].append(layerError)
@@ -323,20 +332,19 @@ class CNNLayerParser():
 
     def _existsErrorNeighbor(self, layerError, layerErrorList):
         for otherLayerError in layerErrorList:
-            if (otherLayerError != layerError):
+            if otherLayerError != layerError and layerError[2] == otherLayerError[2] and (
+                            (layerError[0] == otherLayerError[0])
+                        or (layerError[0] == otherLayerError[0] + 1)
+                    or (layerError[0] == otherLayerError[0] - 1)) and (
+                            (layerError[1] == otherLayerError[1])
+                        or (layerError[1] == otherLayerError[1] + 1)
+                    or (layerError[1] == otherLayerError[1] - 1)):
                 # erros imediatamente ao lado, com msm zPos
-                if (layerError[2] == otherLayerError[2]):
-                    if (layerError[0] == otherLayerError[0]) \
-                            or (layerError[0] == otherLayerError[0] + 1) \
-                            or (layerError[0] == otherLayerError[0] - 1):
-                        if (layerError[1] == otherLayerError[1]) \
-                                or (layerError[1] == otherLayerError[1] + 1) \
-                                or (layerError[1] == otherLayerError[1] - 1):
-                            # print("DEBUG\nerror: " + str(layerError))
-                            # print("otherError: " + str(otherLayerError))
-                            return True
-        # se nao achou nenhum vizinho ate aqui, eh pq nao tem nenhum
-        return False
+                # print("DEBUG\nerror: " + str(layerError))
+                # print("otherError: " + str(otherLayerError))
+                # se nao achou nenhum vizinho ate aqui, eh pq nao tem nenhum
+                return 1
+        return 0
 
     """
     dada uma error list com todos os layerError tendo mesmo Z
@@ -344,26 +352,33 @@ class CNNLayerParser():
     """
 
     def _getGroupedNumCorrectableErrors(self, layerErrorList):
+        # print "Passou aqui\n\n\n"
+        tic = time.clock()
         numCorrectableErrors = 0
         for layerError in layerErrorList:
-            if not self._existsErrorNeighbor(layerError, layerErrorList):
-                numCorrectableErrors += 1
+            numCorrectableErrors += self._existsErrorNeighbor(layerError, layerErrorList)
+            # if not self._existsErrorNeighbor(layerError, layerErrorList):
+            #     numCorrectableErrors += 1
 
         ##DEBUG
         # print "\nDEBUG\nlayerErrorList:\n" + str(layerErrorList)
         # print "numCorrectableErrors: " + str(numCorrectableErrors)
+        # print "IT IS SPENDING FUCKING", time.clock() - tic, "SECONDS"
         return numCorrectableErrors
 
     # retorna o numero de erros corrigiveis por smartpooling
     def _getNumCorrectableErrors(self, layerErrorList):
+        tic = time.clock()
         sortedLayerErrorList = sorted(layerErrorList, key=lambda layerError: layerError[2])  # zPos
         numCorrectableErrors = 0
-
+        # print "Sort is spending ", time.clock() - tic, " vector size ", len(sortedLayerErrorList)
         # debug
         currentZ = -20  # iterador
-        currentLayerErrorList = []
+        currentLayerErrorList = [] #numpy.empty(len(sortedLayerErrorList), dtype=list)
+        tic = time.clock()
         for layerError in sortedLayerErrorList:
             if currentZ == -20:  # primeiro item da lista
+                # currentLayerErrorList[i] = layerError
                 currentLayerErrorList.append(layerError)
                 currentZ = layerError[2]
             elif currentZ > layerError[2]:
@@ -374,9 +389,10 @@ class CNNLayerParser():
                 numCorrectableErrors += self._getGroupedNumCorrectableErrors(currentLayerErrorList)
                 currentZ = layerError[2]
                 currentLayerErrorList = []
+                i = 0
                 currentLayerErrorList.append(layerError)
         numCorrectableErrors += self._getGroupedNumCorrectableErrors(currentLayerErrorList)
-
+        # print "other procedure is spending", time.clock() - tic
         return numCorrectableErrors
 
     # layerError :: xPos, yPos, zPos, found(?), expected(?)
@@ -389,33 +405,37 @@ class CNNLayerParser():
         numMaskableErrors = 0
         numCorrectableErrors = 0
         # totalSum = long(0)
-        relativeErrorsList = []
+        relativeErrorsList = numpy.empty_like(layerErrorList)
+        errListSize = len(layerErrorList)
 
-        for layerError in layerErrorList:
-            if (abs(layerError[3]) > maxpoolAbftThreshold):
+        for i in xrange(0, errListSize):
+            layerError = layerErrorList[i]
+            if abs(layerError[3]) > maxpoolAbftThreshold:
                 numMaskableErrors += 1
 
+            # cost only O(1)
             relativeError = self._getRelativeError(layerError[4], layerError[3])
-            relativeErrorsList.append(relativeError)
+            relativeErrorsList[i] = relativeError
 
-            average += relativeError / len(layerErrorList)
+            average += relativeError / errListSize
 
-            if (smallest == 0.0 and biggest == 0.0):
+            if smallest == 0.0 and biggest == 0.0:
                 smallest = relativeError
                 biggest = relativeError
             else:
-                if (relativeError < smallest):
+                if relativeError < smallest:
                     smallest = relativeError
-                if (relativeError > biggest):
+                if relativeError > biggest:
                     biggest = relativeError
 
-        if (average != 0.0):
+        if average != 0.0:
             stdDeviation = numpy.std(relativeErrorsList)
 
         # calculando numCorrectableErrors:
-        if numLayer in [0, 2, 7, 18] and layerErrorList != []:  # layers logo antes dos maxpooling
-            numCorrectableErrors = self._getNumCorrectableErrors(layerErrorList)
-
+        if numLayer in self.__maxpoolLayers and layerErrorList != []:  # layers logo antes dos maxpooling
+            # tic = time.clock()
+            numCorrectableErrors = 0 #self._getNumCorrectableErrors(layerErrorList)
+            # print "getNumCorrectableErrors time ", time.clock() - tic
         # print('debug numMaskableErrors: ' + str(numMaskableErrors))
         return smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors
 
@@ -433,11 +453,10 @@ class CNNLayerParser():
      layerErrorLists :: {[allLlayerErrors], [filtered2LayerErrors], [filtered5LayerErrors]}
     """
 
-    def parseLayers(self, **kwargs):
-        self._sdcIteration = kwargs.get('sdcIteration')
-        self._logFileName = kwargs.get('logFilename')
-        self._machine = kwargs.get('machine')
-        loadLayer = kwargs.get('loadLayerMethod')
+    def parseLayers(self, sdcIteration=None, logFilename=None, machine=None, loadLayer=None):
+        self._sdcIteration = sdcIteration
+        self._logFileName = logFilename
+        self._machine = machine
 
         # default for most of all CNNs
         self._smallestError = {filterName: [0.0 for i in xrange(self._sizeOfDNN)] for filterName in self.__filterNames}
@@ -460,32 +479,38 @@ class CNNLayerParser():
             gold = loadLayer(i, True)
 
             if layer is None and len(self.__layerDimentions[i]) != 0:
-                print(self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found')
+                # print "\n", self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found'
                 logsNotFound = True
-                break
+                continue
             elif gold is None and len(self.__layerDimentions[i]) != 0:
                 print('gold ' + str(i) + ' log not found')
                 goldsNotFound = True
                 break
             else:
+                # print "getLayerErrorList"
                 layerErrorList = self._getLayerErrorList(layer, gold, i)
-                if (len(layerErrorList) > 0):
+                if len(layerErrorList) > 0:
                     self._numErrors['allErrors'][i] = len(layerErrorList)
+
+                # print "getErrorListInfos"
                 smallest, biggest, average, stdDeviation, numMaskableErrors, numCorrectableErrors = self._getErrorListInfos(
                     layerErrorList, i)
+
                 self._smallestError['allErrors'][i] = smallest
                 self._biggestError['allErrors'][i] = biggest
                 self._errorsAverage['allErrors'][i] = average
                 self._errorsStdDeviation['allErrors'][i] = stdDeviation
                 self._numMaskableErrors[i] = numMaskableErrors
                 self._numCorrectableErrors[i] = numCorrectableErrors
+
                 if i in self._correctableLayers:
                     print (
                         "\nDEBUG\ncamada: " + str(i) + "\nnumCorrectableErrors: " + str(
                             numCorrectableErrors) + " / " + str(
                             self._numErrors['allErrors'][i]))
+
                 # print('\n numMaskableErrors: ' + str(numMaskableErrors) + ' :: ' + str(self._numMaskableErrors[i]))
-                if (self._errorFound):
+                if self._errorFound:
                     # ja tinha erros em alguma camada anterior
                     self._numErrors['propagatedErrors'][i] = self._numErrors['allErrors'][i]
                     self._smallestError['propagatedErrors'][i] = self._smallestError['allErrors'][i]
@@ -498,7 +523,7 @@ class CNNLayerParser():
                     self._biggestError['newErrors'][i] = self._biggestError['allErrors'][i]
                     self._errorsAverage['newErrors'][i] = self._errorsAverage['allErrors'][i]
                     self._errorsStdDeviation['newErrors'][i] = self._errorsStdDeviation['allErrors'][i]
-                if (False):  # i == 31):
+                if self.__debug:
                     print('\nlogName : ' + self._logFileName)
                     print('numErrors camada ' + str(i) + ' :: ' + str(len(layerErrorList)))
                     print('smallestError camada ' + str(i) + ' :: ' + str(smallest))
@@ -508,10 +533,11 @@ class CNNLayerParser():
                     print('ja deu erro? ' + str(self._errorFound))
                     # print('Precision: ' + str(self._precision) + '  Recall: ' + str(self._recall) + '\n')
 
+                # print "\nDebug, passou antes", i
                 # check if it is a 3D Layer or it is a 1D one
                 # parser locality error
                 self.__localityParser(dim=len(self.__layerDimentions[i]), i=i, layerErrorList=layerErrorList)
-
+                # print "depois"
 
         if logsNotFound and goldsNotFound:
             self._failed_layer += 'golds and logs not found'
@@ -526,59 +552,36 @@ class CNNLayerParser():
     i = layer num
     layerErrorList = List of layer errors
     """
+
     def __localityParser(self, dim, i, layerErrorList):
+        # print "inside locality"
         # no size
         if dim == 0:
-            # 2D layer
             print "Layer has no size "
-
         # 1D
         elif dim == 1:
             self._errorTypeList[i] = self._localityParser1D(layerErrorList)
-            # if self.errorTypeList[i]:
-            # # aconteceu algum tipo de erro
-            # if (not self._errorFound):
-            #     self._failed_layer = str(i)
-            #     self._errorFound = True
-            # jaccardCoef = self.jaccard_similarity(layer,gold)
-            # else:
-            #     # nao teve nenhum erro
-            #     jaccardCoef = 1
-            #     # print('jaccard = ' + str(jaccardCoef))
-
         # 2D
         elif dim == 2:
             raise NotImplemented
-
         # 3D
         elif dim == 3:
             # layer 3D
             self._errorTypeList[i] = self._localityParser3D(layerErrorList)
-            # if self.errorTypeList[i]:
-            # aconteceu algum tipo de erro
-            # if not self._errorFound:
-            #     self._failed_layer = str(i)
-            #     self._errorFound = True
-            # layerArray = self.layer3DToArray(layer, i)
-            # goldArray = self.layer3DToArray(gold, i)
-            # jaccardCoef = self.jaccard_similarity(layerArray,goldArray)
-            # else:
-            #     # nao teve nenhum erro
-            #     jaccardCoef = 1
         else:
             raise NotImplementedError
 
-        if self._errorTypeList[i] != [0, 0, 0, 0, 0]:
+        if self._errorTypeList[i] != [0, 0, 0, 0, 0] and not self._errorFound:
             # aconteceu algum tipo de erro
-            if (not self._errorFound):
-                self._failed_layer = str(i)
-                self._errorFound = True
+            self._failed_layer = str(i)
+            self._errorFound = True
 
     """
     errorType :: cubic, square, colOrRow, single, random
     layerError :: xPos, yPos, zPos, found(?), expected(?)
     layerErrorLists :: {[allLlayerErrors], [filtered2LayerErrors], [filtered5LayerErrors]}
     """
+
     def _localityParser3D(self, errList):
         if len(errList) < 1:
             return [0, 0, 0, 0, 0]
@@ -611,6 +614,7 @@ class CNNLayerParser():
     layerError :: xPos, yPos, zPos, found(?), expected(?)
     layerErrorLists :: {[allLlayerErrors], [filtered2LayerErrors], [filtered5LayerErrors]}
     """
+
     def _localityParser1D(self, layerErrorList):
         if len(layerErrorList) < 1:
             return [0, 0, 0, 0, 0]
