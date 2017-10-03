@@ -78,6 +78,8 @@ class DarknetV2Parser(ObjectDetectionParser):
     _smartPoolingSize = 5
     _smartPooling = [0] * _smartPoolingSize
 
+    _maxpoolLayers = [1, 3, 7, 11, 17]
+
     _failedLayer = -1
 
     _cnnParser = None
@@ -92,13 +94,13 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
         self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
                                                         xrange(1, self._smartPoolingSize + 1)]
-
         if self._parseLayers:
             self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
             self.__layersPath = str(kwargs.pop("layersPath"))
             self._cnnParser = CNNLayerParser(layersDimention=self.__layerDimensions,
                                              layerGoldPath=self.__layersGoldPath,
-                                             layerPath=self.__layersPath, dnnSize=self._sizeOfDnn, correctableLayers=[])
+                                             layerPath=self.__layersPath, dnnSize=self._sizeOfDnn, correctableLayers=[],
+                                             maxPoolLayers=self._maxpoolLayers)
 
             self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
@@ -141,7 +143,7 @@ class DarknetV2Parser(ObjectDetectionParser):
         sizeM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
         if sizeM:
             self._goldFileName = str(sizeM.group(1))
-            self._saveLayer = True if sizeM.group(2) == 1 else False
+            self._saveLayer = True if int(sizeM.group(2)) == 1 else False
             self._abftType = str(sizeM.group(3))
             self._iterations = int(sizeM.group(4))
             # self._size = "gold_file_" + os.path.basename(self._goldFileName) + "_abft_" + str(self._abftType)
@@ -158,6 +160,7 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         # for layers parser
         self._imgListSize = gold.getPlistSize()
+        self._imgListPath = gold.getImgListPath()
         # ---------------------------------------------------------------------------------------------------------------
         # img path
         # this is possible since errList has at least 1 element, due verification
@@ -252,7 +255,7 @@ class DarknetV2Parser(ObjectDetectionParser):
             self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
                                         logFilename=self._logFileName,
                                         machine=self._machine,
-                                        loadLayerMethod=self.loadLayer)
+                                        loadLayer=self.loadLayer)
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
@@ -460,7 +463,9 @@ class DarknetV2Parser(ObjectDetectionParser):
     def __processAbft(self, errString):
         # #INF error_detected[0]: 0 error_detected[1]: 13588 error_detected[2]: 8650 error_detected[3]: 141366
         m = re.match(
-            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: (\d+).*",
+            ".*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: "
+            "(\d+).*error_detected\[(\d+)\]\: (\d+).*error_detected\[(\d+)\]\: "
+            "(\d+).*error_detected\[(\d+)\]\: (\d+).*",
             errString)
         ret = [0] * self._smartPoolingSize
         if m:
@@ -484,17 +489,19 @@ class DarknetV2Parser(ObjectDetectionParser):
         # it is better to programing one function only than two almost equal
         imgListpos = int(self._sdcIteration) % self._imgListSize
         if isGold:
-            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
-            layerFilename = self.__layersPath + self._logFileName + "_darknet_v2_layer_" + str(
-                layerNum) + "_img_" + str(
-                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
-        else:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
             layerFilename = self.__layersGoldPath + os.path.basename(
                 self._imgListPath) + "_darknet_v2_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
+        else:
+            # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
+            layerFilename = self.__layersPath + self._logFileName + "_darknet_v2_layer_" + str(
+                layerNum) + "_img_" + str(
+                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
+
+        os.system("ls " + str(layerFilename))
 
         filenames = glob.glob(layerFilename)
 
