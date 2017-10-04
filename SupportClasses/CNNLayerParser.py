@@ -179,7 +179,11 @@ class CNNLayerParser():
 
     def _getRelativeError(self, expected, read):
         absoluteError = abs(expected - read)
-        relativeError = abs(absoluteError / expected) * 100
+        try:
+            relativeError = abs(absoluteError / expected) * 100
+        except:
+            relativeError = absoluteError
+
         return relativeError
 
     """
