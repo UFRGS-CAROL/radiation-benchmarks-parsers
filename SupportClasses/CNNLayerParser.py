@@ -63,6 +63,9 @@ class CNNLayerParser():
         self._correctableLayers = kwargs.pop("correctableLayers")
         self.__maxpoolLayers  = kwargs.pop("maxPoolLayers")
 
+    def getFailedLayer(self):
+        return self._failed_layer
+
     def genCsvHeader(self):
         csvHeader = []
         csvHeader.extend(self._getLayerHeaderName(layerNum, infoName, filterName)

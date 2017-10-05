@@ -256,6 +256,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                                         logFilename=self._logFileName,
                                         machine=self._machine,
                                         loadLayer=self.loadLayer)
+            self._failedLayer = self._cnnParser.getFailedLayer()
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]
