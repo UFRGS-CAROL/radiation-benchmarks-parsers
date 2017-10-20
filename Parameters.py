@@ -104,6 +104,14 @@ SUMMARIES_FILES = {
     'carol-k201-ECC-ON': {
         'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
                '/summaries-fission.csv', 'data': None},
+
+    'caroltx2a-ECC-OFF': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
+
+    'caroltx2a': {
+        'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
+               '/summaries-fission.csv', 'data': None},
 }
 
 ###############################################################################################
