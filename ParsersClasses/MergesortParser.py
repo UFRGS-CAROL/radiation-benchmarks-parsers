@@ -31,6 +31,12 @@ class MergesortParser(SortParser):
 
 
     def _relativeErrorParser(self, errList):
+
+
+
+
+
+
         #implementar aqui o parser do erro
         for i in errList:
             #processa cada erro gerado no parseErrMethod
