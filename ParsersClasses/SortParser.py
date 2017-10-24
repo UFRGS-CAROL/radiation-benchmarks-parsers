@@ -26,15 +26,6 @@ class SortParser(Parser):
     _hardDetec = None
     _itHardDetec = None
 
-    # from caio's parser
-    balance = 0
-    parsed_errors = 0
-    balance_mismatches = 0
-    err_counters = [0, 0, 0, 0, 0]  # outoforder, corrupted, link error, sync/analisys error
-    it_err_counters = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                       0]  # outoforder, corrupted, link error, sync/analisys error, ooo and corrupted,
-    # sync and corrupted, sync and ooo, link and corruption, link and ooo, link and sync, 3+ combinations
-    it_flags = [0, 0, 0, 0]
 
     _csvHeader = ['logFileName', 'Machine', 'Benchmark', 'Header',
                   'SDC', 'LOGGED_ERRORS', 'ACC_ERR',  # 'ACC_TIME',
@@ -213,117 +204,115 @@ class SortParser(Parser):
         if len(errList) < 1:
             return
 
+        # from caio's parser
+        balance = 0
+        parsed_errors = 0
+        balance_mismatches = 0
+        err_counters = [0, 0, 0, 0, 0]  # outoforder, corrupted, link error, sync/analisys error
+        it_err_counters = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                           0]  # outoforder, corrupted, link error, sync/analisys error, ooo and corrupted,
+        # sync and corrupted, sync and ooo, link and corruption, link and ooo, link and sync, 3+ combinations
+        it_flags = [0, 0, 0, 0]
+
         for i in errList:
             if 'inf' in i:
                 # if inf_flag == 0:
                 #     inf_flag = 1
-                self.it_err_counters[11] += 1
-                self.err_counters[4] += 1
+                it_err_counters[11] += 1
+                err_counters[4] += 1
 
             elif 'err' in i:
                 if 'not_ordered' in i:
-                    self.err_counters[0] += 1
-                    self.it_flags[0] = 1
-                    self.parsed_errors += 1
+                    err_counters[0] += 1
+                    it_flags[0] = 1
+                    parsed_errors += 1
 
                 if 'histogram_diff' in i:
                     m = i['m_value']
                     if (int(m.group(2)) >= 32) or (((int(m.group(3)) - int(m.group(2))) >= 32) and (
                                 ((int(m.group(3)) - int(m.group(2))) % 2) == 0)):
-                        self.err_counters[3] += 1
-                        self.it_flags[3] = 1
-                        self.parsed_errors += 1
+                        err_counters[3] += 1
+                        it_flags[3] = 1
+                        parsed_errors += 1
                         # print(">>>>Warning: Ignoring element corruption - Element: ", m.group(1), "srcHist: ", m.group(2), "dstHist: ", m.group(3))
                     else:
-                        self.err_counters[1] += 1
-                        self.it_flags[1] = 1
-                        self.parsed_errors += 1
-                        self.balance += int(m.group(2)) - int(m.group(3))
+                        err_counters[1] += 1
+                        it_flags[1] = 1
+                        parsed_errors += 1
+                        balance += int(m.group(2)) - int(m.group(3))
 
                 if 'link_key' in i:
-                    self.err_counters[2] += 1
-                    self.it_flags[2] = 1
-                    self.parsed_errors += 1
+                    err_counters[2] += 1
+                    it_flags[2] = 1
+                    parsed_errors += 1
 
-        if self.balance != 0:
-            print(">>>Warning: Balance is wrong:", self.balance)
-            self.balance_mismatches += 1
-        self.balance = 0
+        if balance != 0:
+            print(">>>Warning: Balance is wrong:", balance)
+            balance_mismatches += 1
+        # balance = 0
 
         err_type_count = 0
-        for flag in self.it_flags:
+        for flag in it_flags:
             if flag != 0:
                 err_type_count += 1
         if err_type_count >= 3:
-            self.it_err_counters[10] += 1  # more than 3 types of errors
-            for f in range(len(self.it_flags)):
-                self.it_flags[f] = 0
+            it_err_counters[10] += 1  # more than 3 types of errors
+            for f in range(len(it_flags)):
+                it_flags[f] = 0
 
-        if self.it_flags[0] and self.it_flags[1]:
-            self.it_err_counters[4] += 1  # ooo and corrupted
-            self.it_flags[0] = 0
-            self.it_flags[1] = 0
-        if self.it_flags[0] and self.it_flags[3]:
-            self.it_err_counters[5] += 1  # sync and corrupted
-            self.it_flags[0] = 0
-            self.it_flags[3] = 0
-        if self.it_flags[1] and self.it_flags[3]:
-            self.it_err_counters[6] += 1  # sync and ooo
-            self.it_flags[1] = 0
-            self.it_flags[3] = 0
-        if self.it_flags[2] and self.it_flags[0]:
-            self.it_err_counters[7] += 1  # link and ooo
-            self.it_flags[2] = 0
-            self.it_flags[0] = 0
-        if self.it_flags[2] and self.it_flags[1]:
-            self.it_err_counters[8] += 1  # link and corrupted
-            self.it_flags[2] = 0
-            self.it_flags[1] = 0
-        if self.it_flags[2] and self.it_flags[3]:
-            self.it_err_counters[9] += 1  # link and sync
-            self.it_flags[2] = 0
-            self.it_flags[3] = 0
-        for f in range(len(self.it_flags)):
-            if self.it_flags[f]:
-                self.it_err_counters[f] += 1
-            self.it_flags[f] = 0
+        if it_flags[0] and it_flags[1]:
+            it_err_counters[4] += 1  # ooo and corrupted
+            it_flags[0] = 0
+            it_flags[1] = 0
+        if it_flags[0] and it_flags[3]:
+            it_err_counters[5] += 1  # sync and corrupted
+            it_flags[0] = 0
+            it_flags[3] = 0
+        if it_flags[1] and it_flags[3]:
+            it_err_counters[6] += 1  # sync and ooo
+            it_flags[1] = 0
+            it_flags[3] = 0
+        if it_flags[2] and it_flags[0]:
+            it_err_counters[7] += 1  # link and ooo
+            it_flags[2] = 0
+            it_flags[0] = 0
+        if it_flags[2] and it_flags[1]:
+            it_err_counters[8] += 1  # link and corrupted
+            it_flags[2] = 0
+            it_flags[1] = 0
+        if it_flags[2] and it_flags[3]:
+            it_err_counters[9] += 1  # link and sync
+            it_flags[2] = 0
+            it_flags[3] = 0
+        for f in range(len(it_flags)):
+            if it_flags[f]:
+                it_err_counters[f] += 1
+            it_flags[f] = 0
 
-        self._errOutOfOrder = self.err_counters[0]
-        self._errCorrupted = self.err_counters[1]
-        self._errLink = self.err_counters[2]
-        self._errSync = self.err_counters[3]
+        self._errOutOfOrder = err_counters[0]
+        self._errCorrupted = err_counters[1]
+        self._errLink = err_counters[2]
+        self._errSync = err_counters[3]
 
-        self._itOOO = self.it_err_counters[0]
-        self._itCorrupted = self.it_err_counters[1]
-        self._itLink = self.it_err_counters[2]
-        self._itSync = self.it_err_counters[3]
-        self._itOOOCorr = self.it_err_counters[4]
-        self._itSyncCorr = self.it_err_counters[5]
-        self._itSyncOOO = self.it_err_counters[6]
-        self._itLinkOOO = self.it_err_counters[7]
-        self._itLinkCorr = self.it_err_counters[8]
-        self._itLinkSync = self.it_err_counters[9]
-        self._itMultiple = self.it_err_counters[10]
+        self._itOOO = it_err_counters[0]
+        self._itCorrupted = it_err_counters[1]
+        self._itLink = it_err_counters[2]
+        self._itSync = it_err_counters[3]
+        self._itOOOCorr = it_err_counters[4]
+        self._itSyncCorr = it_err_counters[5]
+        self._itSyncOOO = it_err_counters[6]
+        self._itLinkOOO = it_err_counters[7]
+        self._itLinkCorr = it_err_counters[8]
+        self._itLinkSync = it_err_counters[9]
+        self._itMultiple = it_err_counters[10]
 
-        self._balanceMismatches = self.balance_mismatches
-        self._hardDetec = self.err_counters[4]
-        self._itHardDetec = self.it_err_counters[11]
+        self._balanceMismatches = balance_mismatches
+        self._hardDetec = err_counters[4]
+        self._itHardDetec = it_err_counters[11]
 
-        self.__eraseVars()
 
     def __debug(self):
         print "\n", self._errOutOfOrder, self._errCorrupted, self._errLink, self._errSync, \
             self._itOOO, self._itCorrupted, self._itLink, self._itOOOCorr, self._itSyncCorr, \
             self._itSyncOOO, self._itLinkOOO, self._itLinkCorr, self._itLinkSync, self._itMultiple, \
             self._balanceMismatches, self._hardDetec, self._itHardDetec
-
-    def __eraseVars(self):
-        # from caio's parser
-        self.balance = 0
-        self.parsed_errors = 0
-        self.balance_mismatches = 0
-        self.err_counters = [0, 0, 0, 0, 0]  # outoforder, corrupted, link error, sync/analisys error
-        self.it_err_counters = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                0]  # outoforder, corrupted, link error, sync/analisys error, ooo and corrupted,
-        # sync and corrupted, sync and ooo, link and corruption, link and ooo, link and sync, 3+ combinations
-        self.it_flags = [0, 0, 0, 0]
