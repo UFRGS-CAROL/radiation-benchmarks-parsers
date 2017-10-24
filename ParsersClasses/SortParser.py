@@ -91,7 +91,6 @@ class SortParser(Parser):
 
             writer.writerow(outputList)
             csvWFP.close()
-            self.__eraseVars()
 
         except:
             # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
@@ -108,17 +107,20 @@ class SortParser(Parser):
     """
 
     def parseErrMethod(self, errString):
-        inf_flag = 0
-
+        # inf_flag = 0
+        ret = {}
         if "INF" in errString:
             m = re.match(".*INF.*", errString)
             if m:
-                if inf_flag == 0:
-                    inf_flag = 1
-                    self.it_err_counters[11] += 1
-                self.err_counters[4] += 1
+                ret['inf'] = 1
+                ret['inf_err_string'] = errString
+                # if inf_flag == 0:
+                #     inf_flag = 1
+                #     self.it_err_counters[11] += 1
+                # self.err_counters[4] += 1
 
         elif "ERR" in errString:
+            ret['err'] = 1
             # m = re.match(".*#IT.*", line)
             # if m:
             #     inf_flag = 0
@@ -128,81 +130,164 @@ class SortParser(Parser):
             # sdc += 1
             # errors = []
 
-            if self.balance != 0:
-                print(">>>Warning: Balance is wrong:", self.balance)
-                self.balance_mismatches += 1
-            self.balance = 0
-
-            err_type_count = 0
-            for flag in self.it_flags:
-                if flag != 0:
-                    err_type_count += 1
-            if err_type_count >= 3:
-                self.it_err_counters[10] += 1  # more than 3 types of errors
-                for f in range(len(self.it_flags)):
-                    self.it_flags[f] = 0
-
-            if self.it_flags[0] and self.it_flags[1]:
-                self.it_err_counters[4] += 1  # ooo and corrupted
-                self.it_flags[0] = 0
-                self.it_flags[1] = 0
-            if self.it_flags[0] and self.it_flags[3]:
-                self.it_err_counters[5] += 1  # sync and corrupted
-                self.it_flags[0] = 0
-                self.it_flags[3] = 0
-            if self.it_flags[1] and self.it_flags[3]:
-                self.it_err_counters[6] += 1  # sync and ooo
-                self.it_flags[1] = 0
-                self.it_flags[3] = 0
-            if self.it_flags[2] and self.it_flags[0]:
-                self.it_err_counters[7] += 1  # link and ooo
-                self.it_flags[2] = 0
-                self.it_flags[0] = 0
-            if self.it_flags[2] and self.it_flags[1]:
-                self.it_err_counters[8] += 1  # link and corrupted
-                self.it_flags[2] = 0
-                self.it_flags[1] = 0
-            if self.it_flags[2] and self.it_flags[3]:
-                self.it_err_counters[9] += 1  # link and sync
-                self.it_flags[2] = 0
-                self.it_flags[3] = 0
-            for f in range(len(self.it_flags)):
-                if self.it_flags[f]:
-                    self.it_err_counters[f] += 1
-                self.it_flags[f] = 0
+            # if self.balance != 0:
+            #     print(">>>Warning: Balance is wrong:", self.balance)
+            #     self.balance_mismatches += 1
+            # self.balance = 0
+            #
+            # err_type_count = 0
+            # for flag in self.it_flags:
+            #     if flag != 0:
+            #         err_type_count += 1
+            # if err_type_count >= 3:
+            #     self.it_err_counters[10] += 1  # more than 3 types of errors
+            #     for f in range(len(self.it_flags)):
+            #         self.it_flags[f] = 0
+            #
+            # if self.it_flags[0] and self.it_flags[1]:
+            #     self.it_err_counters[4] += 1  # ooo and corrupted
+            #     self.it_flags[0] = 0
+            #     self.it_flags[1] = 0
+            # if self.it_flags[0] and self.it_flags[3]:
+            #     self.it_err_counters[5] += 1  # sync and corrupted
+            #     self.it_flags[0] = 0
+            #     self.it_flags[3] = 0
+            # if self.it_flags[1] and self.it_flags[3]:
+            #     self.it_err_counters[6] += 1  # sync and ooo
+            #     self.it_flags[1] = 0
+            #     self.it_flags[3] = 0
+            # if self.it_flags[2] and self.it_flags[0]:
+            #     self.it_err_counters[7] += 1  # link and ooo
+            #     self.it_flags[2] = 0
+            #     self.it_flags[0] = 0
+            # if self.it_flags[2] and self.it_flags[1]:
+            #     self.it_err_counters[8] += 1  # link and corrupted
+            #     self.it_flags[2] = 0
+            #     self.it_flags[1] = 0
+            # if self.it_flags[2] and self.it_flags[3]:
+            #     self.it_err_counters[9] += 1  # link and sync
+            #     self.it_flags[2] = 0
+            #     self.it_flags[3] = 0
+            # for f in range(len(self.it_flags)):
+            #     if self.it_flags[f]:
+            #         self.it_err_counters[f] += 1
+            #     self.it_flags[f] = 0
 
             m = re.match(".*ERR.*\Elements not ordered.*index=(\d+) ([0-9\-]+)\>([0-9\-]+)", errString)
             if m:
-                self.err_counters[0] += 1
-                self.it_flags[0] = 1
-                self.parsed_errors += 1
+                ret['not_ordered'] = 1
+                # self.err_counters[0] += 1
+                # self.it_flags[0] = 1
+                # self.parsed_errors += 1
+
 
             m = re.match(".*ERR.*\The histogram from element ([0-9\-]+) differs.*srcHist=(\d+) dstHist=(\d+)",
                          errString)
             if m:
-                if (int(m.group(2)) >= 32) or (((int(m.group(3)) - int(m.group(2))) >= 32) and (
-                            ((int(m.group(3)) - int(m.group(2))) % 2) == 0)):
-                    self.err_counters[3] += 1
-                    self.it_flags[3] = 1
-                    self.parsed_errors += 1
-                    # print(">>>>Warning: Ignoring element corruption - Element: ", m.group(1), "srcHist: ", m.group(2), "dstHist: ", m.group(3))
-                else:
-                    self.err_counters[1] += 1
-                    self.it_flags[1] = 1
-                    self.parsed_errors += 1
-                    self.balance += int(m.group(2)) - int(m.group(3))
+                ret['histogram_diff'] = 1
+                ret['m_value'] = m
+                # if (int(m.group(2)) >= 32) or (((int(m.group(3)) - int(m.group(2))) >= 32) and (
+                #             ((int(m.group(3)) - int(m.group(2))) % 2) == 0)):
+                #     self.err_counters[3] += 1
+                #     self.it_flags[3] = 1
+                #     self.parsed_errors += 1
+                #     # print(">>>>Warning: Ignoring element corruption - Element: ", m.group(1), "srcHist: ", m.group(2), "dstHist: ", m.group(3))
+                # else:
+                #     self.err_counters[1] += 1
+                #     self.it_flags[1] = 1
+                #     self.parsed_errors += 1
+                #     self.balance += int(m.group(2)) - int(m.group(3))
 
             # ERR The link between Val and Key arrays in incorrect. index=2090080
             # wrong_key=133787990 val=54684 correct_key_pointed_by_val=-1979613866
             m = re.match(".*ERR.*\The link between Val and Key arrays in incorrect.*", errString)
             if m:
-                self.err_counters[2] += 1
-                self.it_flags[2] = 1
-                self.parsed_errors += 1
+                ret['link_key'] = 1
+                # self.err_counters[2] += 1
+                # self.it_flags[2] = 1
+                # self.parsed_errors += 1
 
-        return inf_flag
+        return ret if len(ret) > 0 else None
 
     def _relativeErrorParser(self, errList):
+        if len(errList) < 1:
+            return
+
+        for i in errList:
+            if 'inf' in i:
+                # if inf_flag == 0:
+                #     inf_flag = 1
+                self.it_err_counters[11] += 1
+                self.err_counters[4] += 1
+
+            elif 'err' in i:
+                if 'not_ordered' in i:
+                    self.err_counters[0] += 1
+                    self.it_flags[0] = 1
+                    self.parsed_errors += 1
+
+                if 'histogram_diff' in i:
+                    m = i['m_value']
+                    if (int(m.group(2)) >= 32) or (((int(m.group(3)) - int(m.group(2))) >= 32) and (
+                                ((int(m.group(3)) - int(m.group(2))) % 2) == 0)):
+                        self.err_counters[3] += 1
+                        self.it_flags[3] = 1
+                        self.parsed_errors += 1
+                        # print(">>>>Warning: Ignoring element corruption - Element: ", m.group(1), "srcHist: ", m.group(2), "dstHist: ", m.group(3))
+                    else:
+                        self.err_counters[1] += 1
+                        self.it_flags[1] = 1
+                        self.parsed_errors += 1
+                        self.balance += int(m.group(2)) - int(m.group(3))
+
+                if 'link_key' in i:
+                    self.err_counters[2] += 1
+                    self.it_flags[2] = 1
+                    self.parsed_errors += 1
+
+        if self.balance != 0:
+            print(">>>Warning: Balance is wrong:", self.balance)
+            self.balance_mismatches += 1
+        self.balance = 0
+
+        err_type_count = 0
+        for flag in self.it_flags:
+            if flag != 0:
+                err_type_count += 1
+        if err_type_count >= 3:
+            self.it_err_counters[10] += 1  # more than 3 types of errors
+            for f in range(len(self.it_flags)):
+                self.it_flags[f] = 0
+
+        if self.it_flags[0] and self.it_flags[1]:
+            self.it_err_counters[4] += 1  # ooo and corrupted
+            self.it_flags[0] = 0
+            self.it_flags[1] = 0
+        if self.it_flags[0] and self.it_flags[3]:
+            self.it_err_counters[5] += 1  # sync and corrupted
+            self.it_flags[0] = 0
+            self.it_flags[3] = 0
+        if self.it_flags[1] and self.it_flags[3]:
+            self.it_err_counters[6] += 1  # sync and ooo
+            self.it_flags[1] = 0
+            self.it_flags[3] = 0
+        if self.it_flags[2] and self.it_flags[0]:
+            self.it_err_counters[7] += 1  # link and ooo
+            self.it_flags[2] = 0
+            self.it_flags[0] = 0
+        if self.it_flags[2] and self.it_flags[1]:
+            self.it_err_counters[8] += 1  # link and corrupted
+            self.it_flags[2] = 0
+            self.it_flags[1] = 0
+        if self.it_flags[2] and self.it_flags[3]:
+            self.it_err_counters[9] += 1  # link and sync
+            self.it_flags[2] = 0
+            self.it_flags[3] = 0
+        for f in range(len(self.it_flags)):
+            if self.it_flags[f]:
+                self.it_err_counters[f] += 1
+            self.it_flags[f] = 0
+
         self._errOutOfOrder = self.err_counters[0]
         self._errCorrupted = self.err_counters[1]
         self._errLink = self.err_counters[2]
@@ -223,6 +308,8 @@ class SortParser(Parser):
         self._balanceMismatches = self.balance_mismatches
         self._hardDetec = self.err_counters[4]
         self._itHardDetec = self.it_err_counters[11]
+
+        self.__eraseVars()
 
     def __debug(self):
         print "\n", self._errOutOfOrder, self._errCorrupted, self._errLink, self._errSync, \
