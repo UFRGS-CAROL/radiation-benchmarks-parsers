@@ -243,3 +243,7 @@ class SortParser(Parser):
         self._balanceMismatches = balance_mismatches
         self._hardDetec = err_counters[4]
         self._itHardDetec = it_err_counters[11]
+
+
+    def buildImageMethod(self):
+        return False

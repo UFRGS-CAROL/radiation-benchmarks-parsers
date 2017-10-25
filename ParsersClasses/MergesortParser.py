@@ -7,11 +7,12 @@ class MergesortParser(SortParser):
         SortParser.__init__(self, **kwargs)
 
 
-
-    #tem que dar um set para o size baseado no header
-    #por exemplo se o size for um numero e o input
-    #setar o _size para mergesort_input_1MB
-    #porque as pastas dos csvs vao ter o nome do _size
+    """
+    input: header is the logfilename header
+    no return
+    must set _size attribute to a string,
+    this string will be used to create the csv file
+    """
     def setSize(self, header):
         self._size = None
         m = re.match(".*size\:(\d+).*", header)
@@ -21,9 +22,3 @@ class MergesortParser(SortParser):
             except:
                 self._size = None
         self._size = 'mergesort_input_' + str(self._size)
-
-
-
-    def buildImageMethod(self):
-        return False
-
