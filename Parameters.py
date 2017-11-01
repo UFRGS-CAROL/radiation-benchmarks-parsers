@@ -45,8 +45,8 @@ DARKNET_DATASETS = {'caltech.pedestrians.critical.1K.txt': {'dumb_abft': 'gold.c
 LAYERS_GOLD_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
 LAYERS_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
 
-LAYERS_GOLD_PATH_DARKNETV2 = '/media/fernando/U/data_K40_1309/'
-LAYERS_PATH_DARKNETV2 = '/media/fernando/U/data_K40_1309/'
+LAYERS_GOLD_PATH_DARKNETV2 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v2'
+LAYERS_PATH_DARKNETV2 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v2'
 
 ############################################################################################
 ###############################FASTER RCNN PARSER PARAMETERS################################

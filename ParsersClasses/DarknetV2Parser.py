@@ -102,7 +102,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                                              layerPath=self.__layersPath, dnnSize=self._sizeOfDnn, correctableLayers=[],
                                              maxPoolLayers=self._maxpoolLayers)
 
-            self._csvHeader.extend(self._cnnParser.genCsvHeader())
+            #self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -132,8 +132,8 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         outputList.append(self._header)
 
-        if self._parseLayers and self._saveLayer:
-            outputList.extend(self._cnnParser.getOutputToCsv())
+        # if self._parseLayers and self._saveLayer:
+        #     outputList.extend(self._cnnParser.getOutputToCsv())
 
         writer.writerow(outputList)
         csvWFP.close()
@@ -153,6 +153,14 @@ class DarknetV2Parser(ObjectDetectionParser):
     def _relativeErrorParser(self, errList):
         if len(errList) == 0:
             return
+
+        # if '2017_09_10_18_31_21_cudaDarknetv2_ECC_OFF_carol-k401.log' not in self._logFileName:
+        #     # print "\npassou\n"
+        #     return
+        # else:
+        #     print "\n", self._logFileName, self._sdcIteration
+        #     print "agora passou"
+
         gold = self._loadGold()
 
         if gold == None:
@@ -493,16 +501,23 @@ class DarknetV2Parser(ObjectDetectionParser):
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
-            layerFilename = self.__layersGoldPath + os.path.basename(
+            layerFilename = self.__layersGoldPath + '/' + os.path.basename(
                 self._imgListPath) + "_darknet_v2_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
         else:
             # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
-            layerFilename = self.__layersPath + self._logFileName + "_darknet_v2_layer_" + str(
+            layerFilename = self.__layersPath + '/' +  self._logFileName + "_darknet_v2_layer_" + str(
                 layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
 
-        os.system("ls " + str(layerFilename))
+            if not os.path.exists(layerFilename):
+                layerFilename = self.__layersPath + '/' + self._logFileName + "_darknet_v2_layer_" + str(
+                    layerNum) + "_img_" + str(
+                    imgListpos) + "_test_it_" + str(self._sdcIteration) + str(
+                    imgListpos) + ".layer"
+                if os.path.exists(layerFilename):
+                    print "\nthis time it was found", layerFilename
+
 
         filenames = glob.glob(layerFilename)
 
