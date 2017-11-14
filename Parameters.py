@@ -114,6 +114,15 @@ SUMMARIES_FILES = {
                '/summaries-fission.csv', 'data': None},
 }
 
+# --- new ERROR Threshold method
+ERROR_RELATIVE_HISTOGRAM = {
+# SET THESE FOR THE FINAL HISTOGRAM CSV
+# precision and limitrange will be multiplied to generate all possible limits
+"PRECISION" : 10,
+"LIMIT_RANGE": 10,
+
+}
+
 ###############################################################################################
 
 
