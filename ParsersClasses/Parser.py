@@ -15,7 +15,7 @@ from datetime import datetime
 class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
-    __errorLimits = [0.0, 2.0, 5.0]
+    __errorLimits = [0.0, 2.0, 5.0, 100]
     __keys = []
     # it will keep the first threshold key
     __firstKey = ""
@@ -160,7 +160,7 @@ class Parser():
 
         self._iteErrors = iteErrors
         self._errList = errList
-        # print "\n\nerr list inside " , len(errList)
+
         self._pureHeader = pureHeader
         self._logFileNameNoExt = logFileNameNoExt
 
@@ -173,7 +173,7 @@ class Parser():
         if self._checkRunsCsv:
             # for i in self._checkRunsCsv:
             board_key = str(self._machine) + ("_ecc_on" if self._ecc else '')
-            # print self._checkRunsCsv[board_key]["csv"]
+
             csvObjFile = open(self._checkRunsCsv[board_key]["csv"])
 
             # to check the delimiter
@@ -246,7 +246,7 @@ class Parser():
 
     """
 
-    def __placeRelativeError(self, relError, err):
+    def _placeRelativeError(self, relError, err):
         # if relError < self._toleratedRelErr:
         #     relErrLowerLimit += 1
         # else:
@@ -269,7 +269,7 @@ class Parser():
     _relErrLowerLimit = {}
     """
 
-    def __cleanRelativeErrorAttributes(self):
+    def _cleanRelativeErrorAttributes(self):
         for key in self.__keys:
             # to store all error parsed values
             self._errors[key] = []
@@ -287,8 +287,7 @@ class Parser():
         relErr = []
         zeroGold = 0
         zeroOut = 0
-        self.__cleanRelativeErrorAttributes()
-
+        self._cleanRelativeErrorAttributes()
         for err in errList:
             read = float(err[2])
             expected = float(err[3])
@@ -301,7 +300,7 @@ class Parser():
                 relError = abs(absoluteErr / expected) * 100
                 relErr.append(relError)
                 # generic way to parse for many error threshold
-                self.__placeRelativeError(relError, err)
+                self._placeRelativeError(relError, err)
 
         if len(relErr) > 0:
             self._maxRelErr = max(relErr)
@@ -359,9 +358,7 @@ class Parser():
     def localityParser(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            print "\n"
             for key, value in self._errors.iteritems():
-                print key
                 if self._hasThirdDimention:
                     self._locality[key] = self._localityParser3D(value)
                 else:
@@ -551,7 +548,6 @@ class Parser():
                     startDate = datetime.strptime(startDate, "%c")
                     endDate = datetime.strptime(endDate, "%c")
                     if startDate <= currDate <= endDate and validBench:
-                        # print "\nstart date ", startDate , " enddate ", endDate, " currDate ", currDate
                         return True
                 except:
                     pass

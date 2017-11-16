@@ -9,7 +9,6 @@ from sklearn.metrics import jaccard_similarity_score
 class LavaMDParser(Parser):
 
     def __init__(self, **kwargs):
-        # super(Parser, self).__init__(kwargs)
         Parser.__init__(self, **kwargs)
 
     _box = None
@@ -61,6 +60,7 @@ class LavaMDParser(Parser):
         relErr = []
         zeroGold = 0
         zeroOut = 0
+        self._cleanRelativeErrorAttributes()
         # relErrLowerLimit = 0
         # relErrLowerLimit2 = 0
         # errListFiltered = []
@@ -108,8 +108,8 @@ class LavaMDParser(Parser):
                 relErrorZ = abs(absoluteErrZ / ze) * 100
 
             relError = relErrorV + relErrorX + relErrorY + relErrorZ
-            # if relError > 0:
-            #     relErr.append(relError)
+            if relError > 0:
+                relErr.append(relError)
             #     if relError < self._toleratedRelErr:
             #         relErrLowerLimit += 1
             #     else:
@@ -118,13 +118,15 @@ class LavaMDParser(Parser):
             #         relErrLowerLimit2 += 1
             #     else:
             #         errListFiltered2.append(err)
-            self.__placeRelativeError(relError, err)
+                self._placeRelativeError(relError, err)
         if len(relErr) > 0:
+
             self._maxRelErr = max(relErr)
             self._minRelErr = min(relErr)
             self._avgRelErr = sum(relErr) / float(len(relErr))
-            # return [maxRelErr, minRelErr, avgRelErr, zeroOut, zeroGold, relErrLowerLimit, errListFiltered,
-            #         relErrLowerLimit2, errListFiltered2]
+
+        self._zeroOut = zeroOut
+        self._zeroGold = zeroGold
 
     def parseErrMethod(self, errString):
         if self._box is None:

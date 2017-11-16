@@ -20,11 +20,7 @@ class LuleshParser(Parser):
         relErr = []
         zeroGold = 0
         zeroOut = 0
-        # relErrLowerLimit = 0
-        # relErrLowerLimit2 = 0
-        # errListFiltered = []
-        # errListFiltered2 = []
-
+        self._cleanRelativeErrorAttributes()
         for err in errList:
             # [posX, posY, posZ, None, None, xr, xe, yr, ye, zr, ze]
 
@@ -72,20 +68,14 @@ class LuleshParser(Parser):
             relError = relErrorX + relErrorY + relErrorZ  # relErrorV +
             if relError > 0:
                 relErr.append(relError)
-                # if relError < self._toleratedRelErr:
-                #     relErrLowerLimit += 1
-                # else:
-                #     errListFiltered.append(err)
-                # if relError < self._toleratedRelErr2:
-                #     relErrLowerLimit2 += 1
-                # else:
-                #     errListFiltered2.append(err)
-                self.__placeRelativeError(relError, err)
+                self._placeRelativeError(relError, err)
         if len(relErr) > 0:
             self._maxRelErr = max(relErr)
             self._minRelErr = min(relErr)
             self._avgRelErr = sum(relErr) / float(len(relErr))
 
+        self._zeroOut = zeroOut
+        self._zeroGold = zeroGold
 
     def parseErrMethod(self, errString):
         if self._box is None:
