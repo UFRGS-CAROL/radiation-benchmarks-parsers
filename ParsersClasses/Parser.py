@@ -15,8 +15,10 @@ from datetime import datetime
 class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
-    __errorLimits = [0.0, 0.2, 0.5]
+    __errorLimits = [0.0, 2.0, 5.0]
     __keys = []
+    # it will keep the first threshold key
+    __firstKey = ""
 
     # errorsParsed
     _errors = {}
@@ -74,7 +76,6 @@ class Parser():
                   "#Iteration Errors", "Max Relative Error", "Min Rel Error",
                   "Average Rel Err", "zeroOut", "zeroGold"]
 
-
     # relative error types
     __relativeErrorTypes = ["cubic", "square", "line", "single", "random"]
 
@@ -84,8 +85,6 @@ class Parser():
     _avgRelErr = 0
     _zeroOut = 0
     _zeroGold = 0
-    # _relErrLowerLimit = 0
-    # _relErrLowerLimit2 = 0
 
     # for benchmarks which have a third dimention this attribute must be set on the child process
     _hasThirdDimention = False
@@ -105,11 +104,13 @@ class Parser():
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
         self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
+        self.__firstKey = self.__keys[0]
+
         if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader:
             # for python list interpretation is faster than a concatenated loop
-            self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
-            self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
-            self._csvHeader.extend([t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
+            self._csvHeader.extend("relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits)
+            self._csvHeader.extend("jaccard_>_" + str(threshold) for threshold in self.__errorLimits)
+            self._csvHeader.extend(t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes)
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
@@ -197,21 +198,21 @@ class Parser():
     """
 
     def parseErr(self):
-        self._errors["errorsParsed"] = []
+        self._errors[self.__firstKey] = []
         for errString in self._errList:
             if self._isLogValid:
                 err = self.parseErrMethod(errString)
                 if err is not None:
-                    self._errors["errorsParsed"].append(err)
+                    self._errors[self.__firstKey].append(err)
 
     """
     _relativeErrorParser caller, if you want override _relativeErrorParse
-     only put all errors on self._errors['errorsParsed'] so
+     only put all errors on self._errors[self.__firstKey] so
     it will be parsed by your _relativeErrorParse
     """
 
     def relativeErrorParser(self):
-        self._relativeErrorParser(self._errors["errorsParsed"])
+        self._relativeErrorParser(self._errors[self.__firstKey])
 
     @abstractmethod
     def parseErrMethod(self, errString):
@@ -254,9 +255,6 @@ class Parser():
         #     relErrLowerLimit2 += 1
         # else:
         #     errListFiltered2.append(err)
-
-        # self._errors["errListFiltered_" + str(threshold)] = []
-        # self._errors["relErrLowerLimit_" + str(threshold)] = 0
         for key, threshold in zip(self.__keys, self.__errorLimits):
             if relError < threshold:
                 self._relErrLowerLimit[key] += 1
@@ -290,10 +288,7 @@ class Parser():
         zeroGold = 0
         zeroOut = 0
         self.__cleanRelativeErrorAttributes()
-        # relErrLowerLimit = 0
-        # relErrLowerLimit2 = 0
-        # errListFiltered = []
-        # errListFiltered2 = []
+
         for err in errList:
             read = float(err[2])
             expected = float(err[3])
@@ -305,29 +300,16 @@ class Parser():
             else:
                 relError = abs(absoluteErr / expected) * 100
                 relErr.append(relError)
-                # if relError < self._toleratedRelErr:
-                #     relErrLowerLimit += 1
-                # else:
-                #     errListFiltered.append(err)
-                # if relError < self._toleratedRelErr2:
-                #     relErrLowerLimit2 += 1
-                # else:
-                #     errListFiltered2.append(err)
+                # generic way to parse for many error threshold
                 self.__placeRelativeError(relError, err)
 
         if len(relErr) > 0:
             self._maxRelErr = max(relErr)
             self._minRelErr = min(relErr)
             self._avgRelErr = sum(relErr) / float(len(relErr))
-            # print "\n\n" , relErrLowerLimit , " > 5 ", relErrLowerLimit2 , "\n\n"
-            # return [maxRelErr, minRelErr, avgRelErr, zeroOut, zeroGold, relErrLowerLimit, errListFiltered,
-            #         relErrLowerLimit2, errListFiltered2]
-        # else:
+
         self._zeroOut = zeroOut
         self._zeroGold = zeroGold
-        # self._relErrLowerLimit = relErrLowerLimit
-
-        # fileNameSuffix = "errorFilterTo-"+str(toleratedRelErr) # add a suffix to csv filename
 
     """
     jaccardCoefficient caller method
@@ -377,7 +359,9 @@ class Parser():
     def localityParser(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
+            print "\n"
             for key, value in self._errors.iteritems():
+                print key
                 if self._hasThirdDimention:
                     self._locality[key] = self._localityParser3D(value)
                 else:
@@ -483,15 +467,10 @@ class Parser():
                           self._zeroOut,
                           self._zeroGold]
 
-            # self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
-            # self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
-            # self._csvHeader.extend(
-            #     [t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
-
-
             outputList.extend(self._relErrLowerLimit[key] for key in self.__keys)
             outputList.extend(self._jaccardCoefficientDict[key] for key in self.__keys)
-            outputList.extend(self._locality[key] for key in self.__keys)
+            for key in self.__keys:
+                outputList.extend(self._locality[key])
 
             writer.writerow(outputList)
             csvWFP.close()
