@@ -109,6 +109,14 @@ arguments:
 
                         if it is a fault injection log processing
 
+  --err_hist
+
+                        This parameter will generate an histogram for a serie of error thresholds,
+                        these error thresholds are calculated using ERROR_RELATIVE_HISTOGRAM dict values
+                        (set on Parameters.py)
+
+
+
 
 ## Contributing
 

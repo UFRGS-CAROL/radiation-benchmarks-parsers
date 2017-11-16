@@ -87,6 +87,12 @@ def parse_args():
     parser.add_argument('--is_fi', dest='is_fi', help='if it is a fault injection log processing', action='store_true',
                         default=False)
 
+    parser.add_argument('--err_hist', dest='parse_err_histogram',
+                        help='This parameter will generate an histogram for a serie of error threshold,'
+                             ' these error threshold are calculated using ERROR_RELATIVE_HISTOGRAM dict values',
+                        default=False,
+                        action='store_true')
+
     args = parser.parse_args()
     return args
 
@@ -115,7 +121,8 @@ if __name__ == '__main__':
             parse_layers=args.parse_layers,
             check_csv=args.check_csv,
             ecc=args.ecc,
-            is_fi=args.is_fi
+            is_fi=args.is_fi,
+            parse_err_histogram=args.parse_err_histogram
         )
 
         # open the shelve error database

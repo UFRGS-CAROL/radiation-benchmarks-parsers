@@ -82,7 +82,7 @@ LAYERS_PATH_LENET = "/home/fernando/Dropbox/UFRGS/Pesquisa/fault_injections/sass
 ############################################################################################
 
 RESNET_CLASSES_PATH = "../src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
-#"/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
+# "/home/fernando/git_pesquisa/radiation-benchmarks/src/cuda/resnet_torch/fb.resnet.torch/pretrained/imagenet.lua"
 
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
@@ -116,10 +116,10 @@ SUMMARIES_FILES = {
 
 # --- new ERROR Threshold method
 ERROR_RELATIVE_HISTOGRAM = {
-# SET THESE FOR THE FINAL HISTOGRAM CSV
-# precision and limitrange will be multiplied to generate all possible limits
-"PRECISION" : 10,
-"LIMIT_RANGE": 10,
+    # SET THESE FOR THE FINAL HISTOGRAM CSV
+    # precision and limitrange will be multiplied to generate all possible limits
+    "PRECISION": 10,
+    "LIMIT_RANGE": 10,
 
 }
 
@@ -137,6 +137,7 @@ def setBenchmarks(**kwargs):
     checkCsv = SUMMARIES_FILES if bool(kwargs.pop("check_csv")) else None
     ecc = bool(kwargs.pop("ecc"))
     isFi = bool(kwargs.pop("is_fi"))
+    parse_err_histogram = bool(kwargs.pop('parse_err_histogram'))
 
     print "Parsing for: ",
     for i in benchmarks:
@@ -193,7 +194,8 @@ def setBenchmarks(**kwargs):
         elif i == 'hotspot':
             benchObj = HotspotParser.HotspotParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                    check_csv=checkCsv,
-                                                   ecc=ecc)
+                                                   ecc=ecc,
+                                                   parse_err_histogram=parse_err_histogram)
         elif i == 'hog':
             benchObj = HogParser.HogParser(
                 prThreshold=pr_threshold,
@@ -207,7 +209,8 @@ def setBenchmarks(**kwargs):
         elif i == 'lavamd':
             benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
-                                                 ecc=ecc)
+                                                 ecc=ecc,
+                                                 parse_err_histogram=parse_err_histogram)
         elif i == 'mergesort':
             benchObj = MergesortParser.MergesortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
@@ -215,7 +218,8 @@ def setBenchmarks(**kwargs):
         elif i == 'nw':
             benchObj = NWParser.NWParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                          check_csv=checkCsv,
-                                         ecc=ecc)
+                                         ecc=ecc,
+                                         parse_err_histogram=parse_err_histogram)
         elif i == 'quicksort':
             benchObj = QuicksortParser.QuicksortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
@@ -223,7 +227,8 @@ def setBenchmarks(**kwargs):
         elif i == 'accl':
             benchObj = ACCLParser.ACCLParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                              check_csv=checkCsv,
-                                             ecc=ecc)
+                                             ecc=ecc,
+                                             parse_err_histogram=parse_err_histogram)
         elif i == 'pyfasterrcnn':
             benchObj = FasterRcnnParser.FasterRcnnParser(
                 prThreshold=pr_threshold,
@@ -238,15 +243,18 @@ def setBenchmarks(**kwargs):
         elif i == 'lulesh':
             benchObj = LuleshParser.LuleshParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
-                                                 ecc=ecc)
+                                                 ecc=ecc,
+                                                 parse_err_histogram=parse_err_histogram)
         elif i == 'lud':
             benchObj = LudParser.LudParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                            check_csv=checkCsv,
-                                           ecc=ecc)
+                                           ecc=ecc,
+                                           parse_err_histogram=parse_err_histogram)
         elif i == 'gemm':
             benchObj = GemmParser.GemmParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                              check_csv=checkCsv,
-                                             ecc=ecc)
+                                             ecc=ecc,
+                                             parse_err_histogram=parse_err_histogram)
         elif i == 'lenet':
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
                                                prThreshold=pr_threshold,
