@@ -20,10 +20,10 @@ class LuleshParser(Parser):
         relErr = []
         zeroGold = 0
         zeroOut = 0
-        relErrLowerLimit = 0
-        relErrLowerLimit2 = 0
-        errListFiltered = []
-        errListFiltered2 = []
+        # relErrLowerLimit = 0
+        # relErrLowerLimit2 = 0
+        # errListFiltered = []
+        # errListFiltered2 = []
 
         for err in errList:
             # [posX, posY, posZ, None, None, xr, xe, yr, ye, zr, ze]
@@ -72,23 +72,20 @@ class LuleshParser(Parser):
             relError = relErrorX + relErrorY + relErrorZ  # relErrorV +
             if relError > 0:
                 relErr.append(relError)
-                if relError < self._toleratedRelErr:
-                    relErrLowerLimit += 1
-                else:
-                    errListFiltered.append(err)
-                if relError < self._toleratedRelErr2:
-                    relErrLowerLimit2 += 1
-                else:
-                    errListFiltered2.append(err)
+                # if relError < self._toleratedRelErr:
+                #     relErrLowerLimit += 1
+                # else:
+                #     errListFiltered.append(err)
+                # if relError < self._toleratedRelErr2:
+                #     relErrLowerLimit2 += 1
+                # else:
+                #     errListFiltered2.append(err)
+                self.__placeRelativeError(relError, err)
         if len(relErr) > 0:
-            maxRelErr = max(relErr)
-            minRelErr = min(relErr)
-            avgRelErr = sum(relErr) / float(len(relErr))
-            return [maxRelErr, minRelErr, avgRelErr, zeroOut, zeroGold, relErrLowerLimit, errListFiltered,
-                    relErrLowerLimit2, errListFiltered2]
-        else:
-            return [None, None, None, zeroOut, zeroGold, relErrLowerLimit, errListFiltered, relErrLowerLimit2,
-                    errListFiltered2]
+            self._maxRelErr = max(relErr)
+            self._minRelErr = min(relErr)
+            self._avgRelErr = sum(relErr) / float(len(relErr))
+
 
     def parseErrMethod(self, errString):
         if self._box is None:

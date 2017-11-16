@@ -57,19 +57,14 @@ class LavaMDParser(Parser):
         except:
             return None
 
-    # return [highest relative error, lowest relative error, average relative error, # zeros in the output,
-    # #zero in the GOLD, #errors with relative errors lower than limit(toleratedRelErr),
-    # list of errors limited by toleratedRelErr, #errors with relative errors lower than limit(toleratedRelErr2),
-    # list of errors limited by toleratedRelErr2]
     def _relativeErrorParser(self, errList):
-        #print "\n\n\nPassou no relavite lava\n\n\n"
         relErr = []
         zeroGold = 0
         zeroOut = 0
-        relErrLowerLimit = 0
-        relErrLowerLimit2 = 0
-        errListFiltered = []
-        errListFiltered2 = []
+        # relErrLowerLimit = 0
+        # relErrLowerLimit2 = 0
+        # errListFiltered = []
+        # errListFiltered2 = []
         for err in errList:
             vr = err[2]
             ve = err[3]
@@ -113,25 +108,23 @@ class LavaMDParser(Parser):
                 relErrorZ = abs(absoluteErrZ / ze) * 100
 
             relError = relErrorV + relErrorX + relErrorY + relErrorZ
-            if relError > 0:
-                relErr.append(relError)
-                if relError < self._toleratedRelErr:
-                    relErrLowerLimit += 1
-                else:
-                    errListFiltered.append(err)
-                if relError < self._toleratedRelErr2:
-                    relErrLowerLimit2 += 1
-                else:
-                    errListFiltered2.append(err)
+            # if relError > 0:
+            #     relErr.append(relError)
+            #     if relError < self._toleratedRelErr:
+            #         relErrLowerLimit += 1
+            #     else:
+            #         errListFiltered.append(err)
+            #     if relError < self._toleratedRelErr2:
+            #         relErrLowerLimit2 += 1
+            #     else:
+            #         errListFiltered2.append(err)
+            self.__placeRelativeError(relError, err)
         if len(relErr) > 0:
-            maxRelErr = max(relErr)
-            minRelErr = min(relErr)
-            avgRelErr = sum(relErr) / float(len(relErr))
-            return [maxRelErr, minRelErr, avgRelErr, zeroOut, zeroGold, relErrLowerLimit, errListFiltered,
-                    relErrLowerLimit2, errListFiltered2]
-        else:
-            return [None, None, None, zeroOut, zeroGold, relErrLowerLimit, errListFiltered, relErrLowerLimit2,
-                    errListFiltered2]
+            self._maxRelErr = max(relErr)
+            self._minRelErr = min(relErr)
+            self._avgRelErr = sum(relErr) / float(len(relErr))
+            # return [maxRelErr, minRelErr, avgRelErr, zeroOut, zeroGold, relErrLowerLimit, errListFiltered,
+            #         relErrLowerLimit2, errListFiltered2]
 
     def parseErrMethod(self, errString):
         if self._box is None:
