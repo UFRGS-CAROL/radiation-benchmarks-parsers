@@ -53,7 +53,7 @@ class Parser():
     _accIteErrors = -1
     _iteErrors = -1
 
-    ## support attributes
+    # support attributes
     # build locality images
     _buildImages = False
     # if header was already written
@@ -105,10 +105,11 @@ class Parser():
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
         self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
-        # for python list interpretation is faster than a concatenated loop
-        self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
-        self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
-        self._csvHeader.extend([t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
+        if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader:
+            # for python list interpretation is faster than a concatenated loop
+            self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
+            self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
+            self._csvHeader.extend([t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
