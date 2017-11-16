@@ -36,9 +36,6 @@ class SortParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-    def getBenchmark(self):
-        return self._benchmark
-
     def localityParser(self):
         pass
 
@@ -90,9 +87,6 @@ class SortParser(Parser):
             # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
             print "Error on writing row to " + str(csvFileName)
             raise
-
-    def relativeErrorParser(self):
-        self._relativeErrorParser(self._errors["errorsParsed"])
 
     """
     errString = ERR or INF string

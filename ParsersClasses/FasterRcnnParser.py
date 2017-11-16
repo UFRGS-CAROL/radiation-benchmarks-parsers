@@ -15,10 +15,6 @@ class FasterRcnnParser(ObjectDetectionParser):
         ObjectDetectionParser.__init__(self, **kwargs)
         self._detectionThreshold = 0.3
 
-
-    def getBenchmark(self):
-        return self._benchmark
-
     # parse PyFaster
     def parseErrMethod(self, errString):
         # print errString

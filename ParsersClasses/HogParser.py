@@ -14,24 +14,8 @@ class HogParser(ObjectDetectionParser):
     def __init__(self, **kwargs):
         ObjectDetectionParser.__init__(self, **kwargs)
 
-
     _imgListPath = None
 
-    def getBenchmark(self):
-        return self._benchmark
-
-    # ERR Rectangles found: 6 (gold has 9).
-    # ERR Image: set08_V000_318.jpg
-    # ERR 102,51,448,191,499,293
-    # ERR 108,54,574,131,628,239
-    # ERR 171,86,17,73,103,244
-    # ERR 211,105,183,18,288,229
-    # ERR 261,130,0,0,130,261
-    # ERR 305,153,388,8,541,313
-    # ERR MISSED
-    # SDC Ite:6220 KerTime:0.036264 AccTime:226.066852 KerErr:2 AccErr:9
-    # ABORT amount of errors equals of the last iteration
-    # END
     def parseErrMethod(self, errString):
         ret = {}
         try:

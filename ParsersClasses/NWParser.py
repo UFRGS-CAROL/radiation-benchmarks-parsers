@@ -8,8 +8,6 @@ class NWParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-    # Return [posX, posY, read, expected] -> [int, int, float, float]
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         try:
             # ERR  p: [1, 467], r: -4654, e: 21, error: 467
@@ -27,7 +25,6 @@ class NWParser(Parser):
                 return None
         except ValueError:
             return None
-
 
     def setSize(self, header):
         self._max_rows = None
@@ -54,10 +51,5 @@ class NWParser(Parser):
                 self._penalty = None
         self._size = "max_cols_" + str(self._max_cols) + "_max_rows_" + str(self._max_rows)
 
-
-
     def buildImageMethod(self):
         return False
-
-    def getBenchmark(self):
-        return self._benchmark

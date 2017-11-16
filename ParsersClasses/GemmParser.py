@@ -8,12 +8,6 @@ class GemmParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-
-    def getBenchmark(self):
-        return self._benchmark
-
-    # Return [posX, posY, read, expected] -> [int, int, float, float]
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         try:
             # ERR stream: 0, p: [0, 0], r: 3.0815771484375000e+02, e: 0.0000000000000000e+00

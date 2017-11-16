@@ -17,9 +17,6 @@ class LavaMDParser(Parser):
     _streams = None
     _hasThirdDimention = True
 
-    def getBenchmark(self):
-        return self._benchmark
-
     def _jaccardCoefficient(self, errListJaccard):
         #print "\n\nPassou no jaccard lava \n\n"
         expected = []
@@ -60,7 +57,10 @@ class LavaMDParser(Parser):
         except:
             return None
 
-    # return [highest relative error, lowest relative error, average relative error, # zeros in the output, #zero in the GOLD, #errors with relative errors lower than limit(toleratedRelErr), list of errors limited by toleratedRelErr, #errors with relative errors lower than limit(toleratedRelErr2), list of errors limited by toleratedRelErr2]
+    # return [highest relative error, lowest relative error, average relative error, # zeros in the output,
+    # #zero in the GOLD, #errors with relative errors lower than limit(toleratedRelErr),
+    # list of errors limited by toleratedRelErr, #errors with relative errors lower than limit(toleratedRelErr2),
+    # list of errors limited by toleratedRelErr2]
     def _relativeErrorParser(self, errList):
         #print "\n\n\nPassou no relavite lava\n\n\n"
         relErr = []
@@ -133,8 +133,6 @@ class LavaMDParser(Parser):
             return [None, None, None, zeroOut, zeroGold, relErrLowerLimit, errListFiltered, relErrLowerLimit2,
                     errListFiltered2]
 
-    # Return [posX, posY, posZ, vr, ve, xr, xe, yr, ye, zr, ze] -> [int, int, int, float, float, float, float, float, float, float, float]
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         if self._box is None:
             print ("box is None!!!\nerrString: ", errString)
@@ -204,4 +202,5 @@ class LavaMDParser(Parser):
         else:
             self._size = "old_lava_boxes_" + str(self._box)
 
-    def buildImageMethod(self): return False
+    def buildImageMethod(self):
+        return False

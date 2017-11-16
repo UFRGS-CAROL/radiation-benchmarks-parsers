@@ -8,19 +8,12 @@ class ACCLParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-
     __frames = None
     __framesPerStream = None
     __maxRows = None
     __maxCols = None
     __penalty = None
 
-
-    def getBenchmark(self):
-        return self._benchmark
-
-    # Return [posX, posY, read, expected, comp_or_spans] -> [int, int, float, float, string]
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         try:
             # ERR stream: 0, p: [0, 0], r: 3.0815771484375000e+02, e: 0.0000000000000000e+00

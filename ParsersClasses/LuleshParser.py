@@ -6,7 +6,6 @@ from Parser import Parser
 
 class LuleshParser(Parser):
 
-
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
@@ -91,9 +90,6 @@ class LuleshParser(Parser):
             return [None, None, None, zeroOut, zeroGold, relErrLowerLimit, errListFiltered, relErrLowerLimit2,
                     errListFiltered2]
 
-    # parse lulesh is the same as lava
-    # Return [posX, posY, posZ, vr, ve, xr, xe, yr, ye, zr, ze] -> [int, int, int, float, float, float, float, float, float, float, float]
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         if self._box is None:
             print ("box is None!!!\nerrString: ", errString)
@@ -155,9 +151,6 @@ class LuleshParser(Parser):
                     self._iterations = None
         self._size = str(self._size) + str(self._iterations)
         # return self._size
-
-    def getBenchmark(self):
-        return self._benchmark
 
     def buildImageMethod(self):
         return False

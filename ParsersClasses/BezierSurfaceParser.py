@@ -7,8 +7,6 @@ class BezierSurfaceParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-
-
     def parseErrMethod(self, errString):
         # print errString
         m = re.match(".*([X-Y-Z]+),.*p\: \[(\d+), (\d+)\],.*r\: (\S+),.*e\: (\S+).*", errString)
@@ -23,23 +21,13 @@ class BezierSurfaceParser(Parser):
 
         return ret
 
-    ## tem que retornar tudo isso
-    #[self._maxRelErr, self._minRelErr, self._avgRelErr, self._zeroOut, self._zeroGold,
-    # self._relErrLowerLimit,
-    # self._errors["errListFiltered"], self._relErrLowerLimit2,
-    # self._errors["errListFiltered2"]]
+
     def _relativeErrorParser(self, errList):
         if len(errList) <= 0:
             return
 
         for i in errList:
             print i
-
-
-    # def relativeErrorParser(self):
-    #     # print "done"
-    #     pass
-
 
 
     def buildImageMethod(self):
@@ -57,7 +45,3 @@ class BezierSurfaceParser(Parser):
             self._size = str(self._i) + "_" + str(self._g) + "_" + str(self._a)\
                          + "_" + str(self._t) + "_" + str(self._n)
 
-
-
-    def getBenchmark(self):
-        return 'beziersurface'

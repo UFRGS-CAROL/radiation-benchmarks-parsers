@@ -8,9 +8,7 @@ class LudParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-
     _mSize = 0
-
 
     def setSize(self, header):
         m = re.match(".*matrix_size\:(\d+).*reps\:(\d+).*", header)
@@ -24,15 +22,8 @@ class LudParser(Parser):
         # return self._size
         self._size = str(self._size) + str(self._mSize)
 
-    def getBenchmark(self):
-        return self._benchmark
-
-
     def buildImageMethod(self):
         return False
-
-        # Return [posX, posY, read, expected] -> [int, int, float, float]
-        # Returns None if it is not possible to parse
 
     def parseErrMethod(self, errString):
         try:

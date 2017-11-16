@@ -8,13 +8,6 @@ class HotspotParser(Parser):
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
-
-
-    def getBenchmark(self):
-        return self._benchmark
-    # Return [posX, posY, read, expected] -> [int, int, float, float]
-    # Return [posX, posY, expected*2, read] if read is NaN
-    # Returns None if it is not possible to parse
     def parseErrMethod(self, errString):
         # print "Passou"
         try:
@@ -47,7 +40,6 @@ class HotspotParser(Parser):
             return None
         except Exception as e:
             return None
-
 
     def setSize(self, header):
         size = None

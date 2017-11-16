@@ -10,8 +10,7 @@ import csv
 import warnings
 from datetime import datetime
 
-"""Base class for parser, need be implemented by each benchmark"""
-
+"""Base class for parser, need to be implemented by each benchmark"""
 
 class Parser():
     __metaclass__ = ABCMeta
@@ -40,14 +39,19 @@ class Parser():
     _ecc = False
 
     # specific atributes for CSV write
+    # log filename str which contains date, and benchmark name
     _logFileName = ""
+    # str which indentify the device
     _machine = ""
+    # benchmark name as string
     _benchmark = None
+    # logfilename header, all special characters were replaced by -
     _header = ""
+    # iteration where an sdc appeared
     _sdcIteration = -1
+    # acc time when an SDC appeared
     _accIteErrors = -1
     _iteErrors = -1
-    _imageIndex = 0
 
     ## support attributes
     # build locality images
@@ -69,6 +73,10 @@ class Parser():
     _csvHeader = ["logFileName", "Machine", "Benchmark", "Header", "SDC Iteration", "#Accumulated Errors",
                   "#Iteration Errors", "Max Relative Error", "Min Rel Error",
                   "Average Rel Err", "zeroOut", "zeroGold"]
+
+
+    # relative error types
+    __relativeErrorTypes = ["cubic", "square", "line", "single", "random"]
 
     # for relativeErrorParser
     _maxRelErr = 0
@@ -97,21 +105,10 @@ class Parser():
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
         self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
-        for key in self.__keys:
-            # to store all error parsed values
-            self._errors[key] = []
-            self._relErrLowerLimit[key] = 0
-            # cubic, square, colRow, single, random
-            self._locality[key] = [0, 0, 0, 0, 0]
-            self._jaccardCoefficientDict[key] = 0
-
-
-
-        for threshold in self.__errorLimits:
-            self._csvHeader.append("relative_errors_<=_" + str(threshold))
-            self._csvHeader.append("jaccard_>_" + str(threshold))
-            for type in ["cubic", "square", "line", "single", "random"]:
-                self._csvHeader.append(type + "_>" + str(threshold))
+        # for python list interpretation is faster than a concatenated loop
+        self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
+        self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
+        self._csvHeader.extend([t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
@@ -240,7 +237,10 @@ class Parser():
         raise NotImplementedError()
 
     """
-    CAIO's new approach
+    relative error with a generic range of tolerated values
+    input:
+    relError: error found in the SDC
+    err: list of elements in the locality classification
 
     """
 
@@ -268,8 +268,6 @@ class Parser():
     relErrLowerLimit
     _errors = {}
     _relErrLowerLimit = {}
-    _locality = {}
-    _jaccardCoefficientDict = {}
     """
 
     def __cleanRelativeErrorAttributes(self):
@@ -484,10 +482,15 @@ class Parser():
                           self._zeroOut,
                           self._zeroGold]
 
-            for key in self.__keys:
-                outputList.append(self._relErrLowerLimit[key])
-                outputList.append(self._jaccardCoefficientDict[key])
-                outputList.extend(self._locality[key])
+            # self._csvHeader.extend(["relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits])
+            # self._csvHeader.extend(["jaccard_>_" + str(threshold) for threshold in self.__errorLimits])
+            # self._csvHeader.extend(
+            #     [t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes])
+
+
+            outputList.extend(self._relErrLowerLimit[key] for key in self.__keys)
+            outputList.extend(self._jaccardCoefficientDict[key] for key in self.__keys)
+            outputList.extend(self._locality[key] for key in self.__keys)
 
             writer.writerow(outputList)
             csvWFP.close()

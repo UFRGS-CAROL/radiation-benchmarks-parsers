@@ -120,10 +120,6 @@ class LenetParser(Parser):
             self._iterations = ""
             self._abftType = ""
 
-
-
-    # parse lenet
-    # returns a dictionary
     def parseErrMethod(self, errString):
         if len(errString) == 0:
             return
@@ -199,29 +195,9 @@ class LenetParser(Parser):
                                         loadLayerMethod=self.loadLayer)
 
 
-    def relativeErrorParser(self):
-        self._relativeErrorParser(self._errors["errorsParsed"])
 
     """
-    this->in_width_ = this->load_layer_var<size_t>(in);
-    this->in_height_ = this->load_layer_var<size_t>(in);
-    this->in_depth_ = this->load_layer_var<size_t>(in);
-    this->out_width_ = this->load_layer_var<size_t>(in);
-    this->out_height_ = this->load_layer_var<size_t>(in);
-    this->out_depth_ = this->load_layer_var<size_t>(in);
-    this->alpha_ = this->load_layer_var<float_t>(in);
-    this->lambda_ = this->load_layer_var<float_t>(in);
-    this->err = this->load_layer_var<float_t>(in);
-    this->exp_y = this->load_layer_var<int>(in);
 
-    //vector attributes
-    this->W_ = this->load_layer_vec<float_t>(in);
-    this->b_ = this->load_layer_vec<float_t>(in);
-    this->deltaW_ = this->load_layer_vec<float_t>(in);
-    this->input_ = this->load_layer_vec<float_t>(in);
-    this->output_ = this->load_layer_vec<float_t>(in);
-    this->g_ = this->load_layer_vec<float_t>(in);
-    this->exp_y_vec = this->load_layer_vec<float_t>(in);
     """
 
     def loadLayer(self, layerNum, isGold=False):
@@ -268,8 +244,6 @@ class LenetParser(Parser):
         return layer
 
     def buildImageMethod(self, *args): return False
-
-    def getBenchmark(self): return self._benchmark
 
 
     def localityParser(self):

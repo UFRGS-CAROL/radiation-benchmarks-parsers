@@ -103,9 +103,6 @@ class ObjectDetectionParser(Parser):
     _rowDetErrors = None
     _colDetErrors = None
 
-    def getBenchmark(self):
-        return self._benchmark
-
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
 
@@ -148,8 +145,6 @@ class ObjectDetectionParser(Parser):
             print "Error on writing row to " + str(csvFileName)
             raise
 
-    def relativeErrorParser(self):
-        self._relativeErrorParser(self._errors["errorsParsed"])
 
     def localityParser(self):
         pass
