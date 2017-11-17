@@ -16,67 +16,6 @@ class LuleshParser(Parser):
     def _jaccardCoefficient(self, errListJaccard):
         return 0
 
-    def _relativeErrorParser(self, errList):
-        relErr = []
-        zeroGold = 0
-        zeroOut = 0
-        self._cleanRelativeErrorAttributes()
-        for err in errList:
-            # [posX, posY, posZ, None, None, xr, xe, yr, ye, zr, ze]
-
-            xr = err[5]
-            xe = err[6]
-            yr = err[7]
-            ye = err[8]
-            zr = err[9]
-            ze = err[10]
-            # print xr,xe,yr,ye,zr,ze
-            # print err
-            # absoluteErrV = abs(ve - vr)
-            absoluteErrX = abs(xe - xr)
-            absoluteErrY = abs(ye - yr)
-            absoluteErrZ = abs(ze - zr)
-            relErrorV = 0
-            relErrorX = 0
-            relErrorY = 0
-            relErrorZ = 0
-            # if abs(vr) < 1e-6:
-            #    zeroOut += 1
-            if abs(xr) < 1e-6:
-                zeroOut += 1
-            if abs(yr) < 1e-6:
-                zeroOut += 1
-            if abs(zr) < 1e-6:
-                zeroOut += 1
-                #  if abs(ve) < 1e-6:
-                #     zeroGold += 1
-                # else:
-                #     relErrorV = abs( absoluteErrV / ve ) * 100
-            if abs(xe) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorX = abs(absoluteErrX / xe) * 100
-            if abs(ye) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorY = abs(absoluteErrY / ye) * 100
-            if abs(ze) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorZ = abs(absoluteErrZ / ze) * 100
-
-            relError = relErrorX + relErrorY + relErrorZ  # relErrorV +
-            if relError > 0:
-                relErr.append(relError)
-                self._placeRelativeError(relError, err)
-        if len(relErr) > 0:
-            self._maxRelErr = max(relErr)
-            self._minRelErr = min(relErr)
-            self._avgRelErr = sum(relErr) / float(len(relErr))
-
-        self._zeroOut = zeroOut
-        self._zeroGold = zeroGold
-
     def parseErrMethod(self, errString):
         if self._box is None:
             print ("box is None!!!\nerrString: ", errString)
@@ -142,3 +81,70 @@ class LuleshParser(Parser):
     def buildImageMethod(self):
         return False
 
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def _relativeErrorParser(self, errList):
+    #     relErr = []
+    #     zeroGold = 0
+    #     zeroOut = 0
+    #     self._cleanRelativeErrorAttributes()
+    #     for err in errList:
+    #         # [posX, posY, posZ, None, None, xr, xe, yr, ye, zr, ze]
+    #
+    #         xr = err[5]
+    #         xe = err[6]
+    #         yr = err[7]
+    #         ye = err[8]
+    #         zr = err[9]
+    #         ze = err[10]
+    #         # print xr,xe,yr,ye,zr,ze
+    #         # print err
+    #         # absoluteErrV = abs(ve - vr)
+    #         absoluteErrX = abs(xe - xr)
+    #         absoluteErrY = abs(ye - yr)
+    #         absoluteErrZ = abs(ze - zr)
+    #         relErrorV = 0
+    #         relErrorX = 0
+    #         relErrorY = 0
+    #         relErrorZ = 0
+    #         # if abs(vr) < 1e-6:
+    #         #    zeroOut += 1
+    #         if abs(xr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(yr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(zr) < 1e-6:
+    #             zeroOut += 1
+    #             #  if abs(ve) < 1e-6:
+    #             #     zeroGold += 1
+    #             # else:
+    #             #     relErrorV = abs( absoluteErrV / ve ) * 100
+    #         if abs(xe) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorX = abs(absoluteErrX / xe) * 100
+    #         if abs(ye) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorY = abs(absoluteErrY / ye) * 100
+    #         if abs(ze) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorZ = abs(absoluteErrZ / ze) * 100
+    #
+    #         relError = relErrorX + relErrorY + relErrorZ  # relErrorV +
+    #         if relError > 0:
+    #             relErr.append(relError)
+    #             self._placeRelativeError(relError, err)
+    #     if len(relErr) > 0:
+    #         self._maxRelErr = max(relErr)
+    #         self._minRelErr = min(relErr)
+    #         self._avgRelErr = sum(relErr) / float(len(relErr))
+    #
+    #     self._zeroOut = zeroOut
+    #     self._zeroGold = zeroGold
