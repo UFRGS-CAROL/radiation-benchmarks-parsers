@@ -12,6 +12,7 @@ from datetime import datetime
 
 """Base class for parser, need to be implemented by each benchmark"""
 
+
 class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
@@ -109,7 +110,8 @@ class Parser():
             # for python list interpretation is faster than a concatenated loop
             self._csvHeader.extend("relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits)
             self._csvHeader.extend("jaccard_>_" + str(threshold) for threshold in self.__errorLimits)
-            self._csvHeader.extend(t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes)
+            self._csvHeader.extend(
+                t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes)
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
@@ -184,14 +186,6 @@ class Parser():
             # ----------------
 
     """
-    some benchmarks have a third dimention
-    so this will return _hasThirdDimention
-    """
-
-    def getHasThirdDimention(self):
-        return self._hasThirdDimention
-
-    """
     call to the private method paseerrMethod
     for each errString in _errList
     """
@@ -260,9 +254,6 @@ class Parser():
             else:
                 self._errors[key].append(err)
 
-
-
-
     """
     to clean all relative errors attributes for the class
     attributes to be cleaned:
@@ -286,28 +277,46 @@ class Parser():
     """
 
     def _relativeErrorParser(self, errList):
-        relErr = []
+        relErrorList = []
         zeroGold = 0
         zeroOut = 0
         self._cleanRelativeErrorAttributes()
+        # need to calculate how many elements for each dimentions
+        # i need to compare
+        # default first element is 2, [posx, posy, read, expected]
+        firstElement = 2
+        lastElement = 3
+
+        # [posX, posY, posZ, vr, ve, xr, xe, yr, ye, zr, ze]
+        if self._hasThirdDimention:
+            firstElement = 3
+            lastElement = 10
+
         for err in errList:
-            read = float(err[2])
-            expected = float(err[3])
-            absoluteErr = abs(expected - read)
-            if abs(read) < 1e-6:
-                zeroOut += 1
-            if abs(expected) < 1e-6:
-                zeroGold += 1
-            else:
-                relError = abs(absoluteErr / expected) * 100
-                relErr.append(relError)
+            relError = 0.0
+            for i in xrange(firstElement, lastElement + 1, 2):
+                if err[i] is None or err[i + 1] is None:
+                    continue
+                read = float(err[i])
+                expected = float(err[i + 1])
+
+                absoluteErr = abs(expected - read)
+                if abs(read) < 1e-6:
+                    zeroOut += 1
+                if abs(expected) < 1e-6:
+                    zeroGold += 1
+                else:
+                    relError += abs(absoluteErr / expected) * 100
+
+            if relError > 0.0:
+                relErrorList.append(relError)
                 # generic way to parse for many error threshold
                 self._placeRelativeError(relError, err)
 
-        if len(relErr) > 0:
-            self._maxRelErr = max(relErr)
-            self._minRelErr = min(relErr)
-            self._avgRelErr = sum(relErr) / float(len(relErr))
+        if len(relErrorList) > 0:
+            self._maxRelErr = max(relErrorList)
+            self._minRelErr = min(relErrorList)
+            self._avgRelErr = sum(relErrorList) / float(len(relErrorList))
 
         self._zeroOut = zeroOut
         self._zeroGold = zeroGold
@@ -676,3 +685,10 @@ class Parser():
     """
     # def setImageIndex(self, imageIndex):
     #     self._imageIndex = imageIndex
+
+
+    """
+    legacy method
+    """
+    # def getHasThirdDimention(self):
+    #     return self._hasThirdDimention

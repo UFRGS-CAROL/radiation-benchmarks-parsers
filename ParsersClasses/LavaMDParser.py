@@ -7,7 +7,6 @@ from sklearn.metrics import jaccard_similarity_score
 
 
 class LavaMDParser(Parser):
-
     def __init__(self, **kwargs):
         Parser.__init__(self, **kwargs)
 
@@ -17,7 +16,7 @@ class LavaMDParser(Parser):
     _hasThirdDimention = True
 
     def _jaccardCoefficient(self, errListJaccard):
-        #print "\n\nPassou no jaccard lava \n\n"
+        # print "\n\nPassou no jaccard lava \n\n"
         expected = []
         read = []
         for err in errListJaccard:
@@ -56,70 +55,6 @@ class LavaMDParser(Parser):
         except:
             return None
 
-    def _relativeErrorParser(self, errList):
-        relErr = []
-        zeroGold = 0
-        zeroOut = 0
-        self._cleanRelativeErrorAttributes()
-        # relErrLowerLimit = 0
-        # relErrLowerLimit2 = 0
-        # errListFiltered = []
-        # errListFiltered2 = []
-        for err in errList:
-            vr = err[2]
-            ve = err[3]
-            xr = err[4]
-            xe = err[5]
-            yr = err[6]
-            ye = err[7]
-            zr = err[8]
-            ze = err[9]
-            absoluteErrV = abs(ve - vr)
-            absoluteErrX = abs(xe - xr)
-            absoluteErrY = abs(ye - yr)
-            absoluteErrZ = abs(ze - zr)
-            relErrorV = 0
-            relErrorX = 0
-            relErrorY = 0
-            relErrorZ = 0
-            if abs(vr) < 1e-6:
-                zeroOut += 1
-            if abs(xr) < 1e-6:
-                zeroOut += 1
-            if abs(yr) < 1e-6:
-                zeroOut += 1
-            if abs(zr) < 1e-6:
-                zeroOut += 1
-            if abs(ve) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorV = abs(absoluteErrV / ve) * 100
-            if abs(xe) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorX = abs(absoluteErrX / xe) * 100
-            if abs(ye) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorY = abs(absoluteErrY / ye) * 100
-            if abs(ze) < 1e-6:
-                zeroGold += 1
-            else:
-                relErrorZ = abs(absoluteErrZ / ze) * 100
-
-            relError = (relErrorV + relErrorX + relErrorY + relErrorZ)
-            if relError > 0:
-                relErr.append(relError)
-                self._placeRelativeError(relError, err)
-        if len(relErr) > 0:
-
-            self._maxRelErr = max(relErr)
-            self._minRelErr = min(relErr)
-            self._avgRelErr = sum(relErr) / float(len(relErr))
-
-        self._zeroOut = zeroOut
-        self._zeroGold = zeroGold
-
     def parseErrMethod(self, errString):
         if self._box is None:
             print ("box is None!!!\nerrString: ", errString)
@@ -151,9 +86,8 @@ class LavaMDParser(Parser):
         except ValueError:
             return None
 
-
     def setSize(self, header):
-        #old versions of lava
+        # old versions of lava
         m = re.match(".*size\:(\d+).*", header)
         if m:
             try:
@@ -176,8 +110,8 @@ class LavaMDParser(Parser):
             except:
                 self._box = None
 
-        #new versions of lava
-        #HEADER streams: 1 boxes:6 block_size:192
+        # new versions of lava
+        # HEADER streams: 1 boxes:6 block_size:192
         m = re.match(".*streams\: (\d+).*boxes\:(\d+).*block_size\:(\d+).*", header)
         if m:
             self._streams = int(m.group(1))
@@ -185,9 +119,80 @@ class LavaMDParser(Parser):
             self._blockSize = int(m.group(3))
 
         if self._blockSize and self._streams:
-            self._size = "streams_"+ str(self._streams) + "_boxes_" + str(self._box) + "_block_size_" + str(self._blockSize)
+            self._size = "streams_" + str(self._streams) + "_boxes_" + str(self._box) + "_block_size_" + str(
+                self._blockSize)
         else:
             self._size = "old_lava_boxes_" + str(self._box)
 
     def buildImageMethod(self):
         return False
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def _relativeErrorParser(self, errList):
+    #     relErr = []
+    #     zeroGold = 0
+    #     zeroOut = 0
+    #     self._cleanRelativeErrorAttributes()
+    #     # relErrLowerLimit = 0
+    #     # relErrLowerLimit2 = 0
+    #     # errListFiltered = []
+    #     # errListFiltered2 = []
+    #     for err in errList:
+    #         vr = err[3]
+    #         ve = err[4]
+    #         xr = err[5]
+    #         xe = err[6]
+    #         yr = err[7]
+    #         ye = err[8]
+    #         zr = err[9]
+    #         ze = err[10]
+    #         absoluteErrV = abs(ve - vr)
+    #         absoluteErrX = abs(xe - xr)
+    #         absoluteErrY = abs(ye - yr)
+    #         absoluteErrZ = abs(ze - zr)
+    #         relErrorV = 0
+    #         relErrorX = 0
+    #         relErrorY = 0
+    #         relErrorZ = 0
+    #         if abs(vr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(xr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(yr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(zr) < 1e-6:
+    #             zeroOut += 1
+    #         if abs(ve) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorV = abs(absoluteErrV / ve) * 100
+    #         if abs(xe) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorX = abs(absoluteErrX / xe) * 100
+    #         if abs(ye) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorY = abs(absoluteErrY / ye) * 100
+    #         if abs(ze) < 1e-6:
+    #             zeroGold += 1
+    #         else:
+    #             relErrorZ = abs(absoluteErrZ / ze) * 100
+    #
+    #         relError = (relErrorV + relErrorX + relErrorY + relErrorZ)
+    #         if relError > 0:
+    #             relErr.append(relError)
+    #             self._placeRelativeError(relError, err)
+    #     if len(relErr) > 0:
+    #
+    #         self._maxRelErr = max(relErr)
+    #         self._minRelErr = min(relErr)
+    #         self._avgRelErr = sum(relErr) / float(len(relErr))
+    #
+    #     self._zeroOut = zeroOut
+    #     self._zeroGold = zeroGold
