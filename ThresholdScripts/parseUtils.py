@@ -2,9 +2,10 @@
 
 import collections
 
-#benchmarks dict => (bechmarkname_machinename : list of SDC item)
-#SDC item => [logfile name, header, sdc iteration, iteration total amount error, iteration accumulated error, list of errors ]
-#list of errors => list of strings with all the error detail print in lines using #ERR
+
+# benchmarks dict => (bechmarkname_machinename : list of SDC item)
+# SDC item => [logfile name, header, sdc iteration, iteration total amount error, iteration accumulated error, list of errors ]
+# list of errors => list of strings with all the error detail print in lines using #ERR
 
 
 # errList => [ {"positions" : listPosition, "values" : listValues} ]
@@ -45,33 +46,34 @@ import collections
 #   list of errors filtered by the errLimit (a list with only the errors higher than errLimit)
 # ]
 def relativeErrorParser(errList, errLimit):
-	relErr = []
-	relErrLowerLimit = 0
-	errListFiltered = []
-	for errItem in errList:
-            relErrorSum = 0
-            for val in errItem["values"]:
-                #name = val[0]
-		read = float(val[1])
-		expected = float(val[2])
-		absoluteErr = float(abs(expected - read))
-                # Only compare relative errors with numbers higher than zero
-		if (abs(read) > 1e-6) and (abs(expected) > 1e-6):
-                    relError = ( absoluteErr / abs(expected) ) * 100
-                    relErrorSum += relError
-	    relErr.append( relErrorSum )
-	    if relErrorSum < errLimit:
-		relErrLowerLimit += 1
-	    else:
-		errListFiltered.append(errItem)
+    relErr = []
+    relErrLowerLimit = 0
+    errListFiltered = []
+    for errItem in errList:
+        relErrorSum = 0
+        for val in errItem["values"]:
+            # name = val[0]
+            read = float(val[1])
+            expected = float(val[2])
+            absoluteErr = float(abs(expected - read))
+            # Only compare relative errors with numbers higher than zero
+            if (abs(read) > 1e-6) and (abs(expected) > 1e-6):
+                relError = (absoluteErr / abs(expected)) * 100
+                relErrorSum += relError
+        relErr.append(relErrorSum)
+        if relErrorSum < errLimit:
+            relErrLowerLimit += 1
+        else:
+            errListFiltered.append(errItem)
 
-	if len(relErr) > 0:
-		maxRelErr = max(relErr)
-		minRelErr = min(relErr)
-		avgRelErr = sum(relErr)/float(len(relErr))
-		return[maxRelErr,minRelErr,avgRelErr,relErrLowerLimit,errListFiltered]
-	else:
-		return[None,None,None,relErrLowerLimit,errListFiltered]
+    if len(relErr) > 0:
+        maxRelErr = max(relErr)
+        minRelErr = min(relErr)
+        avgRelErr = sum(relErr) / float(len(relErr))
+        return [maxRelErr, minRelErr, avgRelErr, relErrLowerLimit, errListFiltered]
+    else:
+        return [None, None, None, relErrLowerLimit, errListFiltered]
+
 
 # Return how many zeros the output and gold values have
 def countZerosReadExpected(errList):
@@ -80,13 +82,13 @@ def countZerosReadExpected(errList):
     for errItem in errList:
         relErrorSum = 0
         for val in errItem["values"]:
-            #name = val[0]
+            # name = val[0]
             read = float(val[1])
             expected = float(val[2])
-	    if abs(read) < 1e-6:
-	    	zeroOut += 1
-	    if abs(expected) < 1e-6:
-	    	zeroGold += 1
+            if abs(read) < 1e-6:
+                zeroOut += 1
+            if abs(expected) < 1e-6:
+                zeroGold += 1
     return [zeroOut, zeroGold]
 
 
@@ -100,21 +102,19 @@ def countZerosReadExpected(errList):
 #
 # If there is ONLY ONE ERROR, the locality should be SINGLE
 def localityMultiDimensional(errList):
-        if errList is None:
-            return None
-        if len(errList) == 0:
-            return None
-        positions = [x["position"] for x in errList]
-        numDimensions = len(positions[0])
-        dimensionsMultipleErrors = 0
-        for i in range(0,numDimensions):
-            AllPositionsThisDimension = [x[i][1] for x in positions]
-            counterPositions = collections.Counter(AllPositionsThisDimension)
-            if (any(x>1 for x in counterPositions.values())): # Check if any value is in the list more than one time
-                dimensionsMultipleErrors += 1
-        return dimensionsMultipleErrors
-
-
+    if errList is None:
+        return None
+    if len(errList) == 0:
+        return None
+    positions = [x["position"] for x in errList]
+    numDimensions = len(positions[0])
+    dimensionsMultipleErrors = 0
+    for i in range(0, numDimensions):
+        AllPositionsThisDimension = [x[i][1] for x in positions]
+        counterPositions = collections.Counter(AllPositionsThisDimension)
+        if (any(x > 1 for x in counterPositions.values())):  # Check if any value is in the list more than one time
+            dimensionsMultipleErrors += 1
+    return dimensionsMultipleErrors
 
 ###errList = list()
 ###

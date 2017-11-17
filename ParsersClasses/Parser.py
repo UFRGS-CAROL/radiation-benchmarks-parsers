@@ -15,7 +15,7 @@ from datetime import datetime
 class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
-    __errorLimits = [0.0, 2.0, 5.0, 10]
+    __errorLimits = [0.0, 2.0, 5.0]
     __keys = []
     # it will keep the first threshold key
     __firstKey = ""

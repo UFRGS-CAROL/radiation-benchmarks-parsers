@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import sys
-import os
 import csv
 import re
-import collections
 import parseUtils
 import parseErrorUtils
 import shelve
