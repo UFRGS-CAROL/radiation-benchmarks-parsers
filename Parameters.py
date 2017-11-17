@@ -137,7 +137,11 @@ def setBenchmarks(**kwargs):
     checkCsv = SUMMARIES_FILES if bool(kwargs.pop("check_csv")) else None
     ecc = bool(kwargs.pop("ecc"))
     isFi = bool(kwargs.pop("is_fi"))
-    parse_err_histogram = bool(kwargs.pop('parse_err_histogram'))
+    err_hist = bool(kwargs.pop('parse_err_histogram'))
+    if err_hist:
+        parse_err_histogram = ERROR_RELATIVE_HISTOGRAM
+    else:
+        parse_err_histogram = None
 
     print "Parsing for: ",
     for i in benchmarks:

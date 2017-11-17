@@ -93,21 +93,21 @@ class LavaMDParser(Parser):
             if abs(ve) < 1e-6:
                 zeroGold += 1
             else:
-                relErrorV = abs(absoluteErrV / ve) * 100
+                relErrorV = abs(absoluteErrV / ve) #* 100
             if abs(xe) < 1e-6:
                 zeroGold += 1
             else:
-                relErrorX = abs(absoluteErrX / xe) * 100
+                relErrorX = abs(absoluteErrX / xe) #* 100
             if abs(ye) < 1e-6:
                 zeroGold += 1
             else:
-                relErrorY = abs(absoluteErrY / ye) * 100
+                relErrorY = abs(absoluteErrY / ye) #* 100
             if abs(ze) < 1e-6:
                 zeroGold += 1
             else:
-                relErrorZ = abs(absoluteErrZ / ze) * 100
+                relErrorZ = abs(absoluteErrZ / ze) #* 100
 
-            relError = relErrorV + relErrorX + relErrorY + relErrorZ
+            relError = (relErrorV + relErrorX + relErrorY + relErrorZ) / 4
             if relError > 0:
                 relErr.append(relError)
             #     if relError < self._toleratedRelErr:

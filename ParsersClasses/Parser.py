@@ -15,7 +15,7 @@ from datetime import datetime
 class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
-    __errorLimits = [0.0, 2.0, 5.0, 100]
+    __errorLimits = [0.0, 2.0, 5.0, 10]
     __keys = []
     # it will keep the first threshold key
     __firstKey = ""
@@ -94,13 +94,12 @@ class Parser():
         try:
             parseForHistogram = kwargs.pop("parse_err_histogram")
         except:
-            parseForHistogram = False
+            parseForHistogram = None
 
         # this is necessary for CAIO's approach
         if parseForHistogram:
-            errorHistogram = kwargs.pop("error_histogram")
-            precision = float(errorHistogram["PRECISION"])
-            limitRange = errorHistogram["LIMIT_RANGE"]
+            precision = int(parseForHistogram["PRECISION"])
+            limitRange = int(parseForHistogram["LIMIT_RANGE"])
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
         self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
@@ -260,6 +259,9 @@ class Parser():
                 self._relErrLowerLimit[key] += 1
             else:
                 self._errors[key].append(err)
+
+
+
 
     """
     to clean all relative errors attributes for the class
@@ -464,6 +466,7 @@ class Parser():
                           self._zeroOut,
                           self._zeroGold]
 
+            print self._relErrLowerLimit
             outputList.extend(self._relErrLowerLimit[key] for key in self.__keys)
             outputList.extend(self._jaccardCoefficientDict[key] for key in self.__keys)
             for key in self.__keys:
