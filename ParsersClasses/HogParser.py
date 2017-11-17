@@ -9,10 +9,8 @@ import re
 # LOCAL_TXT_FOLDER = "/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/networks_img_list/"#"/home/aluno/radiation-benchmarks/data/networks_img_list/"
 PARAMETERS = "0,1.05,1,1,48,0.9,100"
 
-class HogParser(ObjectDetectionParser):
 
-    def __init__(self, **kwargs):
-        ObjectDetectionParser.__init__(self, **kwargs)
+class HogParser(ObjectDetectionParser):
 
     _imgListPath = None
 
@@ -156,3 +154,13 @@ class HogParser(ObjectDetectionParser):
             except:
                 self.size = None
         self._size = 'hog_' + os.path.basename(self._imgListPath) + '_' + str(self._type)
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     ObjectDetectionParser.__init__(self, **kwargs)

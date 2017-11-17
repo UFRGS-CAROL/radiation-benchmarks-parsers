@@ -4,9 +4,6 @@ import re
 
 class BezierSurfaceParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     def parseErrMethod(self, errString):
         # print errString
         m = re.match(".*([X-Y-Z]+),.*p\: \[(\d+), (\d+)\],.*r\: (\S+),.*e\: (\S+).*", errString)
@@ -30,9 +27,6 @@ class BezierSurfaceParser(Parser):
             print i
 
 
-    def buildImageMethod(self):
-        return False
-
     def setSize(self, header):
         ##HEADER -i 5 -g 5 -a 1.00 -t 4 -n 2500
         m = re.match(".*\-i (\d+).*\-g (\d+).*\-a (\S+).*\-t (\d+).*\-n (\d+).*", header)
@@ -45,3 +39,21 @@ class BezierSurfaceParser(Parser):
             self._size = str(self._i) + "_" + str(self._g) + "_" + str(self._a)\
                          + "_" + str(self._t) + "_" + str(self._n)
 
+        self._size = None
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     # type: (integer) -> boolean
+    #     return False

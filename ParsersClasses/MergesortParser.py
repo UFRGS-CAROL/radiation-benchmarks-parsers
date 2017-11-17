@@ -3,10 +3,6 @@ from SortParser import SortParser
 
 
 class MergesortParser(SortParser):
-    def __init__(self, **kwargs):
-        SortParser.__init__(self, **kwargs)
-
-
     """
     input: header is the logfilename header
     no return
@@ -22,3 +18,13 @@ class MergesortParser(SortParser):
             except:
                 self._size = None
         self._size = 'mergesort_input_' + str(self._size)
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     SortParser.__init__(self, **kwargs)

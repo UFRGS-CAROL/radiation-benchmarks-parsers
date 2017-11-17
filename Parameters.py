@@ -15,6 +15,7 @@ from ParsersClasses import DarknetV1Parser
 from ParsersClasses import LenetParser
 from ParsersClasses import ResnetParser
 from ParsersClasses import BezierSurfaceParser
+from ParsersClasses import GaussianParser
 
 ############################################################################################
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
@@ -273,6 +274,9 @@ def setBenchmarks(**kwargs):
                                                datasets=LENET_DATASETS)
         elif i == 'beziersurface':
             benchObj = BezierSurfaceParser.BezierSurfaceParser()
+
+        elif i == 'gaussian':
+            benchObj = GaussianParser.GaussianParser()
 
         elif benchObj == None:
             print "\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system"

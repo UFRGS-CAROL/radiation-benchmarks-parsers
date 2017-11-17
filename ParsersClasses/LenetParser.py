@@ -17,12 +17,6 @@ class LenetParser(Parser):
     __configFile = None
     _extendedHeader = False
 
-    # __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
-    # __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
-    # __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
-
-    # _numMaskableErrors = [0 for i in xrange(32)]
-
     _smallestError = None
     _biggestError = None
     _numErrors = None
@@ -190,15 +184,8 @@ class LenetParser(Parser):
             """
             self._cnnParser.parseLayers(sdcIteration=self._sdcIteration,
                                         logFilename=self._logFileName,
-                                        imgListSize=1,
                                         machine=self._machine,
-                                        loadLayerMethod=self.loadLayer)
-
-
-
-    """
-
-    """
+                                        loadLayer=self.loadLayer)
 
     def loadLayer(self, layerNum, isGold=False):
         imgListpos = self._img
@@ -243,11 +230,17 @@ class LenetParser(Parser):
 
         return layer
 
-    def buildImageMethod(self, *args): return False
-
-
     def localityParser(self):
         pass
 
     def jaccardCoefficient(self):
         pass
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def buildImageMethod(self, *args): return False

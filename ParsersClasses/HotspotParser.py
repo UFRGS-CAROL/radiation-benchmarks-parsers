@@ -5,9 +5,6 @@ from Parser import Parser
 
 class HotspotParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     def parseErrMethod(self, errString):
         # print "Passou"
         try:
@@ -53,5 +50,19 @@ class HotspotParser(Parser):
         # return size
         self._size = str(size)
 
-    def buildImageMethod(self):
-        return False
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     return False

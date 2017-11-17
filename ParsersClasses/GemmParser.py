@@ -5,9 +5,6 @@ from Parser import Parser
 
 class GemmParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     def parseErrMethod(self, errString):
         try:
             # ERR stream: 0, p: [0, 0], r: 3.0815771484375000e+02, e: 0.0000000000000000e+00
@@ -37,14 +34,6 @@ class GemmParser(Parser):
             return None
 
 
-    """
-        build image, based on object parameters
-        #currObj.buildImage(errorsParsed, size,
-        #                            currObj.dirName + '/' + currObj.header + '/' + currObj.logFileNameNoExt + '_' + str(imageIndex))
-    """
-    def buildImageMethod(self):
-        # type: (integer) -> boolean
-        return False
 
 
     def setSize(self, header):
@@ -57,3 +46,20 @@ class GemmParser(Parser):
                size = None
 
         self._size = str(size)
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     # type: (integer) -> boolean
+    #     return False

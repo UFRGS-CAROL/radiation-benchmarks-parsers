@@ -1,6 +1,6 @@
 import re
 from abc import ABCMeta, abstractmethod
-from PIL import Image
+# from PIL import Image
 import struct
 from sklearn.metrics import jaccard_similarity_score
 import os
@@ -213,11 +213,11 @@ class Parser():
 
     """
         build image, based on object parameters
+        ***is not mandatory anymore***
     """
 
-    @abstractmethod
     def buildImageMethod(self, *args):
-        raise NotImplementedError()
+        return False
 
     """
     this method is very important, it must set self._size attribute
@@ -566,85 +566,81 @@ class Parser():
 
         return False
 
-    """
-    buildImage method, will build error caracterization for an specific benchmark
-    this method is always called. If no images will be generate the method will only
-    contains pass command
-    :param
-    errors: error list
-    size: size of the output produced by your benchmark
-    filename: filename to draw an image
-    """
-
-    def _buildImage(self, errors, size, filename):
-        # identifica em qual posicao da matriz ocorreram os erros
-        # definindo as bordas [esquerda, cabeca, direita, pe]
-        err_limits = [int(size), int(size), 0, 0]
-        for error in errors:
-            if int(error[0]) < err_limits[0]:
-                err_limits[0] = int(error[0])
-            if int(error[0]) > err_limits[2]:
-                err_limits[2] = int(error[0])
-            if int(error[1]) < err_limits[1]:
-                err_limits[1] = int(error[1])
-            if int(error[1]) > err_limits[3]:
-                err_limits[3] = int(error[1])
-
-        # adiciona 5 pontos em cada lado para visualizacao facilitada
-        # verifica que isso nao ultrapassa os limites da matriz
-        err_limits[0] -= 5
-        err_limits[1] -= 5
-        err_limits[2] += 5
-        err_limits[3] += 5
-        if err_limits[0] < 0:
-            err_limits[0] = 0
-        if err_limits[1] < 0:
-            err_limits[1] = 0
-        if err_limits[2] > size:
-            err_limits[2] = size
-        if err_limits[3] > size:
-            err_limits[3] = size
-
-        # define uma imagem com o dobro do tamanho, para poder adicionar as guias
-        # (o quadriculado)
-        size_x = (err_limits[2] - err_limits[0]) * 2 + 1
-        size_y = (err_limits[3] - err_limits[1]) * 2 + 1
-        img = Image.new("RGB", (size_x, size_y), "white")
-
-        n = 0
-
-        # adiciona os erros a imagem
-        for error in errors:
-            n += 1
-            try:
-                if (n < 499):
-                    img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
-                                 (255, 0, 0))
-                else:
-                    img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
-                                 (0, 0, 255))
-            except IndexError:
-                print ("Index error: ", error[0], ";", err_limits[0], ";", error[1], ";", err_limits[1])
-
-        # adiciona as guias (quadriculado)
-        if (size_x < 512) and (size_y < 512):
-            for y in range(size_y):
-                for x in range(size_x):
-                    if (x % 2) == 1 or (y % 2) == 1:
-                        img.putpixel((x, y), (240, 240, 240))
-
-        if not os.path.exists(os.path.dirname(filename)):
-            try:
-                os.makedirs(os.path.dirname(filename))
-            except OSError as exc:  # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise
-
-        img.save(filename + '.png')
 
     """
     LEGACY METHODS SECTION
     """
+    """
+    legacy method
+    """
+
+    # def _buildImage(self, errors, size, filename):
+    #     # identifica em qual posicao da matriz ocorreram os erros
+    #     # definindo as bordas [esquerda, cabeca, direita, pe]
+    #     err_limits = [int(size), int(size), 0, 0]
+    #     for error in errors:
+    #         if int(error[0]) < err_limits[0]:
+    #             err_limits[0] = int(error[0])
+    #         if int(error[0]) > err_limits[2]:
+    #             err_limits[2] = int(error[0])
+    #         if int(error[1]) < err_limits[1]:
+    #             err_limits[1] = int(error[1])
+    #         if int(error[1]) > err_limits[3]:
+    #             err_limits[3] = int(error[1])
+    #
+    #     # adiciona 5 pontos em cada lado para visualizacao facilitada
+    #     # verifica que isso nao ultrapassa os limites da matriz
+    #     err_limits[0] -= 5
+    #     err_limits[1] -= 5
+    #     err_limits[2] += 5
+    #     err_limits[3] += 5
+    #     if err_limits[0] < 0:
+    #         err_limits[0] = 0
+    #     if err_limits[1] < 0:
+    #         err_limits[1] = 0
+    #     if err_limits[2] > size:
+    #         err_limits[2] = size
+    #     if err_limits[3] > size:
+    #         err_limits[3] = size
+    #
+    #     # define uma imagem com o dobro do tamanho, para poder adicionar as guias
+    #     # (o quadriculado)
+    #     size_x = (err_limits[2] - err_limits[0]) * 2 + 1
+    #     size_y = (err_limits[3] - err_limits[1]) * 2 + 1
+    #     img = Image.new("RGB", (size_x, size_y), "white")
+    #
+    #     n = 0
+    #
+    #     # adiciona os erros a imagem
+    #     for error in errors:
+    #         n += 1
+    #         try:
+    #             if (n < 499):
+    #                 img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
+    #                              (255, 0, 0))
+    #             else:
+    #                 img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
+    #                              (0, 0, 255))
+    #         except IndexError:
+    #             print ("Index error: ", error[0], ";", err_limits[0], ";", error[1], ";", err_limits[1])
+    #
+    #     # adiciona as guias (quadriculado)
+    #     if (size_x < 512) and (size_y < 512):
+    #         for y in range(size_y):
+    #             for x in range(size_x):
+    #                 if (x % 2) == 1 or (y % 2) == 1:
+    #                     img.putpixel((x, y), (240, 240, 240))
+    #
+    #     if not os.path.exists(os.path.dirname(filename)):
+    #         try:
+    #             os.makedirs(os.path.dirname(filename))
+    #         except OSError as exc:  # Guard against race condition
+    #             if exc.errno != errno.EEXIST:
+    #                 raise
+    #
+    #     img.save(filename + '.png')
+
+
 
     """
     legacy method

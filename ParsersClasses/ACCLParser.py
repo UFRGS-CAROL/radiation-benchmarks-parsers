@@ -5,9 +5,6 @@ from Parser import Parser
 
 class ACCLParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     __frames = None
     __framesPerStream = None
     __maxRows = None
@@ -91,5 +88,19 @@ class ACCLParser(Parser):
         # return self.__frames
         self._size = "frames_" + str(self.__frames) + "_framesPerStream_" + str(self.__framesPerStream)
 
-    def buildImageMethod(self):
-        return False
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     # type: (integer) -> boolean
+    #     return False

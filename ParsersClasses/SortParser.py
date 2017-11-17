@@ -239,5 +239,11 @@ class SortParser(Parser):
         self._itHardDetec = it_err_counters[11]
 
 
-    def buildImageMethod(self):
-        return False
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     return False

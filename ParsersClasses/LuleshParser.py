@@ -6,9 +6,6 @@ from Parser import Parser
 
 class LuleshParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     _box = 50
     _hasThirdDimention = True
     _iterations = None
@@ -78,10 +75,6 @@ class LuleshParser(Parser):
         self._size = str(self._size) + str(self._iterations)
         # return self._size
 
-    def buildImageMethod(self):
-        return False
-
-
     """
     LEGACY METHODS SECTION
     """
@@ -148,3 +141,20 @@ class LuleshParser(Parser):
     #
     #     self._zeroOut = zeroOut
     #     self._zeroGold = zeroGold
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     # type: (integer) -> boolean
+    #     return False

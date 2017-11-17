@@ -5,9 +5,6 @@ from Parser import Parser
 
 class NWParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     def parseErrMethod(self, errString):
         try:
             # ERR  p: [1, 467], r: -4654, e: 21, error: 467
@@ -51,5 +48,19 @@ class NWParser(Parser):
                 self._penalty = None
         self._size = "max_cols_" + str(self._max_cols) + "_max_rows_" + str(self._max_rows)
 
-    def buildImageMethod(self):
-        return False
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     return False

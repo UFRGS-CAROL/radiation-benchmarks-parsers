@@ -7,9 +7,6 @@ from sklearn.metrics import jaccard_similarity_score
 
 
 class LavaMDParser(Parser):
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     _box = None
     _blockSize = None
     _streams = None
@@ -196,3 +193,9 @@ class LavaMDParser(Parser):
     #
     #     self._zeroOut = zeroOut
     #     self._zeroGold = zeroGold
+
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)

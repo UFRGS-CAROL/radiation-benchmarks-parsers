@@ -5,9 +5,6 @@ from Parser import Parser
 
 class LudParser(Parser):
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     _mSize = 0
 
     def setSize(self, header):
@@ -52,3 +49,21 @@ class LudParser(Parser):
 
         except ValueError:
             return None
+
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    """
+    legacy method
+    """
+    # def __init__(self, **kwargs):
+    #     Parser.__init__(self, **kwargs)
+
+    """
+    legacy method
+    """
+    # def buildImageMethod(self):
+    #     # type: (integer) -> boolean
+    #     return False
