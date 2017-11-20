@@ -38,7 +38,7 @@ class ResnetParser(ObjectDetectionParser):
         self._classes = self.__loadClasses(classesPath)
 
         # set resnet threshold
-        self._detectionThreshold = 0.01
+        self._detectionThreshold = 0.1
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -215,9 +215,16 @@ class ResnetParser(ObjectDetectionParser):
         self._wrongElements = len(diffElements)
 
         self._falsePositive, self._truePositive, self._falseNegative =  self.__perfMeasure(foundStrClasses, goldStrClasses)
-        self._recall = float(self._truePositive) / float(self._truePositive + self._falseNegative)
 
-        self._precision = float(self._truePositive) / float(self._truePositive + self._falsePositive)
+        if self._truePositive + self._falseNegative == 0:
+            self._recall = 0
+        else:
+            self._recall = float(self._truePositive) / float(self._truePositive + self._falseNegative)
+
+        if self._truePositive + self._falsePositive == 0:
+            self._precision = 0
+        else:
+            self._precision = float(self._truePositive) / float(self._truePositive + self._falsePositive)
 
     def __perfMeasure(self, found, gold):
         # precision
