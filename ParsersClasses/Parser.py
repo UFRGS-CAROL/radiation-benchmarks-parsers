@@ -68,6 +68,9 @@ class Parser():
     _logFileNameNoExt = ""
     _dirName = ""
 
+    # test if it is not necessary to extend header
+    _extendHeader = True
+
     # size must be set on the child classes
     # size will be the name of each benchmark dir
     _size = ""
@@ -106,7 +109,7 @@ class Parser():
         self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
         self.__firstKey = self.__keys[0]
 
-        if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader:
+        if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader and self._extendHeader:
             # for python list interpretation is faster than a concatenated loop
             self._csvHeader.extend("relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits)
             self._csvHeader.extend("jaccard_>_" + str(threshold) for threshold in self.__errorLimits)

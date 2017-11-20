@@ -21,12 +21,13 @@ class ResnetParser(ObjectDetectionParser):
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
                   "gold_lines", "detected_lines", "wrong_elements", "precision",
                   "recall", 'fscore_0.5',
-                  "false_negative", "false_positive", "true_positive", # "true_negative",
+                  "false_negative", "false_positive", "true_positive",  # "true_negative",
                   "header"]
 
     _classes = None
     _topOnesSize = 5
     _fscore = None
+
     # _trueNegative = None
 
     def __init__(self, **kwargs):
@@ -35,6 +36,9 @@ class ResnetParser(ObjectDetectionParser):
         self._sizeOfDNN = 200
         classesPath = kwargs.pop("classes_path")
         self._classes = self.__loadClasses(classesPath)
+
+        # set resnet threshold
+        self._detectionThreshold = 0.01
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -82,7 +86,8 @@ class ResnetParser(ObjectDetectionParser):
             self._imgListPath = ""
             self._goldFileName = ""
 
-        self._size = os.path.basename(self.__weights) + "_" + os.path.basename(self._imgListPath) + "_" + os.path.basename(
+        self._size = os.path.basename(self.__weights) + "_" + os.path.basename(
+            self._imgListPath) + "_" + os.path.basename(
             self._goldFileName)
 
     # parse Darknet
@@ -128,12 +133,12 @@ class ResnetParser(ObjectDetectionParser):
         return ret if len(ret) > 0 else None
 
     def __loadClasses(self, path):
-        fileContent = open(path, "r").read()
-        temp = fileContent.replace("return{", "")
-        temp = temp.replace("}", "")
-        classesList = temp.replace("\'", "").split(",")
-        retList = [i.lstrip() for i in classesList]
+        fileContent = open(path, "r").readlines()
+        del fileContent[-1]
+        del fileContent[0]
 
+        retList = [i.lstrip().replace("\'", "").replace("\n", "").replace(",", "").replace(" ", "-") for i in
+                   fileContent]
         return retList
 
     def __sortTwoLists(self, list1, list2):
@@ -168,7 +173,6 @@ class ResnetParser(ObjectDetectionParser):
             if class_ == classIndex:
                 probs[i] = probToSet
 
-
     def _relativeErrorParser(self, errList):
         errListLen = len(errList)
         if errListLen == 0:
@@ -180,7 +184,7 @@ class ResnetParser(ObjectDetectionParser):
         gold = self.__loadGold()
 
         goldClasses = gold.getIndexes(imgPath=img)
-        # goldProbs = list(gold.getProbArray(imgPath=img))
+        goldProbs = list(gold.getProbArray(imgPath=img))
 
         if len([item for item, count in Counter(goldClasses).items() if count > 1]) > 0:
             raise ValueError("Some error because list have duplicated elements: " + str(
@@ -195,29 +199,44 @@ class ResnetParser(ObjectDetectionParser):
             fProb = i["found_pb"]
             self.__setFoundListBasedOnTestResult(foundClasses, foundProbs, fIndex, fProb)
 
-        # must reorder the found classes and probs
-        foundProbsSorted, foundClassesSorted = self.__sortTwoLists(foundProbs, foundClasses)
+        goldStrClasses = []
+        foundStrClasses = []
+        for i in goldClasses:
+            if goldProbs[i - 1] > self._detectionThreshold:
+                goldStrClasses.append(self._classes[i - 1])
 
-        gStrClassFull = [self._classes[i] for i in goldClasses]
-        fStrClassFull = [self._classes[i] for i in foundClassesSorted]
-        goldStrClasses = gStrClassFull[0:self._topOnesSize]
-        foundStrClasses = fStrClassFull[0:self._topOnesSize]
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            self._precision, self._recall, self._fscore, _ = precision_recall_fscore_support(goldStrClasses, foundStrClasses, beta=0.5,
-                                                                            average='micro')
+        for i in foundClasses:
+            if foundProbs[i - 1] > self._detectionThreshold:
+                foundStrClasses.append(self._classes[i - 1])
 
         diffElements = list(set(goldStrClasses) - set(foundStrClasses))
         self._goldLines = len(goldStrClasses)
         self._detectedLines = len(foundStrClasses)
         self._wrongElements = len(diffElements)
 
-        classesDetected = list(set(goldStrClasses + foundStrClasses))
-        cm = confusion_matrix(goldStrClasses, foundStrClasses, labels=classesDetected)
+        self._falsePositive, self._truePositive, self._falseNegative =  self.__perfMeasure(foundStrClasses, goldStrClasses)
+        self._recall = float(self._truePositive) / float(self._truePositive + self._falseNegative)
 
-        self._falseNegative = np.sum(cm.sum(axis=1) - np.diag(cm))
-        self._falsePositive = np.sum(cm.sum(axis=0) - np.diag(cm))
-        self._truePositive  = np.sum(np.diag(cm))
+        self._precision = float(self._truePositive) / float(self._truePositive + self._falsePositive)
 
+    def __perfMeasure(self, found, gold):
+        # precision
+        outPositive = 0
+        for i in found:
+            for g in gold:
+                if g == i: #(g.jaccard_similarity(i)) >= self.__threshold:
+                    outPositive += 1
+                    break
 
+        falsePositive = len(found) - outPositive
+
+        # recall
+        truePositive = 0
+        for i in gold:
+            for z in found:
+                if i == z: #(i.jaccard_similarity(z)) >= self.__threshold:
+                    truePositive += 1
+                    break
+
+        falseNegative = len(gold) - truePositive
+        return falsePositive, truePositive, falseNegative

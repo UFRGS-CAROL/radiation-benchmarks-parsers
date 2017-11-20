@@ -58,6 +58,7 @@ class ObjectDetectionParser(Parser):
     _iterations = None
 
     def __init__(self, **kwargs):
+        self._extendHeader = False
         Parser.__init__(self, **kwargs)
         self._prThreshold = float(kwargs.pop("prThreshold"))
         self._imgOutputDir = str(kwargs.pop("imgOutputDir"))
