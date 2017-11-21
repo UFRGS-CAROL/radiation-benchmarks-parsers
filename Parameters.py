@@ -30,6 +30,9 @@ GOLD_BASE_DIR = {
     # 'carol-k201-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
     'carol-k401': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
     'carol-k201': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
+    'carol-tx'  : '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN',
+    'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40'
+
 }
 
 ############################################################################################
@@ -113,6 +116,9 @@ SUMMARIES_FILES = {
     'caroltx2a': {
         'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
                '/summaries-fission.csv', 'data': None},
+
+    'carol-tx' : '', 'data': None,
+    'carol-k402' : '', 'data': None
 }
 
 # --- new ERROR Threshold method

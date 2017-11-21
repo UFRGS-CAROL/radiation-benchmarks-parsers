@@ -197,10 +197,7 @@ class FasterRcnnParser(ObjectDetectionParser):
         #     print '\nnao passou para ', goldKey
         gold = self._goldDatasetArray[goldKey].getPyFasterGold()
 
-
         imgPos = errList[0]['img_path']
-
-
 
         imgFilename = self.__setLocalFile(imgPos)
         imgObj = ImageRaw(imgFilename)
@@ -255,6 +252,9 @@ class FasterRcnnParser(ObjectDetectionParser):
 
         gValidRects, gValidProbs, gValidClasses = self.__generatePyFasterDetection(goldImg)
         fValidRects, fValidProbs, fValidClasses = self.__generatePyFasterDetection(foundImg)
+
+        print "\n", set(gValidProbs) - set(fValidProbs)
+
         # print gValidRects
         self._abftType = self._rowDetErrors = self._colDetErrors = 'pyfaster'
         precisionRecallObj = PrecisionAndRecall.PrecisionAndRecall(self._prThreshold)
@@ -280,8 +280,8 @@ class FasterRcnnParser(ObjectDetectionParser):
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
 
-        self._xCenterOfMass, self._yCenterOfMass = precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
-                                                                                              imgObj.w, imgObj.h)
+        self._xCenterOfMass, self._yCenterOfMass = 0, 0 #precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
+                                                    #                                          imgObj.w, imgObj.h)
 
 
     #like printYoloDetection
