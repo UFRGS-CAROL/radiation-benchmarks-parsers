@@ -241,7 +241,7 @@ class ObjectDetectionParser(Parser):
         else:
             self._recallClasses = float(tp) / float(tp + fn)
 
-        if tp + fn:
+        if tp + fp == 0:
             self._precisionClasses = 0
         else:
             self._precisionClasses = float(tp) / float(tp + fp)
