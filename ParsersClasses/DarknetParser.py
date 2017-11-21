@@ -68,9 +68,11 @@ class DarknetParser(ObjectDetectionParser):
         30: [1175],
         31: [1175]}
 
-    _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass", "y_center_of_mass", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
+    _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration",
+                  "#Accumulated_Errors", "#Iteration_Errors",
+                  "gold_lines", "detected_lines", "wrong_elements",
+                  "precision", "recall", "precision_classes", "recall_classes",
+                  "false_negative", "false_positive", "true_positive", "abft_type", "row_detected_errors",
                   "col_detected_errors", "failed_layer", "header"]
 
     # it is only for darknet for a while
@@ -145,12 +147,6 @@ class DarknetParser(ObjectDetectionParser):
         try:
             csvWFP = open(csvFileName, "a")
             writer = csv.writer(csvWFP, delimiter=';')
-            # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
-            #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
-            #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
-            #     "precision", "recall", "false_negative", "false_positive",
-            #     "true_positive", "abft_type", "row_detected_errors",
-            #     "col_detected_errors", "failed_layer", "header"]
             outputList = [self._logFileName,
                           self._machine,
                           self._benchmark,
@@ -160,10 +156,10 @@ class DarknetParser(ObjectDetectionParser):
                           self._goldLines,
                           self._detectedLines,
                           self._wrongElements,
-                          self._xCenterOfMass,
-                          self._yCenterOfMass,
                           self._precision,
                           self._recall,
+                          self._precisionClasses,
+                          self._recallClasses,
                           self._falseNegative,
                           self._falsePositive,
                           self._truePositive,
@@ -225,7 +221,6 @@ class DarknetParser(ObjectDetectionParser):
             darknetM = re.match(".*gold_file\: (\S+).*save_layer\: (\d+).*abft_type\: (\S+).*iterations\: (\d+).*", header)
             if darknetM:
                 self._goldFileName = darknetM.group(1)
-                self._saveL
 
         # return self.__imgListFile
         # tempPath = os.path.basename(self.__imgListPath).replace(".txt","")
@@ -239,11 +234,6 @@ class DarknetParser(ObjectDetectionParser):
             box = boxes[i]
             xmin = max(box.left - box.width / 2.0, 0)
             ymin = max(box.bottom - box.height / 2.0, 0)
-
-            # if xmin < 0:
-            #     xmin = 0
-            # if ymin < 0:
-            #     ymin = 0
 
             for j in range(0, classes):
                 if probs[i][j] >= self._detectionThreshold:
@@ -776,12 +766,6 @@ class DarknetParser(ObjectDetectionParser):
             goldPath = self._goldBaseDir[self._machine] + "/darknet/" + self._goldFileName
             txtPath = self._goldBaseDir[self._machine] + '/networks_img_list/' + os.path.basename(self._imgListPath)
         else:
-            # if self._machine == 'carolk402':  # errors_log_database_inst foi gerado com essa string
-            #     self._machine = 'carol-k402'
-            #     goldPath = self.__goldBaseDir [self._machine] + "/darknet/" + self._goldFileName
-            #     txtPath = self.__goldBaseDir [self._machine] + '/networks_img_list/' + os.path.basename(self._imgListPath)
-            #     self._isInstLayers = True
-            # else:
             print 'not indexed machine: ', self._machine, " set it on Parameters.py"
             return
 
@@ -797,7 +781,6 @@ class DarknetParser(ObjectDetectionParser):
         self._imgListSize = len(listFile)
         imgPos = int(self._sdcIteration) % self._imgListSize
         imgFilename = self.__setLocalFile(listFile, imgPos)
-        originalFilename = listFile[imgPos]
 
         goldPb = gold.getProbArray(imgPos=imgPos)
         goldRt = gold.getRectArray(imgPos=imgPos)
@@ -845,14 +828,8 @@ class DarknetParser(ObjectDetectionParser):
             elif y["type"] == "probs":
                 i = int(y["probs"]["probs_x"])
                 j = int(y["probs"]["probs_y"])
-
-                # if math.fabs(float(y["probs"]["prob_e"]) - foundPb[i][j]) > 0: print "\n" , foundPb[i][j] , float(y["probs"]["prob_r"]) , y["probs"]["prob_e"]
-
                 foundPb[i][j] = float(y["probs"]["prob_r"])
                 goldPb[i][j] = float(y["probs"]["prob_e"])
-
-        # if self._abftType != 'no_abft':
-        #    print str(self._sdcIteration) + ' : ' + self._abftType 
 
         if self._rowDetErrors > 1e6:
             self._rowDetErrors /= long(1e15)
@@ -870,33 +847,16 @@ class DarknetParser(ObjectDetectionParser):
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
 
-
-        listDiff = list(set(gValidClasses) - set(fValidClasses))
-
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
 
-        if self._parseLayers:  # and self.hasLayerLogs(self._sdcIteration):
-            # print self._sdcIteration + 'debug'
+        if self._parseLayers:
             self.parseLayers()
-            # print self._machine + self._abftType
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
-
-
-        if len(listDiff) and (self._precision == 1 and self._recall == 1):
-            print "\n", gValidClasses
-            print fValidClasses
-            print self._precision, self._recall
-            for i in gValidRects:
-                print i.area(),
-            print ""
-            for i in fValidRects:
-                print i.area(),
-            print ""
 
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
@@ -904,8 +864,7 @@ class DarknetParser(ObjectDetectionParser):
         # set all
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
-        self._xCenterOfMass, self._yCenterOfMass = 0, 0 #precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
-                                                         #                                     imgObj.w, imgObj.h)
+        self._precisionAndRecallClasses(fValidClasses, gValidClasses)
 
     # parse Darknet
     # returns a dictionary
@@ -937,13 +896,6 @@ class DarknetParser(ObjectDetectionParser):
     def __processBoxes(self, errString):
         ret = {}
         imgListPosition = ""
-        # ERR image_list_position: [823] boxes: [0]  x_r:
-        # 6.7088904380798340e+00 x_e: 6.7152066230773926e+00 x_diff:
-        # 6.3161849975585938e-03 y_r: 4.9068140983581543e+00 y_e:
-        # 4.9818339347839355e+00 y_diff: 7.5019836425781250e-02 w_r:
-        # 2.1113674640655518e+00 w_e: 2.1666510105133057e+00 w_diff:
-        # 5.5283546447753906e-02 h_r: 3.4393796920776367e+00 h_e:
-        # 3.4377186298370361e+00 h_diff: 1.6610622406005859e-03
         image_err = re.match(
             ".*image_list_position\: \[(\d+)\].*boxes\: \[(\d+)\].*x_r\: (\S+).*x_e\: (\S+).*x_diff\:"
             " (\S+).*y_r\: (\S+).*y_e\: (\S+).*y_diff\: (\S+).*w_r\: (\S+).*w_e\: (\S+).*w_diff\:"
@@ -1032,16 +984,6 @@ class DarknetParser(ObjectDetectionParser):
             except:
                 print "Error on parsing boxes"
                 raise
-
-                # if float(ret['x_r']) - float(ret['x_e']) > 0.01:
-                #     print float(ret['x_r']) - float(ret['x_e'])
-                # if float(ret['y_r']) - float(ret['y_e']) > 0.01:
-                #     print float(ret['y_r']) - float(ret['y_e'])
-                #
-                # if float(ret["h_r"]) - float(ret['h_e']) > 0.01:
-                #     print float(ret["h_r"]) - float(ret['h_e'])
-                # if float(ret["w_r"]) - float(ret["w_e"]) > 0.01:
-                #     print float(ret["w_r"]) - float(ret["w_e"])
 
         return ret, imgListPosition
 

@@ -12,8 +12,6 @@ import numpy as np
 
 
 class ImageRaw():
-    # w = 0
-    # h = 0
     file = ""
 
     def __init__(self, file):
@@ -56,16 +54,6 @@ class ObjectDetectionParser(Parser):
 
     _iterations = None
 
-    def __init__(self, **kwargs):
-        self._extendHeader = False
-        Parser.__init__(self, **kwargs)
-        self._prThreshold = float(kwargs.pop("prThreshold"))
-        self._imgOutputDir = str(kwargs.pop("imgOutputDir"))
-
-        self._localRadiationBench = str(kwargs.pop("localRadiationBench"))
-        self._goldBaseDir = kwargs.pop("goldBaseDir")
-        self._datasets = kwargs.pop("datasets")
-
     _goldDatasetArray = dict()
     _goldFileName = None
     _imgListPath = None
@@ -79,19 +67,15 @@ class ObjectDetectionParser(Parser):
 
     # overiding csvheader
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors",
-                  "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements", "x_center_of_mass",
-                  "y_center_of_mass", "precision", "recall", "false_negative", "false_positive",
+                  "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements",
+                  "precision", "recall", "precision_classes", "recall_classes",
+                  "false_negative", "false_positive",
                   "true_positive", "abft_type", "row_detected_errors", "col_detected_errors",
                   "header"]
 
-    # ["gold_lines",
-    #     "detected_lines", "x_center_of_mass", "y_center_of_mass", "precision",
-    #     "recall", "false_negative", "false_positive", "true_positive"]
     _goldLines = None
     _detectedLines = None
     _wrongElements = None
-    _xCenterOfMass = None
-    _yCenterOfMass = None
     _precision = None
     _recall = None
     _falseNegative = None
@@ -102,6 +86,20 @@ class ObjectDetectionParser(Parser):
     _abftType = None
     _rowDetErrors = None
     _colDetErrors = None
+
+    #precision and recall classes
+    _precisionClasses = None
+    _recallClasses = None
+
+    def __init__(self, **kwargs):
+        self._extendHeader = False
+        Parser.__init__(self, **kwargs)
+        self._prThreshold = float(kwargs.pop("prThreshold"))
+        self._imgOutputDir = str(kwargs.pop("imgOutputDir"))
+
+        self._localRadiationBench = str(kwargs.pop("localRadiationBench"))
+        self._goldBaseDir = kwargs.pop("goldBaseDir")
+        self._datasets = kwargs.pop("datasets")
 
     def _writeToCSV(self, csvFileName):
         self._writeCSVHeader(csvFileName)
@@ -123,10 +121,10 @@ class ObjectDetectionParser(Parser):
                           self._iteErrors, self._goldLines,
                           self._detectedLines,
                           self._wrongElements,
-                          self._xCenterOfMass,
-                          self._yCenterOfMass,
                           self._precision,
                           self._recall,
+                          self._precisionClasses,
+                          self._recallClasses,
                           self._falseNegative,
                           self._falsePositive,
                           self._truePositive, self._abftType, self._rowDetErrors,
@@ -144,7 +142,6 @@ class ObjectDetectionParser(Parser):
             # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
             print "Error on writing row to " + str(csvFileName)
             raise
-
 
     def localityParser(self):
         pass
@@ -208,7 +205,6 @@ class ObjectDetectionParser(Parser):
         plt.cla()
         plt.close()
 
-
     """
     perfMeasure calculates falsePositive, truePositive and falseNegative
     where two lists of classes is given
@@ -237,3 +233,15 @@ class ObjectDetectionParser(Parser):
 
         falseNegative = len(gold) - truePositive
         return falsePositive, truePositive, falseNegative
+
+    def _precisionAndRecallClasses(self, found, gold):
+        fp, tp, fn = self._perfMeasure(found, gold)
+        if tp + fn == 0:
+            self._recallClasses = 0
+        else:
+            self._recallClasses = float(tp) / float(tp + fn)
+
+        if tp + fn:
+            self._precisionClasses = 0
+        else:
+            self._precisionClasses = float(tp) / float(tp + fp)

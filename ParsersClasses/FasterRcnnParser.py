@@ -220,24 +220,9 @@ class FasterRcnnParser(ObjectDetectionParser):
                 y1R = float(y['boxes']['y1_r'])
                 y2R = float(y['boxes']['y2_r'])
                 r = [x1R, y1R, x2R, y2R]
-                # x1E = float(y['boxes']['x1_e'])
-                # x2E = float(y['boxes']['x2_e'])
-                # y1E = float(y['boxes']['y1_e'])
-                # y2E = float(y['boxes']['y2_e'])
                 # e = [x1E, y1E, x2E, y2E]
                 for i in xrange(0,4): foundImg[cl]['boxes'][box][i] = r[i]
-                # # if math.fabs(x1E - goldImg[cl]['boxes'][box][0]) > 0.1:
-                # print "\npau no box ", goldImg[cl]['boxes'][box][0], x1E
-                #     # sys.exit()
-                # # if math.fabs(y1E - goldImg[cl]['boxes'][box][1]) > 0.1:
-                # print "\npau no box ", goldImg[cl]['boxes'][box][1], y1E
-                #     # sys.exit()
-                # # if math.fabs(x2E - goldImg[cl]['boxes'][box][2]) > 0.1:
-                # print "\npau no box ", goldImg[cl]['boxes'][box][2] , x2E
-                #     # sys.exit()
-                # # if math.fabs(y2E - goldImg[cl]['boxes'][box][3]) > 0.1:
-                # print "\npau no box ", goldImg[cl]['boxes'][box][3], y2E
-                    # sys.exit()
+
             #scores
             if 'scores' in y:
                 if 'score_pos' in y['scores']:
@@ -253,12 +238,6 @@ class FasterRcnnParser(ObjectDetectionParser):
         gValidRects, gValidProbs, gValidClasses = self.__generatePyFasterDetection(goldImg)
         fValidRects, fValidProbs, fValidClasses = self.__generatePyFasterDetection(foundImg)
 
-        listDiff = list(set(gValidClasses) - set(fValidClasses))
-
-        if len(listDiff) > 0:
-            print "\nPau na classificacao", listDiff
-            print "\n", gValidClasses
-            print fValidClasses
 
         # print gValidRects
         self._abftType = self._rowDetErrors = self._colDetErrors = 'pyfaster'
@@ -284,10 +263,7 @@ class FasterRcnnParser(ObjectDetectionParser):
         # set all
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
-
-        self._xCenterOfMass, self._yCenterOfMass = 0, 0 #precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
-                                                    #                                          imgObj.w, imgObj.h)
-
+        self._precisionAndRecallClasses(fValidClasses, gValidClasses)
 
     #like printYoloDetection
     def __generatePyFasterDetection(self, detection):
@@ -326,7 +302,6 @@ class FasterRcnnParser(ObjectDetectionParser):
 
         return ret
 
-
     def setSize(self, header):
         # pyfaster
         # HEADER iterations: 1000 img_list: /home/carol/radiation-benchmarks/data/networks_img_list/caltech.pedestrians.1K.txt board: K40
@@ -339,7 +314,6 @@ class FasterRcnnParser(ObjectDetectionParser):
             self._goldFileName = self._datasets[os.path.basename(self._imgListPath)]
 
         self._size = 'py_faster_' + os.path.basename(self._imgListPath) + '_' + str(self.__board)
-
 
     def __setLocalFile(self, imgPath):
         tmp = ''
