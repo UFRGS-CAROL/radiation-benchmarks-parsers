@@ -12,8 +12,8 @@ import numpy as np
 
 
 class ImageRaw():
-    w = 0
-    h = 0
+    # w = 0
+    # h = 0
     file = ""
 
     def __init__(self, file):
@@ -21,17 +21,16 @@ class ImageRaw():
         self.file = file
 
     def getImageSize(self, imgPath):
-        # print imgPath
         width = None
         height = None
         try:
             with Image.open(imgPath) as im:
                 width, height = im.size
         except:
-            print "\n", imgPath
+            print "\nAqui", imgPath
 
-        if width == None and height == None:
-            print "\n", imgPath
+        # if width == None and height == None:
+        #     print "\n", imgPath
         return width, height
 
 
@@ -208,3 +207,33 @@ class ObjectDetectionParser(Parser):
         plt.savefig(dir + '/' + saveName)
         plt.cla()
         plt.close()
+
+
+    """
+    perfMeasure calculates falsePositive, truePositive and falseNegative
+    where two lists of classes is given
+    input:
+    found: detected classes
+    gold: ground truth and gold
+    """
+    def _perfMeasure(self, found, gold):
+        # precision
+        outPositive = 0
+        for i in found:
+            for g in gold:
+                if g == i: #(g.jaccard_similarity(i)) >= self.__threshold:
+                    outPositive += 1
+                    break
+
+        falsePositive = len(found) - outPositive
+
+        # recall
+        truePositive = 0
+        for i in gold:
+            for z in found:
+                if i == z: #(i.jaccard_similarity(z)) >= self.__threshold:
+                    truePositive += 1
+                    break
+
+        falseNegative = len(gold) - truePositive
+        return falsePositive, truePositive, falseNegative

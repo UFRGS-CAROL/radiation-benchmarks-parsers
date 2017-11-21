@@ -2,7 +2,7 @@ import os
 from SupportClasses import Rectangle
 from SupportClasses import PrecisionAndRecall
 from ObjectDetectionParser import ObjectDetectionParser
-from ObjectDetectionParser import ImageRaw
+# from ObjectDetectionParser import ImageRaw
 import re
 
 # LOCAL_GOLD_FOLDER = "/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40/histogram_ori_gradients/" #"/home/aluno/parser_hog/gold/"

@@ -131,6 +131,10 @@ class GoldContent():
         if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['boxes']
+        elif self.__nn == 'darknet':
+            imgPos = int(kwargs.pop('imgPos'))
+            return self.__prob_array['boxes'][imgPos]
+
 
         return self.__prob_array['boxes']
 
@@ -140,13 +144,18 @@ class GoldContent():
             return self.__prob_array[imgPath]['indexes']
 
     def getProbArray(self, **kwargs):
-        imgPath = kwargs.pop('imgPath')
         if self.__nn == 'darknetv2':
+            imgPath = kwargs.pop('imgPath')
             return self.readProbsAndBoxesV2(None, imgPath)
         elif self.__nn == 'darknetv1':
+            imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
         elif self.__nn == 'resnet':
+            imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
+        elif self.__nn == 'darknet':
+            imgPos = int(kwargs.pop('imgPos'))
+            return self.__prob_array['probs'][imgPos]
 
 
     def getImgDim(self, **kwargs):

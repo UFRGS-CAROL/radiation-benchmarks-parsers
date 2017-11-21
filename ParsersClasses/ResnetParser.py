@@ -214,7 +214,7 @@ class ResnetParser(ObjectDetectionParser):
         self._detectedLines = len(foundStrClasses)
         self._wrongElements = len(diffElements)
 
-        self._falsePositive, self._truePositive, self._falseNegative =  self.__perfMeasure(foundStrClasses, goldStrClasses)
+        self._falsePositive, self._truePositive, self._falseNegative =  self._perfMeasure(foundStrClasses, goldStrClasses)
 
         if self._truePositive + self._falseNegative == 0:
             self._recall = 0
@@ -225,25 +225,3 @@ class ResnetParser(ObjectDetectionParser):
             self._precision = 0
         else:
             self._precision = float(self._truePositive) / float(self._truePositive + self._falsePositive)
-
-    def __perfMeasure(self, found, gold):
-        # precision
-        outPositive = 0
-        for i in found:
-            for g in gold:
-                if g == i: #(g.jaccard_similarity(i)) >= self.__threshold:
-                    outPositive += 1
-                    break
-
-        falsePositive = len(found) - outPositive
-
-        # recall
-        truePositive = 0
-        for i in gold:
-            for z in found:
-                if i == z: #(i.jaccard_similarity(z)) >= self.__threshold:
-                    truePositive += 1
-                    break
-
-        falseNegative = len(gold) - truePositive
-        return falsePositive, truePositive, falseNegative

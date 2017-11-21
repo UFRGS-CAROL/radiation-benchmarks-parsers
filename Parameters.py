@@ -31,8 +31,10 @@ GOLD_BASE_DIR = {
     'carol-k401': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
     'carol-k201': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
     'carol-tx'  : '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN',
-    'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40'
-
+    'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40',
+    'carolx1b' : '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1b',
+    'carolx1c': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
+    'carolx1a': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c'
 }
 
 ############################################################################################

@@ -2,7 +2,7 @@ import os
 import re
 import numpy
 from ObjectDetectionParser import ObjectDetectionParser
-from ObjectDetectionParser import ImageRaw
+# from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 from SupportClasses import GoldContent
 from SupportClasses import Rectangle
@@ -200,7 +200,7 @@ class FasterRcnnParser(ObjectDetectionParser):
         imgPos = errList[0]['img_path']
 
         imgFilename = self.__setLocalFile(imgPos)
-        imgObj = ImageRaw(imgFilename)
+        # imgObj = ImageRaw(imgFilename)
 
         # to get from gold
         imgFilenameRaw = imgPos.rstrip() if 'radiation-benchmarks' in imgPos else '/home/carol/radiation-benchmarks/data/' + imgPos.rstrip()
@@ -253,7 +253,12 @@ class FasterRcnnParser(ObjectDetectionParser):
         gValidRects, gValidProbs, gValidClasses = self.__generatePyFasterDetection(goldImg)
         fValidRects, fValidProbs, fValidClasses = self.__generatePyFasterDetection(foundImg)
 
-        print "\n", set(gValidProbs) - set(fValidProbs)
+        listDiff = list(set(gValidClasses) - set(fValidClasses))
+
+        if len(listDiff) > 0:
+            print "\nPau na classificacao", listDiff
+            print "\n", gValidClasses
+            print fValidClasses
 
         # print gValidRects
         self._abftType = self._rowDetErrors = self._colDetErrors = 'pyfaster'

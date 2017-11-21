@@ -8,7 +8,7 @@ import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import GoldContent
-from ObjectDetectionParser import ImageRaw
+# from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 
 
@@ -797,10 +797,10 @@ class DarknetParser(ObjectDetectionParser):
         self._imgListSize = len(listFile)
         imgPos = int(self._sdcIteration) % self._imgListSize
         imgFilename = self.__setLocalFile(listFile, imgPos)
-        imgObj = ImageRaw(imgFilename)
+        originalFilename = listFile[imgPos]
 
-        goldPb = gold.getProbArray()[imgPos]
-        goldRt = gold.getRectArray()[imgPos]
+        goldPb = gold.getProbArray(imgPos=imgPos)
+        goldRt = gold.getRectArray(imgPos=imgPos)
 
         goldPb = self.newMatrix(goldPb, gold.getTotalSize(), gold.getClasses())
         goldRt = self.newRectArray(goldRt)
@@ -870,6 +870,9 @@ class DarknetParser(ObjectDetectionParser):
         gValidSize = len(gValidRects)
         fValidSize = len(fValidRects)
 
+
+        listDiff = list(set(gValidClasses) - set(fValidClasses))
+
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
@@ -883,14 +886,26 @@ class DarknetParser(ObjectDetectionParser):
             self.buildImageMethod(imgFilename.rstrip(), gValidRects, fValidRects, str(self._sdcIteration)
                                   + '_' + self._logFileName, self._imgOutputDir)
 
+
+        if len(listDiff) and (self._precision == 1 and self._recall == 1):
+            print "\n", gValidClasses
+            print fValidClasses
+            print self._precision, self._recall
+            for i in gValidRects:
+                print i.area(),
+            print ""
+            for i in fValidRects:
+                print i.area(),
+            print ""
+
         self._falseNegative = precisionRecallObj.getFalseNegative()
         self._falsePositive = precisionRecallObj.getFalsePositive()
         self._truePositive = precisionRecallObj.getTruePositive()
         # set all
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
-        self._xCenterOfMass, self._yCenterOfMass = precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
-                                                                                              imgObj.w, imgObj.h)
+        self._xCenterOfMass, self._yCenterOfMass = 0, 0 #precisionRecallObj.centerOfMassGoldVsFound(gValidRects, fValidRects,
+                                                         #                                     imgObj.w, imgObj.h)
 
     # parse Darknet
     # returns a dictionary
