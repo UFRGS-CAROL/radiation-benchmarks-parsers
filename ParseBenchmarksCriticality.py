@@ -7,10 +7,6 @@ import argparse
 import Parameters as par
 
 
-# benchmarks dict => (bechmarkname_machinename : list of SDC item)
-# SDC item => [logfile name, header, sdc iteration,
-# iteration total amount error, iteration accumulated error, list of errors ]
-# list of errors => list of strings with all the error detail print in lines using #ERR
 def parseErrors(benchmarkname_machinename, sdcItemList):
     sdci = 1
     totalSdcs = len(sdcItemList)
