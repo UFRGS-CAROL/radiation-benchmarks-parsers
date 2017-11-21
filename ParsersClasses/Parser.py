@@ -478,7 +478,6 @@ class Parser():
                           self._zeroOut,
                           self._zeroGold]
 
-            print self._relErrLowerLimit
             outputList.extend(self._relErrLowerLimit[key] for key in self.__keys)
             outputList.extend(self._jaccardCoefficientDict[key] for key in self.__keys)
             for key in self.__keys:

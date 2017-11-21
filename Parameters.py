@@ -1,22 +1,3 @@
-from ParsersClasses import GemmParser
-from ParsersClasses import ACCLParser
-from ParsersClasses import DarknetParser
-from ParsersClasses import FasterRcnnParser
-from ParsersClasses import HogParser
-from ParsersClasses import HotspotParser
-from ParsersClasses import LavaMDParser
-from ParsersClasses import NWParser
-from ParsersClasses import LudParser
-from ParsersClasses import LuleshParser
-from ParsersClasses import MergesortParser
-from ParsersClasses import QuicksortParser
-from ParsersClasses import DarknetV2Parser
-from ParsersClasses import DarknetV1Parser
-from ParsersClasses import LenetParser
-from ParsersClasses import ResnetParser
-from ParsersClasses import BezierSurfaceParser
-from ParsersClasses import GaussianParser
-
 ############################################################################################
 ########################OBJECT DETECTION PARSER PARAMETERS##################################
 ############################################################################################
@@ -30,9 +11,9 @@ GOLD_BASE_DIR = {
     # 'carol-k201-ECC-OFF': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
     'carol-k401': '/home/fernando/Dropbox/LANSCE2017/K40_gold',
     'carol-k201': '/home/fernando/Dropbox/LANSCE2017/K20_gold',
-    'carol-tx'  : '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN',
+    'carol-tx': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_TITAN',
     'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40',
-    'carolx1b' : '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1b',
+    'carolx1b': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1b',
     'carolx1c': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
     'carolx1a': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c'
 }
@@ -119,8 +100,8 @@ SUMMARIES_FILES = {
         'csv': '/home/fernando/Dropbox/LANSCE2017/LANSCE2017_results/logs_parsed'
                '/summaries-fission.csv', 'data': None},
 
-    'carol-tx' : '', 'data': None,
-    'carol-k402' : '', 'data': None
+    'carol-tx': '', 'data': None,
+    'carol-k402': '', 'data': None
 }
 
 # --- new ERROR Threshold method
@@ -151,6 +132,45 @@ def setBenchmarks(**kwargs):
         parse_err_histogram = ERROR_RELATIVE_HISTOGRAM
     else:
         parse_err_histogram = None
+
+    # I wish that make things faster
+    for i in benchmarks:
+        if i == 'darknet':
+            from ParsersClasses import DarknetParser
+        if i == 'darknetv1':
+            from ParsersClasses import DarknetV1Parser
+        elif i == 'darknetv2':
+            from ParsersClasses import DarknetV2Parser
+        if i == 'resnet':
+            from ParsersClasses import ResnetParser
+        elif i == 'hotspot':
+            from ParsersClasses import HotspotParser
+        elif i == 'hog':
+            from ParsersClasses import HogParser
+        elif i == 'lavamd':
+            from ParsersClasses import LavaMDParser
+        elif i == 'mergesort':
+            from ParsersClasses import MergesortParser
+        elif i == 'nw':
+            from ParsersClasses import NWParser
+        elif i == 'quicksort':
+            from ParsersClasses import QuicksortParser
+        elif i == 'accl':
+            from ParsersClasses import ACCLParser
+        elif i == 'pyfasterrcnn':
+            from ParsersClasses import FasterRcnnParser
+        elif i == 'lulesh':
+            from ParsersClasses import LuleshParser
+        elif i == 'lud':
+            from ParsersClasses import LudParser
+        elif i == 'gemm':
+            from ParsersClasses import GemmParser
+        elif i == 'lenet':
+            from ParsersClasses import LenetParser
+        elif i == 'beziersurface':
+            from ParsersClasses import BezierSurfaceParser
+        elif i == 'gaussian':
+            from ParsersClasses import GaussianParser
 
     print "Parsing for: ",
     for i in benchmarks:
