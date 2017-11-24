@@ -15,8 +15,8 @@ pdf(file = args[2])
 ggplot(dat, aes(x=Threshold, y=Percentage, group=Device), method = "lm", formula = y ~ poly(x, 10)) +
 ylim(0,100)+
 geom_line(aes(linetype=Device, colour=Device), size=1.1) +
-scale_linetype_manual(values=c("solid", "dotdash", "solid", "solid")) +
-scale_color_manual(values=c('#3465A4','#3465A4', '#FF950E', '#336600'))+
+scale_linetype_manual(values=c("solid", "dotdash", "solid", "solid", "solid", "dotdash")) +
+scale_color_manual(values=c('#3465A4','#3465A4', '#FF950E', '#336600', '#231111', '#332200'))+
 labs(x = "Tolerated Relative Error [%]", y = "GEMM FIT rate [%]", group="Device") +
 theme(legend.position="bottom",axis.text.x=element_text(size=14) , axis.text.y=element_text(size=14) , text = element_text(size = 14)) 
 

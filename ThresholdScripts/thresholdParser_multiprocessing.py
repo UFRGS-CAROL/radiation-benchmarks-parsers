@@ -182,8 +182,8 @@ if __name__ == "__main__":
     csvDirOutPrefix = "parsed_"
     print "\n\tCSV files will be stored in "+csvDirOutPrefix+"+db folder\n"
 
-    precision = 10
-    limitRange = 10
+    precision = 15
+    limitRange = 15
 
     numThreads = 0
 
@@ -237,12 +237,12 @@ if __name__ == "__main__":
     csvHeader = list()
     csvHeader.append("Threshold")
     csvHeader.append("Percentage")
-    csvHeader.append("Machine")
+    csvHeader.append("Device")
 
     #print(totals)
 
     csvWFP = open("thresholds_summary_"+sys.argv[1].replace('/', '')+".csv", "w")
-    writer = csv.writer(csvWFP, delimiter=';')
+    writer = csv.writer(csvWFP, delimiter=',')
     writer.writerow(csvHeader)
     for key in totals.iterkeys():
         last = 0
