@@ -4,6 +4,8 @@ import csv
 
 
 class SortParser(Parser):
+    _extendHeader = False
+
     # must set this values in the _relativeErrorParser
     _errOutOfOrder = None
     _errCorrupted = None
@@ -33,9 +35,6 @@ class SortParser(Parser):
                   'IT_LINK_CORR', 'IT_LINK_SYNC', 'IT_MULTIPLE', 'BALANCE_MISMATCHES',
                   'HARD_DETEC', 'IT_HARD_DETEC']
 
-    def __init__(self, **kwargs):
-        Parser.__init__(self, **kwargs)
-
     def localityParser(self):
         pass
 
@@ -43,50 +42,34 @@ class SortParser(Parser):
         pass
 
     """
-     input csvFileName is the csv directory
      no return
      this method will be called by parent classes,
-     so it needs only be adjusted to write the final content to csvFileName
+     so it needs only be adjusted to write the final content to self._outputListError
      this method will be clalled in every SDC processing
     """
 
-    def _writeToCSV(self, csvFileName):
-        self._writeCSVHeader(csvFileName)
+    def _placeOutputOnList(self):
+        # 'logFileName', 'Machine', 'Benchmark', 'Header',
+        self._outputListError = [self._logFileName, self._machine, self._benchmark, self._header,
 
-        try:
+                                 # 'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'ACC_TIME',
+                                 self._sdcIteration, self._iteErrors, self._accIteErrors,
 
-            csvWFP = open(csvFileName, "a")
-            writer = csv.writer(csvWFP, delimiter=';')
+                                 # 'ERR_OUTOFORDER', 'ERR_CORRUPTED', 'ERR_LINK', 'ERR_SYNC',
+                                 self._errOutOfOrder, self._errCorrupted, self._errLink, self._errSync,
 
-            # 'logFileName', 'Machine', 'Benchmark', 'Header',
-            outputList = [self._logFileName, self._machine, self._benchmark, self._header,
+                                 # 'IT_OOO', 'IT_CORRUPTED', 'IT_LINK', 'IT_SYNC',
+                                 self._itOOO, self._itCorrupted, self._itLink, self._itSync,
 
-                          # 'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'ACC_TIME',
-                          self._sdcIteration, self._iteErrors, self._accIteErrors,
+                                 # 'IT_OOO_CORR', 'IT_SYNC_CORR', 'IT_SYNC_OOO', 'IT_LINK_OOO',
+                                 self._itOOOCorr, self._itSyncCorr, self._itSyncOOO, self._itLinkOOO,
 
-                          # 'ERR_OUTOFORDER', 'ERR_CORRUPTED', 'ERR_LINK', 'ERR_SYNC',
-                          self._errOutOfOrder, self._errCorrupted, self._errLink, self._errSync,
+                                 # 'IT_LINK_CORR', 'IT_LINK_SYNC', 'IT_MULTIPLE', 'BALANCE_MISMATCHES',
+                                 self._itLinkCorr, self._itLinkSync, self._itMultiple, self._balanceMismatches,
 
-                          # 'IT_OOO', 'IT_CORRUPTED', 'IT_LINK', 'IT_SYNC',
-                          self._itOOO, self._itCorrupted, self._itLink, self._itSync,
-
-                          # 'IT_OOO_CORR', 'IT_SYNC_CORR', 'IT_SYNC_OOO', 'IT_LINK_OOO',
-                          self._itOOOCorr, self._itSyncCorr, self._itSyncOOO, self._itLinkOOO,
-
-                          # 'IT_LINK_CORR', 'IT_LINK_SYNC', 'IT_MULTIPLE', 'BALANCE_MISMATCHES',
-                          self._itLinkCorr, self._itLinkSync, self._itMultiple, self._balanceMismatches,
-
-                          # 'HARD_DETEC', 'IT_HARD_DETEC'
-                          self._hardDetec, self._itHardDetec
-                          ]
-
-            writer.writerow(outputList)
-            csvWFP.close()
-
-        except:
-            # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
-            print "Error on writing row to " + str(csvFileName)
-            raise
+                                 # 'HARD_DETEC', 'IT_HARD_DETEC'
+                                 self._hardDetec, self._itHardDetec
+                                 ]
 
     """
     errString = ERR or INF string
@@ -237,13 +220,3 @@ class SortParser(Parser):
         self._balanceMismatches = balance_mismatches
         self._hardDetec = err_counters[4]
         self._itHardDetec = it_err_counters[11]
-
-
-    """
-    LEGACY METHODS SECTION
-    """
-    """
-    legacy method
-    """
-    # def buildImageMethod(self):
-    #     return False

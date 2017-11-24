@@ -1,0 +1,46 @@
+#HEADER size:134217728
+#BEGIN Y:2017 M:09 D:11 Time:08:24:50
+#IT Ite:0 KerTime:0.798981 AccTime:0.798981
+#IT Ite:1 KerTime:0.798823 AccTime:1.597804
+#IT Ite:2 KerTime:0.799270 AccTime:2.397074
+#IT Ite:3 KerTime:0.799016 AccTime:3.196090
+#IT Ite:4 KerTime:0.799010 AccTime:3.995100
+#IT Ite:5 KerTime:0.798915 AccTime:4.794015
+#IT Ite:6 KerTime:0.798915 AccTime:5.592930
+#IT Ite:7 KerTime:0.799112 AccTime:6.392042
+#IT Ite:8 KerTime:0.798957 AccTime:7.190999
+#IT Ite:9 KerTime:0.798908 AccTime:7.989907
+#IT Ite:10 KerTime:0.798832 AccTime:8.788739
+#IT Ite:11 KerTime:0.798882 AccTime:9.587621
+#IT Ite:12 KerTime:0.798864 AccTime:10.386485
+#IT Ite:13 KerTime:0.798949 AccTime:11.185434
+#IT Ite:14 KerTime:0.798977 AccTime:11.984411
+#IT Ite:15 KerTime:0.798890 AccTime:12.783301
+#ERR The link between Val and Key arrays in incorrect. index=125617166 wrong_key=2009811297 val=130962687 correct_key_pointed_by_val=236424708
+#SDC Ite:15 KerTime:0.798890 AccTime:12.783301 KerErr:1 AccErr:1
+#IT Ite:16 KerTime:0.798868 AccTime:13.582169
+#IT Ite:17 KerTime:0.799264 AccTime:14.381433
+#IT Ite:18 KerTime:0.800497 AccTime:15.181930
+#IT Ite:19 KerTime:0.798929 AccTime:15.980859
+#IT Ite:20 KerTime:0.798886 AccTime:16.779745
+#IT Ite:21 KerTime:0.799065 AccTime:17.578810
+#IT Ite:22 KerTime:0.799043 AccTime:18.377853
+#IT Ite:23 KerTime:0.798848 AccTime:19.176701
+#IT Ite:24 KerTime:0.799040 AccTime:19.975741
+#IT Ite:25 KerTime:0.798798 AccTime:20.774539
+#IT Ite:26 KerTime:0.799029 AccTime:21.573568
+#IT Ite:27 KerTime:0.800285 AccTime:22.373853
+#IT Ite:28 KerTime:0.798867 AccTime:23.172720
+#IT Ite:29 KerTime:0.798847 AccTime:23.971567
+#IT Ite:30 KerTime:0.798922 AccTime:24.770489
+#IT Ite:31 KerTime:0.799160 AccTime:25.569649
+#IT Ite:32 KerTime:0.798862 AccTime:26.368511
+#IT Ite:33 KerTime:0.798958 AccTime:27.167469
+#IT Ite:34 KerTime:0.798930 AccTime:27.966399
+#IT Ite:35 KerTime:0.799002 AccTime:28.765401
+#IT Ite:36 KerTime:0.800405 AccTime:29.565806
+#IT Ite:37 KerTime:0.798902 AccTime:30.364708
+#IT Ite:38 KerTime:0.798903 AccTime:31.163611
+#IT Ite:39 KerTime:0.798892 AccTime:31.962503
+#IT Ite:40 KerTime:0.799060 AccTime:32.761563
+#IT Ite:41 KerTime:0.798883 AccTime:33.560446

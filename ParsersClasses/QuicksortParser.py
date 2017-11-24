@@ -18,13 +18,3 @@ class QuicksortParser(SortParser):
             except:
                 self._size = None
         self._size = 'quicksort_input_' + str(self._size)
-
-
-    """
-    LEGACY METHODS SECTION
-    """
-    """
-    legacy method
-    """
-    # def __init__(self, **kwargs):
-    #     SortParser.__init__(self, **kwargs)
