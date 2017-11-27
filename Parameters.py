@@ -133,52 +133,15 @@ def setBenchmarks(**kwargs):
     else:
         parse_err_histogram = None
 
-    # I wish that make things faster
-    for i in benchmarks:
-        if i == 'darknet':
-            from ParsersClasses import DarknetParser
-        if i == 'darknetv1':
-            from ParsersClasses import DarknetV1Parser
-        elif i == 'darknetv2':
-            from ParsersClasses import DarknetV2Parser
-        if i == 'resnet':
-            from ParsersClasses import ResnetParser
-        elif i == 'hotspot':
-            from ParsersClasses import HotspotParser
-        elif i == 'hog':
-            from ParsersClasses import HogParser
-        elif i == 'lavamd':
-            from ParsersClasses import LavaMDParser
-        elif i == 'mergesort':
-            from ParsersClasses import MergesortParser
-        elif i == 'nw':
-            from ParsersClasses import NWParser
-        elif i == 'quicksort':
-            from ParsersClasses import QuicksortParser
-        elif i == 'accl':
-            from ParsersClasses import ACCLParser
-        elif i == 'pyfasterrcnn':
-            from ParsersClasses import FasterRcnnParser
-        elif i == 'lulesh':
-            from ParsersClasses import LuleshParser
-        elif i == 'lud':
-            from ParsersClasses import LudParser
-        elif i == 'gemm':
-            from ParsersClasses import GemmParser
-        elif i == 'lenet':
-            from ParsersClasses import LenetParser
-        elif i == 'beziersurface':
-            from ParsersClasses import BezierSurfaceParser
-        elif i == 'gaussian':
-            from ParsersClasses import GaussianParser
-
+    # I wish that importing only the selected benchmarks
+    # will make things faster
     print "Parsing for: ",
     for i in benchmarks:
         benchObj = None
         print i,
-
         # darknet is the first version of tested darknet, until master degree dissertation
         if i == 'darknet':
+            from ParsersClasses import DarknetParser
             benchObj = DarknetParser.DarknetParser(parseLayers=parse_layers,
                                                    prThreshold=pr_threshold,
                                                    layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
@@ -193,6 +156,7 @@ def setBenchmarks(**kwargs):
                                                    )
 
         if i == 'darknetv1':
+            from ParsersClasses import DarknetV1Parser
             benchObj = DarknetV1Parser.DarknetV1Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
                                                        layersGoldPath=LAYERS_GOLD_PATH_DARKNETV1,
@@ -204,6 +168,7 @@ def setBenchmarks(**kwargs):
                                                        datasets=DARKNET_DATASETS
                                                        )
         if i == 'darknetv2':
+            from ParsersClasses import DarknetV2Parser
             benchObj = DarknetV2Parser.DarknetV2Parser(parseLayers=parse_layers,
                                                        prThreshold=pr_threshold,
                                                        layersGoldPath=LAYERS_GOLD_PATH_DARKNETV2,
@@ -216,6 +181,7 @@ def setBenchmarks(**kwargs):
                                                        )
 
         if i == 'resnet':
+            from ParsersClasses import ResnetParser
             benchObj = ResnetParser.ResnetParser(imgOutputDir=IMG_OUTPUT_DIR,
                                                  prThreshold=pr_threshold,
                                                  localRadiationBench=LOCAL_RADIATION_BENCH,
@@ -225,11 +191,13 @@ def setBenchmarks(**kwargs):
                                                  classes_path=RESNET_CLASSES_PATH)
 
         elif i == 'hotspot':
+            from ParsersClasses import HotspotParser
             benchObj = HotspotParser.HotspotParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                    check_csv=checkCsv,
                                                    ecc=ecc,
                                                    parse_err_histogram=parse_err_histogram)
         elif i == 'hog':
+            from ParsersClasses import HogParser
             benchObj = HogParser.HogParser(
                 prThreshold=pr_threshold,
                 imgOutputDir=IMG_OUTPUT_DIR,
@@ -240,29 +208,35 @@ def setBenchmarks(**kwargs):
                 datasets=HOG_DATASETS
             )
         elif i == 'lavamd':
+            from ParsersClasses import LavaMDParser
             benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
                                                  ecc=ecc,
                                                  parse_err_histogram=parse_err_histogram)
         elif i == 'mergesort':
+            from ParsersClasses import MergesortParser
             benchObj = MergesortParser.MergesortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
                                                        ecc=ecc)
         elif i == 'nw':
+            from ParsersClasses import NWParser
             benchObj = NWParser.NWParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                          check_csv=checkCsv,
                                          ecc=ecc,
                                          parse_err_histogram=parse_err_histogram)
         elif i == 'quicksort':
+            from ParsersClasses import QuicksortParser
             benchObj = QuicksortParser.QuicksortParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
                                                        ecc=ecc)
         elif i == 'accl':
+            from ParsersClasses import ACCLParser
             benchObj = ACCLParser.ACCLParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                              check_csv=checkCsv,
                                              ecc=ecc,
                                              parse_err_histogram=parse_err_histogram)
         elif i == 'pyfasterrcnn':
+            from ParsersClasses import FasterRcnnParser
             benchObj = FasterRcnnParser.FasterRcnnParser(
                 prThreshold=pr_threshold,
                 imgOutputDir=IMG_OUTPUT_DIR,
@@ -274,21 +248,25 @@ def setBenchmarks(**kwargs):
                 datasets=FASTER_RCNN_DATASETS
             )
         elif i == 'lulesh':
+            from ParsersClasses import LuleshParser
             benchObj = LuleshParser.LuleshParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
                                                  ecc=ecc,
                                                  parse_err_histogram=parse_err_histogram)
         elif i == 'lud':
+            from ParsersClasses import LudParser
             benchObj = LudParser.LudParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                            check_csv=checkCsv,
                                            ecc=ecc,
                                            parse_err_histogram=parse_err_histogram)
         elif i == 'gemm':
+            from ParsersClasses import GemmParser
             benchObj = GemmParser.GemmParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                              check_csv=checkCsv,
                                              ecc=ecc,
                                              parse_err_histogram=parse_err_histogram)
         elif i == 'lenet':
+            from ParsersClasses import LenetParser
             benchObj = LenetParser.LenetParser(parseLayers=parse_layers,
                                                prThreshold=pr_threshold,
                                                layersGoldPath=LAYERS_GOLD_PATH_LENET,
@@ -301,9 +279,11 @@ def setBenchmarks(**kwargs):
                                                goldBaseDir=GOLD_BASE_DIR,
                                                datasets=LENET_DATASETS)
         elif i == 'beziersurface':
+            from ParsersClasses import BezierSurfaceParser
             benchObj = BezierSurfaceParser.BezierSurfaceParser()
 
         elif i == 'gaussian':
+            from ParsersClasses import GaussianParser
             benchObj = GaussianParser.GaussianParser()
 
         elif benchObj == None:

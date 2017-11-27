@@ -84,7 +84,7 @@ class WriteSDCDatabase():
         i = 1
         # percorre todos os arquivos .log
         for fi in all_logs:
-            progress = "{0:.2f}".format(i / total_files * 100)
+            progress = "{0:.2f}".format(float(i) / float(total_files) * 100.0)
             sys.stdout.write("\rProcessing file " + str(i) + " of " + str(total_files) + " - " + progress + "%")
             sys.stdout.flush()
             # verifica se o arquivo eh um arquivo de log dos nossos

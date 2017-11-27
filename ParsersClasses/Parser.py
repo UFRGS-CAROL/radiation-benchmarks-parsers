@@ -293,8 +293,11 @@ class Parser():
             firstElement = 3
             lastElement = 10
 
+        self._countErrors = len(errList)
+        self._errValueAverage = 0
         for err in errList:
             relError = 0.0
+            # this is only to support N dimentional errors
             for i in xrange(firstElement, lastElement + 1, 2):
                 if err[i] is None or err[i + 1] is None:
                     continue
@@ -309,10 +312,16 @@ class Parser():
                 else:
                     relError += abs(absoluteErr / expected) * 100
 
+                # error average calculation
+                self._errValueAverage += read / float(self._countErrors)
+
             if relError > 0.0:
                 relErrorList.append(relError)
                 # generic way to parse for many error threshold
                 self._placeRelativeError(relError, err)
+
+
+
 
         if len(relErrorList) > 0:
             self._maxRelErr = max(relErrorList)
@@ -321,7 +330,8 @@ class Parser():
 
         self._zeroOut = zeroOut
         self._zeroGold = zeroGold
-        self._countErrors = len(errList)
+
+
 
     """
     jaccardCoefficient caller method
