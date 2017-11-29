@@ -1,20 +1,24 @@
 import re
 
-import Parameters as par
-
 """All benchmarks must be an atribute of MatchBenchmark, it will turn allmost all parser process invisible"""
 
 
 class MatchBenchmark():
     # all fucking benchmarks here
-    __radiationBenchmarks = par.radiationBenchmarks
+    __radiationBenchmarks = None
+
+    # for the current processing benchmark
+    __currBench = None
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     __notMatchedBenchs = []
     """sdcItem is => [logfile name, header, sdc iteration, iteration total amount error, iteration accumulated error, list of errors ]"""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.__currBench = None
+
+        # must have the radiationBenchmarks parameter
+        self.__radiationBenchmarks = kwargs.get("radiation_benchmarks")
 
     #
 
@@ -42,7 +46,6 @@ class MatchBenchmark():
             benchmark = m.group(1)
             machine = m.group(2)
 
-
         isBench = False
         key = None
         for key, values in self.__radiationBenchmarks.iteritems():
@@ -55,7 +58,7 @@ class MatchBenchmark():
                 # doind it I will have duplicate data, but it is the cost of generalization
                 self.__currBench.setDefaultValues(logFileName, machine, benchmark, header, sdcIteration, accIteErrors,
                                                   iteErrors, errList, logFileNameNoExt, pureHeader)
-                #print self.__currBench.debugAttPrint()
+                # print self.__currBench.debugAttPrint()
 
                 break
 
@@ -64,14 +67,11 @@ class MatchBenchmark():
                 self.__notMatchedBenchs.append(benchmark)
         return isBench
 
-
-
     def checkNotDoneBenchs(self):
         if len(self.__notMatchedBenchs) == 0:
             return ""
 
         return "These benchmarks were not found on radiation_list " + str(set(self.__notMatchedBenchs))
-
 
     def getCurrentObj(self):
         return self.__currBench
@@ -81,7 +81,6 @@ class MatchBenchmark():
 
     def relativeErrorParserCall(self):
         self.__currBench.relativeErrorParser()
-
 
     def localityParserCall(self):
         self.__currBench.localityParser()

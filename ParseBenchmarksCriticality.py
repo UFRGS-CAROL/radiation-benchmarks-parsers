@@ -10,7 +10,7 @@ import Parameters as par
 def parseErrors(benchmarkname_machinename, sdcItemList):
     sdci = 1
     totalSdcs = len(sdcItemList)
-    matchBench = MatchBenchmark.MatchBenchmark()
+    matchBench = MatchBenchmark.MatchBenchmark(radiation_benchmarks=par.radiationBenchmarks)
     for sdcItem in sdcItemList:
 
         # set header and each class specific values for futher process

@@ -6,7 +6,6 @@ import collections
 import glob
 import numpy
 import struct
-
 import time
 
 

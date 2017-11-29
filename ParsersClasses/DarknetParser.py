@@ -1,5 +1,4 @@
 import numpy
-import sys
 import csv
 from math import *
 from SupportClasses import Rectangle
@@ -8,7 +7,6 @@ import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import GoldContent
-# from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 
 

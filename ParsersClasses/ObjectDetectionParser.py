@@ -10,28 +10,6 @@ import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
 
-
-class ImageRaw():
-    file = ""
-
-    def __init__(self, file):
-        self.w, self.h = self.getImageSize(file)
-        self.file = file
-
-    def getImageSize(self, imgPath):
-        width = None
-        height = None
-        try:
-            with Image.open(imgPath) as im:
-                width, height = im.size
-        except:
-            print "\nAqui", imgPath
-
-        # if width == None and height == None:
-        #     print "\n", imgPath
-        return width, height
-
-
 class ObjectDetectionParser(Parser):
     __metaclass__ = ABCMeta
     # precisionRecallObj = None
@@ -245,3 +223,28 @@ class ObjectDetectionParser(Parser):
             self._precisionClasses = 0
         else:
             self._precisionClasses = float(tp) / float(tp + fp)
+
+
+    """
+    LEGACY METHODS SECTION
+    """
+    #
+    # class ImageRaw():
+    #     file = ""
+    #
+    #     def __init__(self, file):
+    #         self.w, self.h = self.getImageSize(file)
+    #         self.file = file
+    #
+    #     def getImageSize(self, imgPath):
+    #         width = None
+    #         height = None
+    #         try:
+    #             with Image.open(imgPath) as im:
+    #                 width, height = im.size
+    #         except:
+    #             print "\nAqui", imgPath
+    #
+    #         # if width == None and height == None:
+    #         #     print "\n", imgPath
+    #         return width, height

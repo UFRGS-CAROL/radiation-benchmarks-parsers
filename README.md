@@ -1,21 +1,59 @@
 # UFRGS Radiation Benchmarks Parsers
 
 TODO: Write a project description
+<p align="center">
+  <img src="./Docs/setupChipIR.png" alt="Setup example"
+       width="654" height="450">
+</p>
 
-## Installation
+## Table of content
 
-### 1
+- [For developers](#for-developers)
+    - [Parser classes](#parser-classes)
+    - [Support classes](#support-classes)
+    - [Contributing](#contributing)
+- [For users](#for-users)
+    - [Instalation](#installation)
+    - [Usage](#usage)
+        - [Flags for database generation](#flags-for-database-generation)
+        - [Flags for error parser](#flags-for-error-parser)
+- [History](#history)
+- [Credits](#credits)
+- [Licence](#license)
+- [Links](#links)
+
+
+## For developers
+
+### Parser classes
+
+### Support classes
+
+### Contributing
+    
+    1. Fork it!
+    2. Create your feature branch: `git checkout -b my-new-feature`
+    3. Commit your changes: `git commit -am 'Add some feature'`
+    4. Push to the branch: `git push origin my-new-feature`
+    5. Submit a pull request :D
+
+
+## For users
+
+### Installation
+
+- 1
     Get the repository with git clone 
     https://github.com/fernandoFernandeSantos/radiation-benchmarks-parsers.git
 
-### 2
+- 2
     Set parameters for each particular benchmark available in
     https://github.com/dagoliveira/radiation-benchmarks.git
     Note: for some benchmarks such as Py-Faster-Rcnn and Darknet,
     you must have the Golden output for each platform,
     for error criticality evaluation
 
-## Usage
+### Usage
 
 Before use ParseBenchmarkCriticality.py keep in mind that all benchmarks parameters must be set in Parameters.py,
 on the contrary, this parser will crash.
@@ -38,7 +76,7 @@ arguments:
 
   -h, --help            show this help message and exit
 
-### Flags for database generation
+#### Flags for database generation
 
   --gen_database <GEN_DATA>
 
@@ -53,7 +91,7 @@ arguments:
                         this flag will set the filename for the generated database.
                         The default filename is ./error_log_database.
 
-### Flags for error parser
+#### Flags for error parser
 
   --database <ERROR_DATABASE>
 
@@ -117,14 +155,6 @@ arguments:
 
 
 
-
-## Contributing
-
-1. Fork it!
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request :D
 
 ## History
 
