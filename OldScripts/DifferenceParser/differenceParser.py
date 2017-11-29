@@ -54,6 +54,39 @@ def processErrors(benchmarkname_machinename, sdcItemList):
                 sys.stdout.write("\nBenchmark " + benchmark + " not implemented.\n")
             continue
 
+        if "SORT" in benchmark.upper() and "CUDA" in benchmark.upper():
+            meanDistanceOfValues = long(4294967295) / goldCount
+            iteErrors = 0
+            lowestAffectedRange = 0
+            highestAffectedRange = 0
+            # Sort benchmarks in CUDA by caio have different ways of logging errors.
+            for err in errList:
+                if "ERR" in err:
+                    m = re.match(".*ERR.*\Elements not ordered.*index=(\d+) ([0-9\-]+)\>([0-9\-]+)", err)
+                    if m:
+                        if lowestAffectedRange == 0 or highestAffectedRange == 0:
+                            lowestAffectedRange = int(m.group(1))
+                            highestAffectedRange = int(m.group(1))
+                        newLowestAffectedRange = min(lowestAffectedRange, long(round((int(m.group(3)) & 0xffffffff) / meanDistanceOfValues)))
+                        newHighestAffectedRange = max(highestAffectedRange, long(round((int(m.group(2)) & 0xffffffff) / meanDistanceOfValues)))
+                        if newLowestAffectedRange < lowestAffectedRange:
+                            iteErrors += lowestAffectedRange - newLowestAffectedRange
+                        if newHighestAffectedRange > highestAffectedRange:
+                            iteErrors += newHighestAffectedRange - highestAffectedRange
+                        lowestAffectedRange = newLowestAffectedRange
+                        highestAffectedRange = newHighestAffectedRange
+
+                    m = re.match(".*ERR.*\The histogram from element ([0-9\-]+) differs.*srcHist=(\d+) dstHist=(\d+)", err)
+                    if m:
+                        iteErrors += abs(int(m.group(2)) - int(m.group(3)))
+
+                    # ERR The link between Val and Key arrays in incorrect. index=2090080
+                    # wrong_key=133787990 val=54684 correct_key_pointed_by_val=-1979613866
+                    m = re.match(".*ERR.*\The link between Val and Key arrays in incorrect.*", err)
+                    if m:
+                        iteErrors += 1
+
+
         sdcInfo = dict()
         sdcInfo["machine"] = machine
         sdcInfo["benchmark"] = benchmark
