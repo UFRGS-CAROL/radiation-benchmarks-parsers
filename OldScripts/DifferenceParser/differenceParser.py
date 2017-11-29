@@ -64,6 +64,9 @@ def processErrors(benchmarkname_machinename, sdcItemList):
                 if "ERR" in err:
                     m = re.match(".*ERR.*\Elements not ordered.*index=(\d+) ([0-9\-]+)\>([0-9\-]+)", err)
                     if m:
+                        if m.group(2) == -1 or m.group(3) == -1 or m.group(2) == 0 or m.group(3) == 0:
+                            iteErrors += 1 # consider as corruption and well, can`t think of a better solution for this
+                            continue
                         if lowestAffectedRange == 0 or highestAffectedRange == 0:
                             lowestAffectedRange = int(m.group(1))
                             highestAffectedRange = int(m.group(1))
