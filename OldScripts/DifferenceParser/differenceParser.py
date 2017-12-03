@@ -26,7 +26,12 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         sys.stdout.write("\r"+benchmark+" - Processing SDC "+str(sdci)+" of "+str(total_sdcs)+" - "+progress+"%")
         sys.stdout.flush()
 
-        sizeRE = re.match(".*?(\d+).*", sdcItem[1])
+        if "OPENMPHOTSPOT" in benchmark.upper():
+            sizeRE = re.match(".*?gridSize:(\d+).*", sdcItem[1])
+        elif "OPENMPLAVA" in benchmark.upper():
+            sizeRE = re.match(".*?box\:(\d+).*", sdcItem[1])
+        else:
+            sizeRE = re.match(".*?(\d+).*", sdcItem[1])
         if not sizeRE:
             continue
 
@@ -46,8 +51,12 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         
         if "SORT" in benchmark.upper():
             goldCount = int(header)
-        elif "GEMM" in benchmark.upper() or "hotspot" in benchmark.upper():
+        elif "GEMM" in benchmark.upper() or "HOTSPOT" in benchmark.upper():
             goldCount = int(header) * int(header)
+        elif "CUDALAVA" in benchmark.upper():
+            goldCount = (int(header) ** 3) * 192
+        elif "LAVA" in benchmark.upper():
+            goldCount = (int(header) ** 3) * 100
         else:
             if not benchmark in benchmarkWarnings:
                 benchmarkWarnings.append(benchmark)
