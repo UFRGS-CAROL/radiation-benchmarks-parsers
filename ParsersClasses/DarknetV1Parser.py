@@ -516,7 +516,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         # print "\nLayerPath", layerFilename
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:
-            print "\n", layerFilename, self._sdcIteration
+            # print "\n", layerFilename, self._sdcIteration
             return None
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
