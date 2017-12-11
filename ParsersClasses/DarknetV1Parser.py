@@ -1,22 +1,18 @@
 import numpy
 import sys
-import csv
-# from math import *
-import time
-
 from SupportClasses import Rectangle
 import os
 import re
 import glob, struct
 from ObjectDetectionParser import ObjectDetectionParser
 from SupportClasses import GoldContent
-# from ObjectDetectionParser import ImageRaw
 from SupportClasses import PrecisionAndRecall
 from SupportClasses.CNNLayerParser import CNNLayerParser
 
 from operator import add
 
 MAX_NUM_OF_OBJECTS = 200
+
 
 class DarknetV1Parser(ObjectDetectionParser):
     __executionType = None
@@ -118,46 +114,37 @@ class DarknetV1Parser(ObjectDetectionParser):
             print "\n Crash on create parse layers parameters"
             sys.exit(-1)
 
-    def _writeToCSV(self, csvFileName):
-        self._writeCSVHeader(csvFileName)
-
-        csvWFP = open(csvFileName, "a")
-        writer = csv.writer(csvWFP, delimiter=';')
+    def _placeOutputOnList(self):
         # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
         #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
         #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
         #     "precision", "recall", "false_negative", "false_positive",
         #     "true_positive", "abft_type", "row_detected_errors",
         #     "col_detected_errors", "failed_layer", "header"]
-        outputList = [self._logFileName,
-                      self._machine,
-                      self._benchmark,
-                      self._sdcIteration,
-                      self._accIteErrors,
-                      self._iteErrors,
-                      self._goldLines,
-                      self._detectedLines,
-                      self._wrongElements,
-                      # self._xCenterOfMass,
-                      # self._yCenterOfMass,
-                      self._precision,
-                      self._recall,
-                      self._falseNegative,
-                      self._falsePositive,
-                      self._truePositive,
-                      self._abftType,
-                      self._failedLayer]
+        self._outputListError = [self._logFileName,
+                                 self._machine,
+                                 self._benchmark,
+                                 self._sdcIteration,
+                                 self._accIteErrors,
+                                 self._iteErrors,
+                                 self._goldLines,
+                                 self._detectedLines,
+                                 self._wrongElements,
+                                 self._precision,
+                                 self._recall,
+                                 self._falseNegative,
+                                 self._falsePositive,
+                                 self._truePositive,
+                                 self._abftType,
+                                 self._failedLayer]
 
-        outputList.extend([self._rowDetErrors, self._colDetErrors])
-        outputList.extend(self._smartPooling)
+        self._outputListError.extend([self._rowDetErrors, self._colDetErrors])
+        self._outputListError.extend(self._smartPooling)
 
-        outputList.append(self._header)
+        self._outputListError.append(self._header)
 
         if self._parseLayers and self._saveLayer:
-            outputList.extend(self._cnnParser.getOutputToCsv())
-
-        writer.writerow(outputList)
-        csvWFP.close()
+            self._outputListError.extend(self._cnnParser.getOutputToCsv())
 
     def setSize(self, header):
         # HEADER gold_file: /home/carol/radiation-benchmarks/data/darknet/darknet_v1_gold.urban.street.1.1K.csv save_layer: 0 abft_type: none iterations: 10000
@@ -510,23 +497,26 @@ class DarknetV1Parser(ObjectDetectionParser):
     def loadLayer(self, layerNum, isGold=False):
         # it is better to programing one function only than two almost equal
         imgListpos = int(self._sdcIteration) % self._imgListSize
+        # correcting the sdc iteration iteration
+        correctIt = int(int(self._sdcIteration) / self._imgListSize)
 
         if isGold:
             # carrega de um log para uma matriz
             # goldIteration = str(int(self._sdcIteration) % self._imgListSize)
             # /media/fernando/U/data_K40/data/voc.2012.10.txt_darknet_v2_gold_layer_7_img_7_test_it_0.layer
-            layerFilename = self.__layersGoldPath + os.path.basename(
+            layerFilename = self.__layersGoldPath + "/" + os.path.basename(
                 self._imgListPath) + "_darknet_v1_gold_layer_" + str(layerNum) + "_img_" + str(
                 imgListpos) + "_test_it_0.layer"
         else:
             # 2017_09_10_10_00_29_cudaDarknetV1_ECC_OFF_carol-k401.log_darknet_v1_layer_3_img_4_test_it_95.layer
-            layerFilename = self.__layersPath + self._logFileName + "_darknet_v1_layer_" + str(
+            layerFilename = self.__layersPath + "/" + self._logFileName + "_darknet_v1_layer_" + str(
                 layerNum) + "_img_" + str(
-                imgListpos) + "_test_it_" + str(self._sdcIteration) + ".layer"
+                imgListpos) + "_test_it_" + str(correctIt) + ".layer"
 
         # print "\nLayerPath", layerFilename
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:
+            print "\n", layerFilename, self._sdcIteration
             return None
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')

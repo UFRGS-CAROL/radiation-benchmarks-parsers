@@ -29,8 +29,8 @@ DARKNET_DATASETS = {'caltech.pedestrians.critical.1K.txt': {'dumb_abft': 'gold.c
                                                    'no_abft': 'gold.caltech.1K.test'},
                     'voc.2012.1K.txt': {'dumb_abft': 'gold.voc.2012.abft.1K.test', 'no_abft': 'gold.voc.2012.1K.test'}}
 
-LAYERS_GOLD_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
-LAYERS_PATH_DARKNETV1 = '/media/fernando/U/data_K40/data/'
+LAYERS_GOLD_PATH_DARKNETV1 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v1'
+LAYERS_PATH_DARKNETV1 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v1'
 
 LAYERS_GOLD_PATH_DARKNETV2 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v2'
 LAYERS_PATH_DARKNETV2 = '/media/fernando/ed3cae20-d686-4879-a851-dd813aea60ca/home/carol/data_lansce_2017_darknet/data_v2'
