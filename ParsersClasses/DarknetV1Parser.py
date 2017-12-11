@@ -527,7 +527,12 @@ class DarknetV1Parser(ObjectDetectionParser):
         layerFile = open(filename, "rb")
         numItens = layerSize  # float size = 4bytes
 
-        layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
+        try:
+            layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
+        except:
+            layerFile.close()
+            return None
+        
         layer = None
         # botar em matriz 3D
         if len(self.__layerDimensions[layerNum]) == 3:
