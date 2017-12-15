@@ -516,7 +516,7 @@ class DarknetV1Parser(ObjectDetectionParser):
         # print "\nLayerPath", layerFilename
         filenames = glob.glob(layerFilename)
         if len(filenames) == 0:
-            print "\n", layerFilename, self._sdcIteration
+            # print "\n", layerFilename, self._sdcIteration
             return None
         elif len(filenames) > 1:
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
@@ -525,14 +525,9 @@ class DarknetV1Parser(ObjectDetectionParser):
         layerSize = self.getSizeOfLayer(layerNum)
 
         layerFile = open(filename, "rb")
-        numItens = layerSize  # float size = 4bytes
+        print "\n", layerFilename
+        layerContents = struct.unpack('f' * layerSize, layerFile.read(4 * layerSize))
 
-        try:
-            layerContents = struct.unpack('f' * numItens, layerFile.read(4 * numItens))
-        except:
-            layerFile.close()
-            return None
-        
         layer = None
         # botar em matriz 3D
         if len(self.__layerDimensions[layerNum]) == 3:
@@ -552,7 +547,8 @@ class DarknetV1Parser(ObjectDetectionParser):
 
     def tupleTo3DMatrix(self, layerContents, layerNum):
         dim = self.__layerDimensions[layerNum]  # width,height,depth
-        layer = [[[0 for k in xrange(dim[2])] for j in xrange(dim[1])] for i in xrange(dim[0])]
+        # layer = [[[0 for k in xrange(dim[2])] for j in xrange(dim[1])] for i in xrange(dim[0])]
+        layer = [[[0] * dim[2]] * dim[1]] * dim[0]
         for i in range(0, dim[0]):
             for j in range(0, dim[1]):
                 for k in range(0, dim[2]):
