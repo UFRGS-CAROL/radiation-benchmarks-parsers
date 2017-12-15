@@ -32,10 +32,6 @@ class DarknetV2Parser(ObjectDetectionParser):
     __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
     __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
 
-    _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "detected_lines", "wrong_elements", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]
-
     __layerDimensions = {0: [608, 608, 32],
                          1: [304, 304, 32],
                          2: [304, 304, 64],
@@ -91,9 +87,9 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._sizeOfDnn = len(self.__layerDimensions)
 
         # I write by default
-        self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
+        # self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
         self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
-                                                        xrange(1, self._smartPoolingSize + 1)]
+                                                        xrange(1, self._smartPoolingSize + 1), "failed_layer"]
         if self._parseLayers:
             self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
             self.__layersPath = str(kwargs.pop("layersPath"))
@@ -104,39 +100,42 @@ class DarknetV2Parser(ObjectDetectionParser):
 
             #self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
-    def _writeToCSV(self, csvFileName):
-        self._writeCSVHeader(csvFileName)
 
-        csvWFP = open(csvFileName, "a")
-        writer = csv.writer(csvWFP, delimiter=';')
 
-        outputList = [self._logFileName,
-                      self._machine,
-                      self._benchmark,
-                      self._sdcIteration,
-                      self._accIteErrors,
-                      self._iteErrors,
-                      self._goldLines,
-                      self._detectedLines,
-                      self._wrongElements,
-                      self._precision,
-                      self._recall,
-                      self._falseNegative,
-                      self._falsePositive,
-                      self._truePositive,
-                      self._abftType,
-                      self._failedLayer]
+    def _placeOutputOnList(self):
+        # ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors",
+        #           "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements",
+        #           "precision", "recall", "precision_classes", "recall_classes",
+        #           "false_negative", "false_positive",
+        #           "true_positive", "abft_type", "row_detected_errors", "col_detected_errors",
+        #           "header"]
+        self._outputListError = [self._logFileName,
+                                 self._machine,
+                                 self._benchmark,
+                                 self._sdcIteration,
+                                 self._accIteErrors,
+                                 self._iteErrors,
+                                 self._goldLines,
+                                 self._detectedLines,
+                                 self._wrongElements,
+                                 self._precision,
+                                 self._recall,
+                                 self._precisionClasses,
+                                 self._recallClasses,
+                                 self._falseNegative,
+                                 self._falsePositive,
+                                 self._truePositive,
+                                 self._abftType,
+                                 self._rowDetErrors,
+                                 self._colDetErrors,
+                                 self._header]
 
-        outputList.extend([self._rowDetErrors, self._colDetErrors])
-        outputList.extend(self._smartPooling)
+        self._outputListError.extend(self._smartPooling)
+        self._outputListError.append(self._failedLayer)
 
-        outputList.append(self._header)
+        if self._parseLayers and self._saveLayer:
+            self._outputListError.extend(self._cnnParser.getOutputToCsv())
 
-        # if self._parseLayers and self._saveLayer:
-        #     outputList.extend(self._cnnParser.getOutputToCsv())
-
-        writer.writerow(outputList)
-        csvWFP.close()
 
     def setSize(self, header):
         ##HEADER gold_file: temp.csv save_layer: 1 abft_type: 0 iterations: 1
@@ -286,6 +285,7 @@ class DarknetV2Parser(ObjectDetectionParser):
         self._goldLines = gValidSize
         self._detectedLines = fValidSize
         self._wrongElements = abs(gValidSize - fValidSize)
+        self._precisionAndRecallClasses(fValidClasses, gValidClasses)
 
     def _loadGold(self):
         # ---------------------------------------------------------------------------------------------------------------
@@ -589,3 +589,45 @@ class DarknetV2Parser(ObjectDetectionParser):
             return 0
 
             # ---------------------------------------------------------------------------------------------------------------------
+
+
+    """
+    LEGACY METHODS
+    """
+    # def _writeToCSV(self, csvFileName):
+    #     self._writeCSVHeader(csvFileName)
+    #
+    #     csvWFP = open(csvFileName, "a")
+    #     writer = csv.writer(csvWFP, delimiter=';')
+    #
+    #     outputList = [self._logFileName,
+    #                   self._machine,
+    #                   self._benchmark,
+    #                   self._sdcIteration,
+    #                   self._accIteErrors,
+    #                   self._iteErrors,
+    #                   self._goldLines,
+    #                   self._detectedLines,
+    #                   self._wrongElements,
+    #                   self._precision,
+    #                   self._recall,
+    #                   self._falseNegative,
+    #                   self._falsePositive,
+    #                   self._truePositive,
+    #                   self._abftType,
+    #                   self._failedLayer]
+    #
+    #     outputList.extend([self._rowDetErrors, self._colDetErrors])
+    #     outputList.extend(self._smartPooling)
+    #
+    #     outputList.append(self._header)
+    #
+    #     # if self._parseLayers and self._saveLayer:
+    #     #     outputList.extend(self._cnnParser.getOutputToCsv())
+    #
+    #     writer.writerow(outputList)
+    #     csvWFP.close()
+
+    # _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
+    #               "gold_lines", "detected_lines", "wrong_elements", "precision",
+    #               "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]

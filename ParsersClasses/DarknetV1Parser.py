@@ -78,10 +78,6 @@ class DarknetV1Parser(ObjectDetectionParser):
     _smartPoolingSize = 4
     _smartPooling = [0] * _smartPoolingSize
 
-    _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
-                  "gold_lines", "detected_lines", "wrong_elements", "precision",
-                  "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]
-
     # it is only for darknet for a while
     _parseLayers = False
     __layersGoldPath = ""
@@ -94,9 +90,9 @@ class DarknetV1Parser(ObjectDetectionParser):
         self._parseLayers = bool(kwargs.pop("parseLayers"))
 
         # I write by default
-        self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
+        # self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
         self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
-                                                        xrange(1, self._smartPoolingSize + 1)]
+                                                        xrange(1, self._smartPoolingSize + 1), "failed_layer"]
 
         try:
             if self._parseLayers:
@@ -115,12 +111,12 @@ class DarknetV1Parser(ObjectDetectionParser):
             sys.exit(-1)
 
     def _placeOutputOnList(self):
-        # ["logFileName", "Machine", "Benchmark", "imgFile", "SDC_Iteration",
-        #     "#Accumulated_Errors", "#Iteration_Errors", "gold_lines",
-        #     "detected_lines", "x_center_of_mass", "y_center_of_mass",
-        #     "precision", "recall", "false_negative", "false_positive",
-        #     "true_positive", "abft_type", "row_detected_errors",
-        #     "col_detected_errors", "failed_layer", "header"]
+        # ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors",
+        #           "#Iteration_Errors", "gold_lines", "detected_lines", "wrong_elements",
+        #           "precision", "recall", "precision_classes", "recall_classes",
+        #           "false_negative", "false_positive",
+        #           "true_positive", "abft_type", "row_detected_errors", "col_detected_errors",
+        #           "header"]
         self._outputListError = [self._logFileName,
                                  self._machine,
                                  self._benchmark,
@@ -132,16 +128,18 @@ class DarknetV1Parser(ObjectDetectionParser):
                                  self._wrongElements,
                                  self._precision,
                                  self._recall,
+                                 self._precisionClasses,
+                                 self._recallClasses,
                                  self._falseNegative,
                                  self._falsePositive,
                                  self._truePositive,
                                  self._abftType,
-                                 self._failedLayer]
+                                 self._rowDetErrors,
+                                 self._colDetErrors,
+                                 self._header]
 
-        self._outputListError.extend([self._rowDetErrors, self._colDetErrors])
         self._outputListError.extend(self._smartPooling)
-
-        self._outputListError.append(self._header)
+        self._outputListError.append(self._failedLayer)
 
         if self._parseLayers and self._saveLayer:
             self._outputListError.extend(self._cnnParser.getOutputToCsv())
@@ -250,6 +248,8 @@ class DarknetV1Parser(ObjectDetectionParser):
         precisionRecallObj.precisionAndRecallParallel(gValidRects, fValidRects)
         self._precision = precisionRecallObj.getPrecision()
         self._recall = precisionRecallObj.getRecall()
+        self._precisionAndRecallClasses(fValidClasses, gValidClasses)
+
 
         # tic = time.clock()
         if self._parseLayers and self._saveLayer:
@@ -585,3 +585,10 @@ class DarknetV1Parser(ObjectDetectionParser):
             return 0
 
             # ---------------------------------------------------------------------------------------------------------------------
+
+    """
+    LEGACY METHODS
+    """
+    # _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors", "#Iteration_Errors",
+    #               "gold_lines", "detected_lines", "wrong_elements", "precision",
+    #               "recall", "false_negative", "false_positive", "true_positive", "abft_type", "failed_layer", "header"]
