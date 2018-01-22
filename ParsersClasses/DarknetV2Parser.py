@@ -522,10 +522,12 @@ class DarknetV2Parser(ObjectDetectionParser):
         filenames = glob.glob(layerFilename)
 
         if (len(filenames) == 0):
-            print layerFilename , "not found"
+            #print layerFilename , "not found"
             return None
         elif (len(filenames) > 1):
             print('+de 1 layer encontrada para \'' + layerFilename + '\'')
+        elif (len(filenames) == 1):
+            print "Found layer ", layerFilename
 
         filename = filenames[0]
         layerSize = self.getSizeOfLayer(layerNum)
