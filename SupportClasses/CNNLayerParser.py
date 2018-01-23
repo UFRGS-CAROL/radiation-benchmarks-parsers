@@ -481,7 +481,10 @@ class CNNLayerParser():
         for i in range(0, self._sizeOfDNN):
             # print '\n----layer ' + str(i) + ' :'
             layer = loadLayer(i)
-            gold = loadLayer(i, True)
+            if layer != None:
+                gold = loadLayer(i, True)
+            else:
+                gold = None
 
             if layer is None and len(self.__layerDimentions[i]) != 0:
                 # print "\n", self._machine + ' it: ' + str(self._sdcIteration) + ' layer ' + str(i) + ' log not found'
