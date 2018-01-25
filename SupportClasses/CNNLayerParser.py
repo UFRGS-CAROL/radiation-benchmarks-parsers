@@ -547,12 +547,12 @@ class CNNLayerParser():
                 self.__localityParser(dim=len(self.__layerDimentions[i]), i=i, layerErrorList=layerErrorList)
                 # print "depois"
 
-        if logsNotFound and goldsNotFound:
-            self._failed_layer += 'golds and logs not found'
-        elif logsNotFound:
-            self._failed_layer += 'logs not found'
-        elif goldsNotFound:
-            self._failed_layer += 'golds not found'
+        # if logsNotFound and goldsNotFound:
+        #     self._failed_layer += 'golds and logs not found'
+        # elif logsNotFound:
+        #     self._failed_layer += 'logs not found'
+        # elif goldsNotFound:
+        #     self._failed_layer += 'golds not found'
 
     """
     generic locality parser

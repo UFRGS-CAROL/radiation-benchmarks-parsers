@@ -91,8 +91,9 @@ class DarknetV1Parser(ObjectDetectionParser):
 
         # I write by default
         # self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
-        self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
-                                                        xrange(1, self._smartPoolingSize + 1), "failed_layer"]
+        t = ["smart_pooling_" + str(i) for i in xrange(1, self._smartPoolingSize + 1)]
+        t.append("failed_layer")
+        self._csvHeader.extend(t)
 
         try:
             if self._parseLayers:
@@ -265,7 +266,7 @@ class DarknetV1Parser(ObjectDetectionParser):
                                         logFilename=self._logFileName,
                                         machine=self._machine,
                                         loadLayer=self.loadLayer)
-            # print "\nTime spent on parsing layers", time.clock() - tic
+            self._failedLayer = self._cnnParser.getFailedLayer()
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1):
             drawImgFileName = self._localRadiationBench + imgFilename.split("/radiation-benchmarks")[1]

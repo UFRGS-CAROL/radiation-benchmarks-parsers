@@ -28,10 +28,6 @@ class DarknetV2Parser(ObjectDetectionParser):
                 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book',
                 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
-    __errorTypes = ['allLayers', 'filtered2', 'filtered5', 'filtered50']
-    __infoNames = ['smallestError', 'biggestError', 'numErrors', 'errorsAverage', 'errorsStdDeviation']
-    __filterNames = ['allErrors', 'newErrors', 'propagatedErrors']
-
     __layerDimensions = {0: [608, 608, 32],
                          1: [304, 304, 32],
                          2: [304, 304, 64],
@@ -88,8 +84,10 @@ class DarknetV2Parser(ObjectDetectionParser):
 
         # I write by default
         # self._csvHeader[len(self._csvHeader) - 1: 1] = ["row_detected_errors", "collum_detected_error"]
-        self._csvHeader[len(self._csvHeader) - 1: 1] = ["smart_pooling_" + str(i) for i in
-                                                        xrange(1, self._smartPoolingSize + 1), "failed_layer"]
+        t = ["smart_pooling_" + str(i) for i in xrange(1, self._smartPoolingSize + 1)]
+        t.append("failed_layer")
+        self._csvHeader.extend(t)
+
         if self._parseLayers:
             self.__layersGoldPath = str(kwargs.pop("layersGoldPath"))
             self.__layersPath = str(kwargs.pop("layersPath"))
@@ -98,7 +96,7 @@ class DarknetV2Parser(ObjectDetectionParser):
                                              layerPath=self.__layersPath, dnnSize=self._sizeOfDnn, correctableLayers=[],
                                              maxPoolLayers=self._maxpoolLayers)
 
-            #self._csvHeader.extend(self._cnnParser.genCsvHeader())
+            self._csvHeader.extend(self._cnnParser.genCsvHeader())
 
 
 
