@@ -94,6 +94,11 @@ class SassifiParser:
         # kernel time
         kern_time = []
 
+        # Count Register file criticality
+        # Each register has a counter for the faults injected
+        # And sdcs generated
+        inj_destination_id_counter = {i: [0, 0] for i in xrange(0, 257)}
+
         total_crashes = 0
         total_aborts = 0
         print "Parsing " + csv_input
@@ -125,6 +130,11 @@ class SassifiParser:
             if 'inst' in self.inst_type:
                 it_inst_count = int(row['inj_igid'])
 
+            # Counting for each register
+            # Clean the key first
+            inj_destination_id = int(float(row["inj_destination_id"].strip().replace(" ", "")))
+            inj_destination_id_counter[inj_destination_id][0] += 1
+
             it_em_count = int(row['inj_fault_model'])
             # increase each instrction/error model count to have the final results
             if '1' in row['has_sdc']:
@@ -147,6 +157,9 @@ class SassifiParser:
 
                 sdc_em_count_per_kernel[row["inj_kname"]][it_em_count] += 1
                 sdc_inst_count_per_kernel[row["inj_kname"]][it_inst_count] += 1
+
+                # Register criticality
+                inj_destination_id_counter[inj_destination_id][1] += 1
 
             if row["inj_kname"] not in inj_em_count_per_kernel:
                 inj_em_count_per_kernel[row["inj_kname"]] = 0
@@ -269,6 +282,16 @@ class SassifiParser:
         writer.writerow(
             {'instruction': 'SDCs per instruction based on each error type', 'sdc_num': ''})
 
+        # Blank line
+        writer.writerow({'instruction': '', 'sdc_num': '', 'total_inst_count': ''})
+
+        # Register FILE criticality
+        writer.writerow({'instruction': 'Register', 'sdc_num': 'injected_faults', 'total_inst_count': 'sdcs'})
+        for i in inj_destination_id_counter:
+            writer.writerow({'instruction': i, 'sdc_num': inj_destination_id_counter[i][0],
+                             'total_inst_count': inj_destination_id_counter[i][1]})
+
+
         csvfile.close()
         print csv_input + " parsed"
 
@@ -283,7 +306,7 @@ class SassifiParser:
             dialect = csv.Sniffer().sniff(csvfile.read(), delimiters=";,")
         return dialect.delimiter
 
-    def process_daniels_and_caios_log(self, csv_input, to_join, key1, key2, joined):
+    def process_logs(self, csv_input, to_join, key1, key2, joined):
         # sassifi output
         del1 = self.get_delimiter(csv_input)
         csvfile = open(csv_input)
@@ -389,7 +412,7 @@ if __name__ == "__main__":
     if args.to_join_csv == 'none':
         sassiParse.parse_csv(args.csv_input, args.logs_dir, args.copy)
     else:
-        sassiParse.process_daniels_and_caios_log(args.csv_input, args.to_join_csv, args.join_key1, args.join_key2, args.joined)
+        sassiParse.process_logs(args.csv_input, args.to_join_csv, args.join_key1, args.join_key2, args.joined)
         # ():
         # else:
         #     process_daniels_and_caios_log(parameter[0], parameter[1],
