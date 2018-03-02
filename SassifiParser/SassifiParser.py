@@ -97,16 +97,17 @@ class SassifiParser:
         # Count Register file criticality
         # Each register has a counter for the faults injected
         # And sdcs generated
-        inj_destination_id_counter = {i: [0, 0] for i in xrange(0, 257)}
+        inj_destination_id_counter_sdc = {i: [0, 0] for i in xrange(0, 257)}
+        inj_destination_id_counter_crash = {i: [0, 0] for i in xrange(0, 257)}
 
         total_crashes = 0
         total_aborts = 0
         print "Parsing " + csv_input
         # separate the good data
-        copyLogsFolder = ""
+        copy_logs_folder = ""
         if cp != "":
-            copyLogsFolder = str(cp)
-            os.system("mkdir -p " + copyLogsFolder)
+            copy_logs_folder = str(cp)
+            os.system("mkdir -p " + copy_logs_folder)
         for i in range(0, INSTRUCTION_SIZE):
             sdc_inst_count.append(0)
             total_inst_count.append(0)
@@ -124,7 +125,7 @@ class SassifiParser:
         for row in reader:
             # cp all good data to new folder
             if cp != "":
-                os.system("cp " + logs_dir + "/" + row['log_file'] + " " + copyLogsFolder)
+                os.system("cp " + logs_dir + "/" + row['log_file'] + " " + copy_logs_folder)
             it_inst_count = 8
 
             if 'inst' in self.inst_type:
@@ -133,7 +134,8 @@ class SassifiParser:
             # Counting for each register
             # Clean the key first
             inj_destination_id = int(float(row["inj_destination_id"].strip().replace(" ", "")))
-            inj_destination_id_counter[inj_destination_id][0] += 1
+            inj_destination_id_counter_sdc[inj_destination_id][0] += 1
+            inj_destination_id_counter_crash[inj_destination_id][0] += 1
 
             it_em_count = int(row['inj_fault_model'])
             # increase each instrction/error model count to have the final results
@@ -159,7 +161,7 @@ class SassifiParser:
                 sdc_inst_count_per_kernel[row["inj_kname"]][it_inst_count] += 1
 
                 # Register criticality
-                inj_destination_id_counter[inj_destination_id][1] += 1
+                inj_destination_id_counter_sdc[inj_destination_id][1] += 1
 
             if row["inj_kname"] not in inj_em_count_per_kernel:
                 inj_em_count_per_kernel[row["inj_kname"]] = 0
@@ -174,6 +176,10 @@ class SassifiParser:
             if crash > 1 or abort > 1:
                 print 'Some error in the log files'
                 exit(1)
+
+            # Crash Register criticality
+            inj_destination_id_counter_crash[inj_destination_id][1] += (crash or abort)
+
             crashes_inst_count[it_inst_count] += crash
             abort_inst_count[it_inst_count] += abort
             crashes_em_count[it_em_count] += crash
@@ -286,11 +292,12 @@ class SassifiParser:
         writer.writerow({'instruction': '', 'sdc_num': '', 'total_inst_count': ''})
 
         # Register FILE criticality
-        writer.writerow({'instruction': 'Register', 'sdc_num': 'injected_faults', 'total_inst_count': 'sdcs'})
-        for i in inj_destination_id_counter:
-            writer.writerow({'instruction': i, 'sdc_num': inj_destination_id_counter[i][0],
-                             'total_inst_count': inj_destination_id_counter[i][1]})
-
+        writer.writerow({'instruction': 'Register', 'sdc_num': 'injected_faults', 'total_inst_count': 'sdcs',
+                         'crashes': 'crashes per register'})
+        for i in inj_destination_id_counter_sdc:
+            writer.writerow({'instruction': i, 'sdc_num': inj_destination_id_counter_sdc[i][0],
+                             'total_inst_count': inj_destination_id_counter_sdc[i][1],
+                             'crashes': inj_destination_id_counter_crash[i][1]})
 
         csvfile.close()
         print csv_input + " parsed"
