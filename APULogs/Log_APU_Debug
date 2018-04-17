@@ -1,3 +1,5 @@
+#HEADER -i 16 -g 8 -a 0.10 -t 2 -n 2500
+#BEGIN Y:2017 M:09 D:12 Time:11:22:46
 #IT Ite:40 KerTime:5.506180 AccTime:226.919387
 #IT Ite:50 KerTime:5.496334 AccTime:282.251555
 #IT Ite:60 KerTime:5.607696 AccTime:337.621101
