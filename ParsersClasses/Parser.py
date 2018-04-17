@@ -17,7 +17,7 @@ class Parser():
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
     __errorLimits = [0.0, 2.0, 5.0]
-    __keys = []
+    _keys = []
     # it will keep the first threshold key
     __firstKey = ""
 
@@ -112,8 +112,8 @@ class Parser():
             limitRange = int(parseForHistogram["LIMIT_RANGE"])
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
-        self.__keys = ["errorLimit" + str(i) for i in self.__errorLimits]
-        self.__firstKey = self.__keys[0]
+        self._keys = ["errorLimit" + str(i) for i in self.__errorLimits]
+        self.__firstKey = self._keys[0]
 
         if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader and self._extendHeader:
             # for python list interpretation is faster than a concatenated loop
@@ -249,7 +249,7 @@ class Parser():
     """
 
     def _placeRelativeError(self, relError, err):
-        for key, threshold in zip(self.__keys, self.__errorLimits):
+        for key, threshold in zip(self._keys, self.__errorLimits):
             if relError < threshold:
                 self._relErrLowerLimit[key] += 1
             else:
@@ -264,10 +264,11 @@ class Parser():
     """
 
     def _cleanRelativeErrorAttributes(self):
-        for key in self.__keys:
+        for key in self._keys:
             # to store all error parsed values
             self._errors[key] = []
             self._relErrLowerLimit[key] = 0
+            self._jaccardCoefficientDict[key] = 0
 
     """
     if you want other relative error parser this method must be override
@@ -496,9 +497,9 @@ class Parser():
                                  self._zeroGold,
                                  self._countErrors]
 
-        self._outputListError.extend(self._relErrLowerLimit[key] for key in self.__keys)
-        self._outputListError.extend(self._jaccardCoefficientDict[key] for key in self.__keys)
-        for key in self.__keys:
+        self._outputListError.extend(self._relErrLowerLimit[key] for key in self._keys)
+        self._outputListError.extend(self._jaccardCoefficientDict[key] for key in self._keys)
+        for key in self._keys:
             self._outputListError.extend(self._locality[key])
 
     """

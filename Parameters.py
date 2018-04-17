@@ -280,7 +280,10 @@ def setBenchmarks(**kwargs):
                                                datasets=LENET_DATASETS)
         elif i == 'beziersurface':
             from ParsersClasses import BezierSurfaceParser
-            benchObj = BezierSurfaceParser.BezierSurfaceParser()
+            benchObj = BezierSurfaceParser.BezierSurfaceParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                               check_csv=checkCsv,
+                                                               ecc=ecc,
+                                                               parse_err_histogram=parse_err_histogram)
 
         elif i == 'gaussian':
             from ParsersClasses import GaussianParser
