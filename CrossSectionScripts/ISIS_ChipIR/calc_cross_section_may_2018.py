@@ -42,7 +42,7 @@ def read_count_file(in_file_name):
     return file_lines
 
 
-def get_fluence_flux(start_dt, end_dt, file_lines):
+def get_fluence_flux(start_dt, end_dt, file_lines, factor):
     # inFile = open(inFileName, 'r')
     # endDT = startDT + timedelta(minutes=60)
 
@@ -104,14 +104,60 @@ def get_fluence_flux(start_dt, end_dt, file_lines):
 
         if cur_dt > end_dt:
             flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
+            flux1h *= factor
             return [flux1h, beam_off_time]
         elif first_cur_integral is not None:
             last_cur_integral = cur_integral
 
 
 def calc_distance_factor(x):
-    return (20 * 20) / ((x + 20) * (x + 20))
+    return 400.0 / ((x + 20.0) * (x + 20.0))
 
+
+# def getFlux(startDT):
+#
+#	inFile = open(inFileName, 'r')
+#	endDT = startDT + timedelta(minutes=60)
+#
+#	beamIntegralSum = 0
+#	timeBeamOff=0 # in seconds
+#
+#	for l in inFile:
+#
+#		# Sanity check, we require a date at the beginning of the line
+#		line = l.rstrip()
+#		if not re.match("\d{1,2}/\d{1,2}/\d{2,4}", line):
+#			#sys.stderr.write("Ignoring line (malformed):\n%s\n" % (line))
+#			continue
+#
+#		if "N/A" in line:
+#		    break
+#
+#		# Parse the line
+#		lv = line.split(';')
+#
+#		yearDate = lv[0]
+#		dayTime = lv[1]
+#		secFrac = lv[2]
+#		unknown = lv[3]
+#		thermalNeutronsCount = lv[4]
+#		fastNeutronsCount = lv[5]
+#		efficientCount = lv[6]
+#		synchrotronCurrent = lv[7]
+#		shutter = lv[8]
+#		elapsedTime = lv[9]
+#		beamIntegral = lv[10]
+#
+#		# Generate datetime for line
+#		curDt = getDt(yearDate, dayTime, secFrac)
+#
+#		if startDT <= curDt and curDt <= endDT:
+#			beamIntegralSum += float(lv[10])
+#			if shutter == "Closed" or float(synchrotronCurrent) < 50:
+#				timeBeamOff += float(elapsedTime)
+#		elif curDt > endDT:
+#			flux1h = (beamIntegralSum*factor)/180
+#			return [flux1h, timeBeamOff]
 
 def main():
     if len(sys.argv) < 4:
@@ -140,10 +186,7 @@ def main():
         # We need to read the neutron count files before calling get_fluence_flux
         file_lines = read_count_file(in_file_name)
         for i in range(0, len(lines) - 1):
-            print lines[i][0]
-            print lines[i][0][0:-1]
             start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
-            print "date in line " + str(i) + ": ", start_dt
             j = i
             acc_time_s = float(lines[i][6])
             sdc_s = int(lines[i][4])
@@ -153,6 +196,8 @@ def main():
             writer.writerow(lines[i])
             writer2.writerow(lines[i])
             end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+            print "date in line " + str(i) + ": ", start_dt, end_dt
+
             last_line = ""
             while (end_dt - start_dt) < timedelta(minutes=60):
                 if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
@@ -171,10 +216,14 @@ def main():
                     break
                 end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             # compute 1h flux; sum SDC, ACC_TIME, Abort with 0; compute fluence (flux*(sum ACC_TIME))
-            flux, time_beam_off = get_fluence_flux(start_dt, (start_dt + timedelta(minutes=60)), file_lines)
-            flux_acc_time, time_beam_off_acc_time = get_fluence_flux(start_dt,
-                                                                     (start_dt + timedelta(seconds=acc_time_s)),
-                                                                     file_lines)
+            flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),
+                                           file_lines=file_lines, factor=factor)
+            # get_fluence_flux(start_dt, (start_dt + timedelta(minutes=60)), file_lines)
+            flux_acc_time, time_beam_off_acc_time = get_fluence_flux(start_dt=start_dt,
+                                                             end_dt=(start_dt + timedelta(seconds=acc_time_s)),
+                                                             file_lines=file_lines, factor=factor)
+            # get_fluence_flux(start_dt,         (start_dt + timedelta(seconds=acc_time_s)),
+            #                                                      file_lines)
             fluence = flux * acc_time_s
             fluence_acc_time = flux_acc_time * acc_time_s
             if fluence > 0:
