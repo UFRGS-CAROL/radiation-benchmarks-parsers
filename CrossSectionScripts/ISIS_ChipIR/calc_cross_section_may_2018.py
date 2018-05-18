@@ -1,5 +1,5 @@
 #!/usr/bin/python -u
-
+import os
 import sys
 import re
 import csv
@@ -47,7 +47,7 @@ def read_count_file(in_file_name):
     return file_lines
 
 
-def get_fluence_flux(start_dt, end_dt, file_lines, factor):
+def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1):
     # inFile = open(inFileName, 'r')
     # endDT = startDT + timedelta(minutes=60)
 
@@ -58,61 +58,57 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor):
     last_dt = None
     # flux1h = 0
     beam_off_time = 0
-    first_cur_integral = None
+    first_counter_30mv = None
 
     # for l in inFile:
     for line in file_lines:
         # Parse the line
         line = line.split(';')
+        # the date is organized in this order:
+        # Date;time;decimal of second; Dimond counter threshold = 40mV(counts);
+        # Dimond counter th = 20mV(counts);Dimond counter th = 30mV(counts);
+        # Fission Counter(counts); Integral Current uAh; Current uA
 
-        # 0 - 03/05/2018;
-        # 1 - 00:00:02;
-        # 2 - .723;
-        # 3 - 00000000061;
-        # 4 - 00000000035;
-        # 5 - 00000000017;
-        # 6 - 00001158191;
-        # 7 - 4461.49;
-        # 8 - 21.66
         year_date = line[0]
         day_time = line[1]
         sec_frac = line[2]
-        cur_integral = float(line[6])
+        counter_30mv = float(line[6])
 
         # Generate datetime for line
         cur_dt = get_dt(year_date, day_time, sec_frac)
-        if first_cur_integral is None:
-            first_cur_integral = cur_integral
+        if first_counter_30mv is None:
+            first_counter_30mv = counter_30mv
 
         if cur_dt > end_dt:
             interval_total_seconds = float((end_dt - start_dt).total_seconds())
-            flux1h = ((first_cur_integral -  cur_integral) * factor) / interval_total_seconds
+            flux1h = ((first_counter_30mv - counter_30mv) * factor) / interval_total_seconds
+            flux1h *= distance_factor
             if flux1h < 0:
-                raise ValueError
+                os.system("cat " + str(flux1h) + " >> errorlog.txt")
             # print cur_integral, first_cur_integral, interval_total_seconds, flux1h
             return [flux1h, beam_off_time]
 
-        # if start_dt <= cur_dt and first_cur_integral is None:
-        #     first_cur_integral = float(cur_integral)
-        #     last_counter_20 = counter_20
-        #     last_counter_30 = counter_30
-        #     last_counter_40 = counter_40
-        #     last_dt = cur_dt
-        #     continue
-        #
-        # if first_cur_integral is not None:
-        #     if counter_30 == last_counter_30:
-        #         beam_off_time += (cur_dt - last_dt).total_seconds()
-        #
-        #     last_counter_20 = counter_20
-        #     last_counter_30 = counter_30
-        #     last_counter_40 = counter_40
-        #     last_dt = cur_dt
-        # if cur_dt > end_dt:
-        #     flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
-        #     return [flux1h, beam_off_time]
-        # elif first_cur_integral is not None:
-        #     last_cur_integral = cur_integral
+            # if start_dt <= cur_dt and first_cur_integral is None:
+            #     first_cur_integral = float(cur_integral)
+            #     last_counter_20 = counter_20
+            #     last_counter_30 = counter_30
+            #     last_counter_40 = counter_40
+            #     last_dt = cur_dt
+            #     continue
+            #
+            # if first_cur_integral is not None:
+            #     if counter_30 == last_counter_30:
+            #         beam_off_time += (cur_dt - last_dt).total_seconds()
+            #
+            #     last_counter_20 = counter_20
+            #     last_counter_30 = counter_30
+            #     last_counter_40 = counter_40
+            #     last_dt = cur_dt
+            # if cur_dt > end_dt:
+            #     flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
+            #     return [flux1h, beam_off_time]
+            # elif first_cur_integral is not None:
+            #     last_cur_integral = cur_integral
 
 
 def calc_distance_factor(x):
@@ -183,11 +179,13 @@ def main():
                 end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             # compute 1h flux; sum SDC, ACC_TIME, Abort with 0; compute fluence (flux*(sum ACC_TIME))
             flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),
-                                                   file_lines=file_lines, factor=factor)
+                                                   file_lines=file_lines, factor=factor,
+                                                   distance_factor=distance_factor)
             # get_fluence_flux(start_dt, (start_dt + timedelta(minutes=60)), file_lines)
             flux_acc_time, time_beam_off_acc_time = get_fluence_flux(start_dt=start_dt,
                                                                      end_dt=(start_dt + timedelta(seconds=acc_time_s)),
-                                                                     file_lines=file_lines, factor=factor)
+                                                                     file_lines=file_lines, factor=factor,
+                                                                     distance_factor=distance_factor)
             # get_fluence_flux(start_dt,         (start_dt + timedelta(seconds=acc_time_s)),
             #                                                      file_lines)
             fluence = flux * acc_time_s
@@ -205,7 +203,8 @@ def main():
                 cross_section_acc_time = 0
                 cross_section_crash_acc_time = 0
             header_c = ["start timestamp", "end timestamp", "#lines computed", "#SDC", "#AccTime", "#(Abort==0)",
-                        "Flux 1h (factor " + str(distance_factor) + ")", "Flux AccTime (factor " + str(distance_factor) + ")",
+                        "Flux 1h (factor " + str(distance_factor) + ")",
+                        "Flux AccTime (factor " + str(distance_factor) + ")",
                         "Fluence(Flux * $AccTime)", "Fluence AccTime(FluxAccTime * $AccTime)", "Cross Section SDC",
                         "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
                         "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
