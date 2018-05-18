@@ -47,12 +47,12 @@ def read_count_file(in_file_name):
     return file_lines
 
 
-def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1):
+def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
     # inFile = open(inFileName, 'r')
     # endDT = startDT + timedelta(minutes=60)
 
     # last_counter_20 = 0
-    last_counter_30 = 0
+    last_counter_30mv = -99999
     # last_counter_40 = 0
     last_cur_integral = 0
     last_dt = None
@@ -76,39 +76,47 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1):
 
         # Generate datetime for line
         cur_dt = get_dt(year_date, day_time, sec_frac)
-        if first_counter_30mv is None:
+        if start_dt <= cur_dt and first_counter_30mv is None:
             first_counter_30mv = counter_30mv
+            last_counter_30mv = counter_30mv
+            last_dt = cur_dt
+            continue
+
+        if first_counter_30mv is not None and counter_30mv == last_counter_30mv:
+                beam_off_time += (cur_dt - last_dt).total_seconds()
 
         if cur_dt > end_dt:
             interval_total_seconds = float((end_dt - start_dt).total_seconds())
-            flux1h = ((first_counter_30mv - counter_30mv) * factor) / interval_total_seconds
-            flux1h *= distance_factor
+            flux1h = ((counter_30mv - first_counter_30mv) * factor) / interval_total_seconds
+            # flux1h *= distance_factor
             if flux1h < 0:
                 os.system("cat " + str(flux1h) + " >> errorlog.txt")
             # print cur_integral, first_cur_integral, interval_total_seconds, flux1h
             return [flux1h, beam_off_time]
+        elif first_counter_30mv is not None:
+            last_counter_30mv = counter_30mv
 
-            # if start_dt <= cur_dt and first_cur_integral is None:
-            #     first_cur_integral = float(cur_integral)
-            #     last_counter_20 = counter_20
-            #     last_counter_30 = counter_30
-            #     last_counter_40 = counter_40
-            #     last_dt = cur_dt
-            #     continue
-            #
-            # if first_cur_integral is not None:
-            #     if counter_30 == last_counter_30:
-            #         beam_off_time += (cur_dt - last_dt).total_seconds()
-            #
-            #     last_counter_20 = counter_20
-            #     last_counter_30 = counter_30
-            #     last_counter_40 = counter_40
-            #     last_dt = cur_dt
-            # if cur_dt > end_dt:
-            #     flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
-            #     return [flux1h, beam_off_time]
-            # elif first_cur_integral is not None:
-            #     last_cur_integral = cur_integral
+        # if start_dt <= cur_dt and first_cur_integral is None:
+        #     first_cur_integral = float(cur_integral)
+        #     last_counter_20 = counter_20
+        #     last_counter_30 = counter_30
+        #     last_counter_40 = counter_40
+        #     last_dt = cur_dt
+        #     continue
+        #
+        # if first_cur_integral is not None:
+        #     if counter_30 == last_counter_30:
+        #         beam_off_time += (cur_dt - last_dt).total_seconds()
+        #
+        #     last_counter_20 = counter_20
+        #     last_counter_30 = counter_30
+        #     last_counter_40 = counter_40
+        #     last_dt = cur_dt
+        # if cur_dt > end_dt:
+        #     flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
+        #     return [flux1h, beam_off_time]
+        # elif first_cur_integral is not None:
+        #     last_cur_integral = cur_integral
 
 
 def calc_distance_factor(x):
@@ -158,7 +166,8 @@ def main():
             writer_csv_full.writerow(lines[i])
             writer_csv_summary.writerow(lines[i])
             end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
-            print "date in line", str(i), ":", start_dt, end_dt
+            print "parsing file {} date in line {}:{}".format(csv_file_name.replace(".csv", ""), str(i), start_dt,
+                                                              end_dt)
 
             last_line = ""
             while (end_dt - start_dt) < timedelta(minutes=60):
