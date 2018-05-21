@@ -52,13 +52,16 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
     # endDT = startDT + timedelta(minutes=60)
 
     # last_counter_20 = 0
-    last_counter_30mv = 0
+    last_fission_counter = None
+    # last_counter_30mv = 0
     # last_counter_40 = 0
-    last_cur_integral_30mv = 0
+    # last_cur_integral = 0
     last_dt = None
     # flux1h = 0
     beam_off_time = 0
     first_curr_integral = None
+    first_counter_30mv = None
+    first_fission_counter = None
 
     # for l in inFile:
     for l in file_lines:
@@ -66,36 +69,40 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         line = l.split(';')
         # the date is organized in this order:
         # Date;time;decimal of second; Dimond counter threshold = 40mV(counts);
-        # Dimond counter th = 20mV(counts);Dimond counter th = 30mV(counts);
+        # Dimond counter th = 20mV(counts); Dimond counter th = 30mV(counts);
         # Fission Counter(counts); Integral Current uAh; Current uA
 
         year_date = line[0]
         day_time = line[1]
         sec_frac = line[2]
-        counter_30mv = float(line[5])
-        curr_integral = float(line[7])
+        # counter_30mv = float(line[5])
+        fission_counter = float(line[6])
+        # curr_integral = float(line[5])
 
         # Generate datetime for line
         cur_dt = get_dt(year_date, day_time, sec_frac)
-        if start_dt <= cur_dt and first_curr_integral is None:
-            first_curr_integral = curr_integral
-            last_counter_30mv = counter_30mv
+        if start_dt <= cur_dt and first_fission_counter is None:
+            first_fission_counter = fission_counter
+            # first_counter_30mv = counter_30mv
+            # last_counter_30mv = counter_30mv
             last_dt = cur_dt
             continue
 
-        if first_curr_integral is not None:
-            if counter_30mv == last_counter_30mv:
+        # if first_curr_integral is not None:
+        if first_fission_counter is not None:
+            if fission_counter == last_fission_counter:
                 beam_off_time += (cur_dt - last_dt).total_seconds()
 
-            last_counter_30mv = counter_30mv
+            last_fission_counter = fission_counter
             last_dt = cur_dt
 
         if cur_dt > end_dt:
             interval_total_seconds = float((end_dt - start_dt).total_seconds())
-            flux1h = ((last_cur_integral_30mv - first_curr_integral) * factor) / interval_total_seconds
-            return [flux1h, beam_off_time]
+            flux1h = ((last_fission_counter - first_fission_counter) * factor) / interval_total_seconds
+            flux1h *= distance_factor
+            return flux1h, beam_off_time
         elif first_curr_integral is not None:
-            last_cur_integral_30mv = curr_integral
+            last_fission_counter = fission_counter
 
 
 def calc_distance_factor(x):
