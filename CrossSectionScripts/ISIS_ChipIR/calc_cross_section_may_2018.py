@@ -52,13 +52,13 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
     # endDT = startDT + timedelta(minutes=60)
 
     # last_counter_20 = 0
-    last_counter_30mv = -99999
+    last_counter_30mv = 0
     # last_counter_40 = 0
-    last_cur_integral = 0
+    last_cur_integral_30mv = 0
     last_dt = None
     # flux1h = 0
     beam_off_time = 0
-    first_counter_30mv = None
+    first_curr_integral = None
 
     # for l in inFile:
     for line in file_lines:
@@ -72,51 +72,30 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         year_date = line[0]
         day_time = line[1]
         sec_frac = line[2]
-        counter_30mv = float(line[6])
+        counter_30mv = float(line[5])
+        curr_integral = float(line[6])
 
         # Generate datetime for line
         cur_dt = get_dt(year_date, day_time, sec_frac)
-        if start_dt <= cur_dt and first_counter_30mv is None:
-            first_counter_30mv = counter_30mv
+        if start_dt <= cur_dt and first_curr_integral is None:
+            first_curr_integral = curr_integral
             last_counter_30mv = counter_30mv
             last_dt = cur_dt
             continue
 
-        if first_counter_30mv is not None and counter_30mv == last_counter_30mv:
+        if first_curr_integral is not None:
+            if counter_30mv == last_counter_30mv:
                 beam_off_time += (cur_dt - last_dt).total_seconds()
+
+            last_counter_30mv = counter_30mv
+            last_dt = cur_dt
 
         if cur_dt > end_dt:
             interval_total_seconds = float((end_dt - start_dt).total_seconds())
-            flux1h = ((counter_30mv - first_counter_30mv) * factor) / interval_total_seconds
-            # flux1h *= distance_factor
-            if flux1h < 0:
-                os.system("cat " + str(flux1h) + " >> errorlog.txt")
-            # print cur_integral, first_cur_integral, interval_total_seconds, flux1h
+            flux1h = ((last_cur_integral_30mv - first_curr_integral) * factor) / interval_total_seconds
             return [flux1h, beam_off_time]
-        elif first_counter_30mv is not None:
-            last_counter_30mv = counter_30mv
-
-        # if start_dt <= cur_dt and first_cur_integral is None:
-        #     first_cur_integral = float(cur_integral)
-        #     last_counter_20 = counter_20
-        #     last_counter_30 = counter_30
-        #     last_counter_40 = counter_40
-        #     last_dt = cur_dt
-        #     continue
-        #
-        # if first_cur_integral is not None:
-        #     if counter_30 == last_counter_30:
-        #         beam_off_time += (cur_dt - last_dt).total_seconds()
-        #
-        #     last_counter_20 = counter_20
-        #     last_counter_30 = counter_30
-        #     last_counter_40 = counter_40
-        #     last_dt = cur_dt
-        # if cur_dt > end_dt:
-        #     flux1h = (float(last_cur_integral) - first_cur_integral) / (end_dt - start_dt).total_seconds()
-        #     return [flux1h, beam_off_time]
-        # elif first_cur_integral is not None:
-        #     last_cur_integral = cur_integral
+        elif first_curr_integral is not None:
+            last_cur_integral_30mv = curr_integral
 
 
 def calc_distance_factor(x):
@@ -129,7 +108,7 @@ def main():
         sys.exit(1)
     in_file_name = sys.argv[1]
     csv_file_name = sys.argv[2]
-    factor = float(sys.argv[3])  # calc_distance_factor(float(sys.argv[3]) / 100.0)
+    factor = float(sys.argv[3])
     distance_factor = float(sys.argv[4])
 
     csv_out_file_full = csv_file_name.replace(".csv", "_cross_section.csv")
@@ -148,6 +127,13 @@ def main():
         writer_csv_summary.writerow(csv_header)
 
         lines = list(reader)
+
+        header_c = ["start timestamp", "end timestamp", "#lines computed", "#SDC", "#AccTime", "#(Abort==0)",
+                    "Flux 1h (factor " + str(distance_factor) + ")",
+                    "Flux AccTime (factor " + str(distance_factor) + ")",
+                    "Fluence(Flux * $AccTime)", "Fluence AccTime(FluxAccTime * $AccTime)", "Cross Section SDC",
+                    "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
+                    "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
 
         # We need to read the neutron count files before calling get_fluence_flux
         file_lines = read_count_file(in_file_name)
@@ -190,13 +176,11 @@ def main():
             flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),
                                                    file_lines=file_lines, factor=factor,
                                                    distance_factor=distance_factor)
-            # get_fluence_flux(start_dt, (start_dt + timedelta(minutes=60)), file_lines)
             flux_acc_time, time_beam_off_acc_time = get_fluence_flux(start_dt=start_dt,
                                                                      end_dt=(start_dt + timedelta(seconds=acc_time_s)),
                                                                      file_lines=file_lines, factor=factor,
                                                                      distance_factor=distance_factor)
-            # get_fluence_flux(start_dt,         (start_dt + timedelta(seconds=acc_time_s)),
-            #                                                      file_lines)
+
             fluence = flux * acc_time_s
             fluence_acc_time = flux_acc_time * acc_time_s
             if fluence > 0:
@@ -211,12 +195,7 @@ def main():
             else:
                 cross_section_acc_time = 0
                 cross_section_crash_acc_time = 0
-            header_c = ["start timestamp", "end timestamp", "#lines computed", "#SDC", "#AccTime", "#(Abort==0)",
-                        "Flux 1h (factor " + str(distance_factor) + ")",
-                        "Flux AccTime (factor " + str(distance_factor) + ")",
-                        "Fluence(Flux * $AccTime)", "Fluence AccTime(FluxAccTime * $AccTime)", "Cross Section SDC",
-                        "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
-                        "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
+
             writer_csv_full.writerow(header_c)
             writer_csv_summary.writerow(last_line)
             writer_csv_summary.writerow(header_c)
@@ -228,9 +207,9 @@ def main():
             writer_csv_full.writerow(row)
             writer_csv_summary.writerow(row)
             writer_csv_full.writerow([])
-            writer_csv_full.writerow([])
+            # writer_csv_full.writerow([])
             writer_csv_summary.writerow([])
-            writer_csv_summary.writerow([])
+            # writer_csv_summary.writerow([])
 
 
 #########################################################
