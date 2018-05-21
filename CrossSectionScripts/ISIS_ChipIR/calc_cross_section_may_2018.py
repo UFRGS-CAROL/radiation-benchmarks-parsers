@@ -61,9 +61,9 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
     first_curr_integral = None
 
     # for l in inFile:
-    for line in file_lines:
+    for l in file_lines:
         # Parse the line
-        line = line.split(';')
+        line = l.split(';')
         # the date is organized in this order:
         # Date;time;decimal of second; Dimond counter threshold = 40mV(counts);
         # Dimond counter th = 20mV(counts);Dimond counter th = 30mV(counts);
@@ -73,7 +73,7 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         day_time = line[1]
         sec_frac = line[2]
         counter_30mv = float(line[5])
-        curr_integral = float(line[6])
+        curr_integral = float(line[7])
 
         # Generate datetime for line
         cur_dt = get_dt(year_date, day_time, sec_frac)
