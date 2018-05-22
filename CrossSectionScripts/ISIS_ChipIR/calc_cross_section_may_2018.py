@@ -125,16 +125,13 @@ def main():
     print "out: " + csv_out_file_full
     with open(csv_file_name, "r") as csv_input, open(csv_out_file_full, "w") as csv_full, open(csv_out_file_summary,
                                                                                                "w") as csv_summary:
-        reader = csv.reader(csv_input, delimiter=';')
-        writer_csv_full = csv.writer(csv_full, delimiter=';')
-        writer_csv_summary = csv.writer(csv_summary, delimiter=';')
 
-        csv_header = next(reader, None)
-
-        writer_csv_full.writerow(csv_header)
-        writer_csv_summary.writerow(csv_header)
-
+        reader = csv.DictReader(csv_input, delimiter=';')
+        # csv_header = next(reader, None)
         lines = list(reader)
+        field_names = lines[0].keys()
+        # writer_csv_full.writerow()
+        # writer_csv_summary.writerow(lines[0].keys())
 
         header_c = ["start timestamp", "end timestamp", "#lines computed", "#SDC", "#AccTime", "#(Abort==0)",
                     "Flux 1h (factor " + str(distance_factor) + ")",
@@ -143,43 +140,53 @@ def main():
                     "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
                     "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
 
+        writer_csv_full = csv.DictWriter(csv_full, delimiter=';',
+                                         fieldnames=header_c + field_names, extrasaction='ignore')
+        writer_csv_summary = csv.DictWriter(csv_summary, delimiter=';',
+                                            fieldnames=header_c + field_names, extrasaction='ignore')
+        writer_csv_full.writeheader()
+        writer_csv_summary.writeheader()
+
         # We need to read the neutron count files before calling get_fluence_flux
         file_lines = read_count_file(in_file_name)
-        for i in range(0, len(lines) - 1):
-            start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
+        # Time;Machine;Benchmark;Header Info;#SDC;acc_err;acc_time;abort;end;filename and dir
+        for i, line in enumerate(lines):
+            start_dt = datetime.strptime(line['Time'][0:-1], "%c")
             j = i
             # acc_time
-            acc_time_s = float(lines[i][6])
+            acc_time_s = float(line['acc_time'])
             # #SDC
-            sdc_s = int(lines[i][4])
+            sdc_s = int(line['#SDC'])
             # abort
             abort_zero_s = 0
-            if int(lines[i][7]) == 0:
+            if int(line['abort']) == 0:
                 abort_zero_s += 1
 
-            writer_csv_full.writerow(lines[i])
-            writer_csv_summary.writerow(lines[i])
-            end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+            writer_csv_full.writerow(line)
+            writer_csv_summary.writerow(line)
+            end_dt = datetime.strptime(lines[i + 1]['Time'][0:-1], "%c")
             print "parsing file {} date in line {}:{}".format(csv_file_name.replace(".csv", ""), str(i), start_dt,
                                                               end_dt)
 
             last_line = ""
             while (end_dt - start_dt) < timedelta(minutes=60):
-                if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
+                if lines[i + 1]['Benchmark'] != line['Benchmark']:  # not the same benchmark
                     break
-                if lines[i + 1][3] != lines[i][3]:  # not the same input
+                if lines[i + 1]['Header Info'] != line['Header Info']:  # not the same input
                     break
                 # print "line "+str(i)+" inside 1h interval"
                 i += 1
-                acc_time_s += float(lines[i][6])
-                sdc_s += int(lines[i][4])
-                if int(lines[i][7]) == 0:
+                acc_time_s += float(line['acc_time'])
+                sdc_s += int(line['#SDC'])
+                if int(line['abort']) == 0:
                     abort_zero_s += 1
-                writer_csv_full.writerow(lines[i])
-                last_line = lines[i]
+                writer_csv_full.writerow(line)
+                last_line = line
+
                 if i == (len(lines) - 1):  # end of lines
                     break
-                end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+                end_dt = datetime.strptime(lines[i + 1]['Time'][0:-1], "%c")
+
             # compute 1h flux; sum SDC, ACC_TIME, Abort with 0; compute fluence (flux*(sum ACC_TIME))
             flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),
                                                    file_lines=file_lines, factor=factor,
@@ -204,19 +211,29 @@ def main():
                 cross_section_acc_time = 0
                 cross_section_crash_acc_time = 0
 
-            writer_csv_full.writerow(header_c)
-            writer_csv_summary.writerow(last_line)
-            writer_csv_summary.writerow(header_c)
-            row = [start_dt.ctime(), end_dt.ctime(), (i - j + 1), sdc_s, acc_time_s, abort_zero_s, flux, flux_acc_time,
-                   fluence,
-                   fluence_acc_time, cross_section, cross_section_crash, time_beam_off, cross_section_acc_time,
-                   cross_section_crash_acc_time,
-                   time_beam_off_acc_time]
+            # writer_csv_full.writerow(header_c)
+            try:
+                writer_csv_summary.writerow(last_line)
+            except:
+                print last_line
+            # writer_csv_summary.writerow(header_c)
+            row = {"start timestamp":start_dt.ctime(),
+                   "end timestamp":end_dt.ctime(), "#lines computed":(i - j + 1),
+                   "#SDC":sdc_s, "#AccTime":acc_time_s, "#(Abort==0)":abort_zero_s,
+                   "Flux 1h (factor " + str(distance_factor) + ")":flux,
+                   "Flux AccTime (factor " + str(distance_factor) + ")":flux_acc_time,
+                   "Fluence(Flux * $AccTime)":fluence,
+                   "Fluence AccTime(FluxAccTime * $AccTime)":fluence_acc_time,
+                   "Cross Section SDC":cross_section,
+                   "Cross Section Crash":cross_section_crash, "Time Beam Off (sec)":time_beam_off,
+                   "Cross Section SDC AccTime":cross_section_acc_time,
+                   "Cross Section Crash AccTime":cross_section_crash_acc_time,
+                   "Time Beam Off AccTime (sec)":time_beam_off_acc_time}
             writer_csv_full.writerow(row)
             writer_csv_summary.writerow(row)
-            writer_csv_full.writerow([])
             # writer_csv_full.writerow([])
-            writer_csv_summary.writerow([])
+            # writer_csv_full.writerow([])
+            # writer_csv_summary.writerow([])
             # writer_csv_summary.writerow([])
 
 
