@@ -104,6 +104,7 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         elif first_curr_integral is not None:
             last_fission_counter = fission_counter
 
+    return 0, beam_off_time
 
 def calc_distance_factor(x):
     return 400.0 / ((x + 20.0) * (x + 20.0))
