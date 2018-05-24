@@ -25,7 +25,7 @@ How to parse radiation logs and calculate cross section
 	
 	# May 2018 calc_cross_section_may_2018.py was used
 	- it has one more parameter as follows
-	- $ ./calcCrossSection.py <unified neutron count logs> <benchmark csv file>  <distance factor>
+	- $ ./calcCrossSection.py <unified neutron count logs> <benchmark csv file>  <factor> <distance factor>
 		- <unified neutron count log> generated at step 2
 		- <benchmark csv file> csv file generated at step 1, usually is named like this: logs_parsed_carol-k402.csv
 		- <factor> An int number that is given by physicists
