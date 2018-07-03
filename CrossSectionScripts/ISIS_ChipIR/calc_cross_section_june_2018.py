@@ -182,11 +182,11 @@ def main():
         while i < len(lines) - 1:
             i += 1  # Soluciona sobreposicao
             try:
-                start_d_t = datetime.strptime(lines[i][0][0:-1], "%c")
-                end_d_t = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+                start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
+                end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             except:
                 continue
-            start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
+            # start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
             j = i
             machine = lines[i][1]
             bench = lines[i][2]
@@ -201,7 +201,7 @@ def main():
                 abort_zero_s += 1
 
             writer_csv_summary.writerow(lines[i])
-            end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+            # end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             print "parsing file {} date in line {}:{}".format(csv_file_name.replace(".csv", ""), str(i), start_dt,
                                                               end_dt)
             last_line = ""
