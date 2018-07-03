@@ -92,7 +92,7 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         if first_fission_counter is not None:
             if fission_counter == last_fission_counter:
                 beam_off_time += (
-                cur_dt - last_dt).total_seconds()  # Adiciona a diferenca do tempo de i e i-1 -> Beam Parado 3S
+                    cur_dt - last_dt).total_seconds()  # Adiciona a diferenca do tempo de i e i-1 -> Beam Parado 3S
 
             last_fission_counter = fission_counter
             last_dt = cur_dt
@@ -109,19 +109,54 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
 def calc_distance_factor(x):
     return 400.0 / ((x + 20.0) * (x + 20.0))
 
-def check_shutter_interval(shutter_file, curr_date):
-    pass
 
+def convert_date(date_to_convert):
+    date, hr = date_to_convert.split(" ")
+    yv = date.split('/')
+    day = int(yv[0])
+    month = int(yv[1])
+    year = 2018
+    dv = hr.split(':')
+    hour = int(dv[0])
+    minute = int(dv[1])
+    second = 0
+    # we get secFrac in seconds, so we must convert to microseconds
+    # e.g: 0.100 seconds = 100 milliseconds = 100000 microseconds
+    microsecond = 0
+    return datetime(year, month, day, hour, minute, second, microsecond)
+
+
+def check_distance_factor(distance_data, start_dt, board):
+    for t in distance_data:
+        last = t
+        if t['board'] in board and t['start'] <= start_dt <= t['end']:
+            return float(t['Distance attenuation'])
+
+    print(last['start'], start_dt, last['end'])
+    return None
+
+
+def get_distance_data(distance_factor_file):
+    distance_data = []
+    with open(distance_factor_file, "r") as csv_distance:
+        dict_data = csv.DictReader(csv_distance, delimiter=',')
+        for i in dict_data:
+            to_append = i
+            to_append['start'] = convert_date(i['start'])
+            to_append['end'] = convert_date(i['end'])
+            distance_data.append(to_append)
+    return distance_data
 
 
 def main():
     if len(sys.argv) < 4:
-        print "Usage: %s <neutron counts input file> <csv file> <factor>" % (sys.argv[0])
+        print "Usage: %s <neutron counts input file> <csv file> <factor> <distance factor file>" % (sys.argv[0])
         sys.exit(1)
     in_file_name = sys.argv[1]
     csv_file_name = sys.argv[2]
     factor = float(sys.argv[3])
-    distance_factor = float(sys.argv[4])
+    distance_factor_file = sys.argv[4]
+    distance_data = get_distance_data(distance_factor_file=distance_factor_file)
 
     csv_out_file_full = csv_file_name.replace(".csv", "_cross_section.csv")
     csv_out_file_summary = csv_file_name.replace(".csv", "_cross_section_summary.csv")
@@ -140,26 +175,16 @@ def main():
 
         lines = list(reader)
 
-        header_c = ["Machine", "benchmark", "header info", "start timestamp", "end timestamp", "#lines computed",
-                    "#SDC", "#AccTime", "#(Abort==0)",
-                    "Flux 1h (factor " + str(distance_factor) + ")",
-                    "Flux AccTime (factor " + str(distance_factor) + ")",
-                    "Fluence(Flux * $AccTime)", "Fluence AccTime(FluxAccTime * $AccTime)", "Cross Section SDC",
-                    "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
-                    "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
-        writer_csv_full.writerow(header_c)
         # We need to read the neutron count files before calling get_fluence_flux
         file_lines = read_count_file(in_file_name)
 
         i = -1
         while i < len(lines) - 1:
             i += 1  # Soluciona sobreposicao
-            print("Nova Linha", i)
             try:
                 start_d_t = datetime.strptime(lines[i][0][0:-1], "%c")
                 end_d_t = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             except:
-                print("data lixo")
                 continue
             start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
             j = i
@@ -182,7 +207,6 @@ def main():
             last_line = ""
             # flag = 0
             while (end_dt - start_dt) < timedelta(minutes=60):
-                print("Procuro no run")
                 # flag = 1
                 if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
                     break
@@ -200,11 +224,10 @@ def main():
                     break
                 end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
             # compute 1h flux; sum SDC, ACC_TIME, Abort with 0; compute fluence (flux*(sum ACC_TIME))
-            print("Fora While", i)
             # print(flag)
             # if(flag == 0):
             # i=i+1
-
+            distance_factor = check_distance_factor(distance_data=distance_data, start_dt=start_dt, board=lines[i][1])
             flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),
                                                    file_lines=file_lines, factor=factor,
                                                    distance_factor=distance_factor)
@@ -229,6 +252,15 @@ def main():
                 cross_section_crash_acc_time = 0
 
             # writer_csv_full.writerow(header_c)
+
+            header_c = ["Machine", "benchmark", "header info", "start timestamp", "end timestamp", "#lines computed",
+                        "#SDC", "#AccTime", "#(Abort==0)",
+                        "Flux 1h (factor " + str(distance_factor) + ")",
+                        "Flux AccTime (factor " + str(distance_factor) + ")",
+                        "Fluence(Flux * $AccTime)", "Fluence AccTime(FluxAccTime * $AccTime)", "Cross Section SDC",
+                        "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
+                        "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
+            writer_csv_full.writerow(header_c)
             writer_csv_summary.writerow(last_line)
             writer_csv_summary.writerow(header_c)
             row = [machine, bench, header_info, start_dt.ctime(), end_dt.ctime(), (i - j + 1), sdc_s, acc_time_s,

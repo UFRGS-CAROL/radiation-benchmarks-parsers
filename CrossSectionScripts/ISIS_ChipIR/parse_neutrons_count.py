@@ -12,9 +12,10 @@ def merge_files(paths, output_file):
                     if 'Data From ChipIR' in line:
                         continue
                     try:
-                        out_line = re.sub(r"\s+", ';', line)
-                        out_line = out_line[:-1]
-                        outf.write(out_line + "\n")
+                        if len(line) > 10:
+                            out_line = re.sub(r"\s+", ';', line)
+                            out_line = out_line[:-1]
+                            outf.write(out_line + "\n")
                     except Exception as err:
                         print line, err
 
