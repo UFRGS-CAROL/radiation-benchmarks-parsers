@@ -142,7 +142,7 @@ def main():
                     "Cross Section Crash", "Time Beam Off (sec)", "Cross Section SDC AccTime",
                     "Cross Section Crash AccTime", "Time Beam Off AccTime (sec)"]
         writer_csv_full.writerow(header_c)
-        # We need to read the neutron count files before calling get_fluence_flux
+        # We need to read the neutron count files before calling get_fluency_flux
         file_lines = read_count_file(in_file_name)
     
         i = -1

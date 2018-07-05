@@ -3,7 +3,7 @@
 import sys
 import csv
 import re
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 import os
 from glob import glob
 
@@ -117,7 +117,7 @@ print "\n\t\tTOTAL_SDC: ", total_sdc, "\n"
 
 summariesFile = "./" + folder_p + "/summaries.csv"
 os.system("rm -f " + summariesFile)
-
+endDT1h = date(1900, 1, 1)
 for csvFileName in good_csv_files:
 
     csvOutFileName = csvFileName.replace(".csv", "_summary.csv")
@@ -174,9 +174,9 @@ for csvFileName in good_csv_files:
                         if i + 1 == size:
                             break
                         if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
-                            break;
+                            break
                         if lines[i + 1][3] != lines[i][3]:  # not the same input
-                            break;
+                            break
                         i += 1
                         # summary
                         endDT1h = datetime.strptime(lines[i][0][0:-1], "%c")
@@ -187,11 +187,11 @@ for csvFileName in good_csv_files:
                             abortZeroS += 1
                         writer.writerow(lines[i])
                         if i == (len(lines) - 1):  # end of lines
-                            break;
+                            break
                         if re.match("Time", lines[i + 1][0]):
                             i += 1
                         if i == (len(lines) - 1):  # end of lines
-                            break;
+                            break
             except ValueError as e:
                 print "date conversion error, detail: " + str(e)
                 print "date: " + lines[i + 1][0][0:-1] + "\n"
