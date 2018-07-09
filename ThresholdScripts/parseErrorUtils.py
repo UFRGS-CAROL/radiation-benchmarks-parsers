@@ -129,14 +129,15 @@ def parseErrMethod2(errString, header):
 def getParserFunction(benchmark):
     isHotspot = re.search("hotspot", benchmark, flags=re.IGNORECASE)
     isGEMM = re.search("GEMM", benchmark, flags=re.IGNORECASE)
-    isLavaMD = re.search("lavamd", benchmark, flags=re.IGNORECASE)
+    isMXM = re.search("mxm", benchmark, flags=re.IGNORECASE)
+    isLavaMD = re.search("lava", benchmark, flags=re.IGNORECASE)
     isCLAMR = re.search("clamr", benchmark, flags=re.IGNORECASE)
     isLUD = re.search("lud", benchmark, flags=re.IGNORECASE)
     isGaussian = re.search("gaussian", benchmark, flags=re.IGNORECASE)
     isNW = re.search("NW", benchmark, flags=re.IGNORECASE)
     errorsParsed = []
     parseFunc = None
-    if isGEMM or isLUD or isGaussian or isNW:
+    if isGEMM or isMXM or isLUD or isGaussian or isNW:
         parseFunc = parseErrMethod1
     elif isHotspot:
         parseFunc = parseErrMethod2

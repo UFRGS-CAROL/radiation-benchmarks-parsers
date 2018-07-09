@@ -61,6 +61,9 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         accIteErrors = sdcItem[4]
         errList = sdcItem[5]
 
+        if not "mxm" in benchmark:
+            break
+
         csvOutDict = dict()
         csvOutDict["logFileName"] = logFileName
         csvOutDict["machine"] = machine
