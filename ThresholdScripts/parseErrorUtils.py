@@ -126,6 +126,27 @@ def parseErrMethod2(errString, header):
         return None
 
 
+# Returns an error item in dict form: {"positions" : listPosition, "values" : listValues}
+# Returns None if it is not possible to parse
+# Works for Micro benchmarks
+def parseErrMethod3(errString, header):
+    try:
+        # micro:
+        # ERR  p: [3708], r: 1.1220343410968781e-02, e: 1.1220589280128479e-02
+        m = re.match(".*ERR.*\[(\d+)\].*r\: ([0-9e\+\-\.]+).*e\: ([0-9e\+\-\.]+)", errString)
+        if m:
+            thread = int(m.group(1))
+            read = float(m.group(2))
+            expected = float(m.group(3))
+            positions = [["thread", thread]]
+            values = [["v", read, expected]]
+            return {"position": positions, "values": values}
+        # return [thread, read, expected]
+        else:
+            return None
+    except ValueError:
+        return None
+
 def getParserFunction(benchmark):
     isHotspot = re.search("hotspot", benchmark, flags=re.IGNORECASE)
     isGEMM = re.search("GEMM", benchmark, flags=re.IGNORECASE)
@@ -135,6 +156,7 @@ def getParserFunction(benchmark):
     isLUD = re.search("lud", benchmark, flags=re.IGNORECASE)
     isGaussian = re.search("gaussian", benchmark, flags=re.IGNORECASE)
     isNW = re.search("NW", benchmark, flags=re.IGNORECASE)
+    isMicro = re.search("micro", benchmark, flags=re.IGNORECASE)
     errorsParsed = []
     parseFunc = None
     if isGEMM or isMXM or isLUD or isGaussian or isNW:
@@ -143,6 +165,8 @@ def getParserFunction(benchmark):
         parseFunc = parseErrMethod2
     elif isLavaMD:
         parseFunc = parseErrLavaMD
+    elif isMicro:
+        parseFunc = parseErrMethod3
 
     return parseFunc
 
