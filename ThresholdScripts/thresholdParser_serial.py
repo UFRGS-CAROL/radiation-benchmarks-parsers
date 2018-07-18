@@ -61,8 +61,8 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         accIteErrors = sdcItem[4]
         errList = sdcItem[5]
 
-        # if not "mxm" in benchmark:
-        #     break
+#        if not "gemm" in benchmark:
+#            break
 
         csvOutDict = dict()
         csvOutDict["logFileName"] = logFileName
@@ -114,9 +114,9 @@ def processErrors(benchmarkname_machinename, sdcItemList):
 
 
 
-        # Write info to csv file
-                csvFileName = "logs_parsed_machine-"+machine+"_benchmark-"+benchmark+"_header-"+header+".csv"
-                csvFullPath = os.path.join(csvDirOut, csvFileName)
+# Write info to csv file
+        csvFileName = "logs_parsed_machine-"+machine+"_benchmark-"+benchmark+"_header-"+header+".csv"
+        csvFullPath = os.path.join(csvDirOut, csvFileName)
         if not os.path.exists(os.path.dirname(csvFullPath)):
             try:
                 os.makedirs(os.path.dirname(csvFullPath))
@@ -171,22 +171,22 @@ for inputDB in sys.argv[1:]:
 csvHeader = list()
 csvHeader.append("Threshold")
 csvHeader.append("Percentage")
-csvHeader.append("Machine")
+csvHeader.append("Configuration")
 
 #print(totals)
 
 csvWFP = open("thresholds_summary.csv", "w")
 writer = csv.writer(csvWFP, delimiter=';')
 writer.writerow(csvHeader)
-csvWFPgemm = open("thresholds_gemm.csv", "w")
-writerGemm = csv.writer(csvWFPgemm, delimiter=';')
-writerGemm.writerow(csvHeader)
-csvWFPhotspot = open("thresholds_hotspot.csv", "w")
-writerHotspot = csv.writer(csvWFPhotspot, delimiter=';')
-writerHotspot.writerow(csvHeader)
-csvWFPlava = open("thresholds_lava.csv", "w")
-writerLava = csv.writer(csvWFPlava, delimiter=';')
-writerLava.writerow(csvHeader)
+# csvWFPgemm = open("thresholds_gemm.csv", "w")
+# writerGemm = csv.writer(csvWFPgemm, delimiter=';')
+# writerGemm.writerow(csvHeader)
+# csvWFPhotspot = open("thresholds_hotspot.csv", "w")
+# writerHotspot = csv.writer(csvWFPhotspot, delimiter=';')
+# writerHotspot.writerow(csvHeader)
+# csvWFPlava = open("thresholds_lava.csv", "w")
+# writerLava = csv.writer(csvWFPlava, delimiter=';')
+# writerLava.writerow(csvHeader)
 for key in totals.iterkeys():
     last = -1
     for errLimit in errLimitList:
@@ -197,14 +197,9 @@ for key in totals.iterkeys():
             csvRow.append(str(100 - (float(totals[key][str(errLimit)]) / float(totals[key]["errors"])) * 100.0))
             csvRow.append(key)
             writer.writerow(csvRow)
-            if ("GEMM" in key) and ("4096" in key):
-                writerGemm.writerow(csvRow)
-            if "Hotspot".upper() in key.upper():
-                writerHotspot.writerow(csvRow)
-            if "Lava".upper() in key.upper():
-                writerLava.writerow(csvRow)
-            
-csvWFP.close()
-csvWFPgemm.close()
-csvWFPhotspot.close()
-csvWFPlava.close()
+
+
+# csvWFP.close()
+# csvWFPgemm.close()
+# csvWFPhotspot.close()
+# csvWFPlava.close()
