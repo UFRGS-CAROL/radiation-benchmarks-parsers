@@ -61,8 +61,8 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         accIteErrors = sdcItem[4]
         errList = sdcItem[5]
 
-        if not "mxm" in benchmark:
-            break
+        # if not "mxm" in benchmark:
+        #     break
 
         csvOutDict = dict()
         csvOutDict["logFileName"] = logFileName
@@ -141,7 +141,7 @@ def processErrors(benchmarkname_machinename, sdcItemList):
                 csvWFP.close()
         sdci += 1
 
-    sys.stdout.write("\r"+benchmark+" - Processing SDC "+str(sdci-1)+" of "+str(total_sdcs)+" - 100%                     "+"\n")
+    sys.stdout.write("\r"+benchmark+" - Processing SDC "+str(sdci-1)+" of "+str(total_sdcs)+" - 100%\n")
     sys.stdout.flush()
 ################ => processErrors()
 
@@ -199,9 +199,9 @@ for key in totals.iterkeys():
             writer.writerow(csvRow)
             if ("GEMM" in key) and ("4096" in key):
                 writerGemm.writerow(csvRow)
-            if "Hotspot" in key:
+            if "Hotspot".upper() in key.upper():
                 writerHotspot.writerow(csvRow)
-            if "Lava" in key:
+            if "Lava".upper() in key.upper():
                 writerLava.writerow(csvRow)
             
 csvWFP.close()
