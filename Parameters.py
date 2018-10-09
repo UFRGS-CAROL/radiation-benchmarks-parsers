@@ -15,7 +15,8 @@ GOLD_BASE_DIR = {
     'carol-k402': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_K40',
     'carolx1b': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1b',
     'carolx1c': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
-    'carolx1a': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c'
+    'carolx1a': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
+    'caroltitanx1': '/home/fernando/Dropbox/Voltas_LANSCE2018/V2_darknet_data'
 }
 
 ############################################################################################
@@ -173,6 +174,15 @@ def setBenchmarks(**kwargs):
                                                        prThreshold=pr_threshold,
                                                        layersGoldPath=LAYERS_GOLD_PATH_DARKNETV2,
                                                        layersPath=LAYERS_PATH_DARKNETV2,
+                                                       imgOutputDir=IMG_OUTPUT_DIR,
+                                                       localRadiationBench=LOCAL_RADIATION_BENCH,
+                                                       check_csv=checkCsv,
+                                                       goldBaseDir=GOLD_BASE_DIR,
+                                                       datasets=DARKNET_DATASETS
+                                                       )
+        if i == 'darknetv3':
+            from ParsersClasses import DarknetV3Parser
+            benchObj = DarknetV3Parser.DarknetV3Parser(prThreshold=pr_threshold,
                                                        imgOutputDir=IMG_OUTPUT_DIR,
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,

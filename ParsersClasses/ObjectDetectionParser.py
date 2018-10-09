@@ -195,7 +195,7 @@ class ObjectDetectionParser(Parser):
         outPositive = 0
         for i in found:
             for g in gold:
-                if g == i: #(g.jaccard_similarity(i)) >= self.__threshold:
+                if g == i:  # (g.jaccard_similarity(i)) >= self.__threshold:
                     outPositive += 1
                     break
 
@@ -205,7 +205,7 @@ class ObjectDetectionParser(Parser):
         truePositive = 0
         for i in gold:
             for z in found:
-                if i == z: #(i.jaccard_similarity(z)) >= self.__threshold:
+                if i == z:  # (i.jaccard_similarity(z)) >= self.__threshold:
                     truePositive += 1
                     break
 
@@ -223,28 +223,3 @@ class ObjectDetectionParser(Parser):
             self._precisionClasses = 0
         else:
             self._precisionClasses = float(tp) / float(tp + fp)
-
-
-    """
-    LEGACY METHODS SECTION
-    """
-    #
-    # class ImageRaw():
-    #     file = ""
-    #
-    #     def __init__(self, file):
-    #         self.w, self.h = self.getImageSize(file)
-    #         self.file = file
-    #
-    #     def getImageSize(self, imgPath):
-    #         width = None
-    #         height = None
-    #         try:
-    #             with Image.open(imgPath) as im:
-    #                 width, height = im.size
-    #         except:
-    #             print "\nAqui", imgPath
-    #
-    #         # if width == None and height == None:
-    #         #     print "\n", imgPath
-    #         return width, height

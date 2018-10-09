@@ -6,6 +6,8 @@ from ctypes import *
 import numpy as np
 
 # from SupportClasses
+from xxsubtype import spamdict
+
 import Rectangle
 
 """Read a darknet/pyfaster/resnet Gold content to memory"""
@@ -41,7 +43,7 @@ class Point(object):
         self.y = y
 
 
-class GoldContent():
+class GoldContent:
     __plistSize = 0
     __classes = 0
     __totalSize = 0
@@ -64,22 +66,11 @@ class GoldContent():
     __nn = None
     __csvGoldFilePath = ''
     __pyFasterImgList = ''
-
+    __tensor_core = False
 
     # imgs, doing it there is no need to open img list file
     __imgsLocationList = []
 
-    # return a dict that look like this
-    # //to store all gold filenames
-    # typedef struct gold_pointers {
-    # //	box *boxes_gold;
-    # //	ProbArray pb;
-    # 	ProbArray *pb_gold;
-    # 	long plist_size;
-    # 	FILE* gold;
-    # 	int has_file;
-    # } GoldPointers;
-    #
     def __init__(self, **kwargs):
         # use keyargs
         try:
@@ -99,6 +90,9 @@ class GoldContent():
 
             elif "darknetv1" == self.__nn:
                 self.darknetV2Constructor(filePath=self.__csvGoldFilePath)
+
+            elif "darknetv3" == self.__nn:
+                self.darknetV3Constructor(filePath=self.__csvGoldFilePath)
 
         except:
             raise
@@ -128,13 +122,12 @@ class GoldContent():
         return self.__csvGoldFilePath
 
     def getRectArray(self, **kwargs):
-        if self.__nn == 'darknetv2' or self.__nn == 'darknetv1':
+        if self.__nn in ['darknetv3', 'darknetv2', 'darknetv1']:
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['boxes']
         elif self.__nn == 'darknet':
             imgPos = int(kwargs.pop('imgPos'))
             return self.__prob_array['boxes'][imgPos]
-
 
         return self.__prob_array['boxes']
 
@@ -147,7 +140,8 @@ class GoldContent():
         if self.__nn == 'darknetv2':
             imgPath = kwargs.pop('imgPath')
             return self.readProbsAndBoxesV2(None, imgPath)
-        elif self.__nn == 'darknetv1':
+
+        elif self.__nn in ['darknetv3', 'darknetv1']:
             imgPath = kwargs.pop('imgPath')
             return self.__prob_array[imgPath]['probs']
         elif self.__nn == 'resnet':
@@ -371,8 +365,57 @@ class GoldContent():
         csvfile.close()
 
 
-#debug
-# temp = GoldContent(nn='darknetv2', filepath='/home/fernando/Dropbox/LANSCE2017/K20_gold/darknet_v2/darknet_v2_gold.voc.2012.1K.csv')
-# prob, boxes = temp.getProbArray(imgPath='/home/carol/radiation-benchmarks/data/VOC2012/2010_003258.jpg')
-# for i in zip(prob, boxes):
-#     if i[0][0]: print i
+    """
+    This method reads a csv file and stores it into
+    __prob_array, where it is filled with all data
+    about an indexed img detection
+    the index is the name o the image itself
+    """
+
+    def darknetV3Constructor(self, filePath):
+        csvfile = open(filePath, 'rb')
+
+        spamreader = csv.reader(csvfile, delimiter=';')
+        header = next(spamreader)
+        #  thresh; hier_tresh; img_list_size; img_list_path; config_file;config_data;model;weights;tensor_core;
+
+        self.__thesh = float(header[0])
+        self.__hierThresh = float(header[1])
+        self.__plistSize = int(header[2])
+        self.__imgListPath = str(header[3])
+        self.__configFile = str(header[4])
+        self.__cfgData = str(header[5])
+        self.__model = str(header[6])
+        self.__weights = str(header[7])
+        self.__tensor_core = bool(header[8])
+
+        for i in range(0, self.__plistSize):
+            row = next(spamreader)
+            imgName = str(row[0])
+            nboxes = int(row[1])
+            self.__prob_array[imgName] = {}
+            self.__prob_array[imgName]['nboxes'] = nboxes
+            self.__prob_array[imgName]['probs'] = []
+
+            for img in range(0, nboxes):
+                self.__prob_array[imgName]['probs'].append(self.readProbsAndBoxesV3(spamreader))
+
+        csvfile.close()
+
+    def readProbsAndBoxesV3(self, spamreader):
+        probRes = []
+        row = next(spamreader)
+        objectness = float(row[0])
+        sort_class = int(row[1])
+        b_x = float(row[2])
+        b_y = float(row[3])
+        b_w = float(row[4])
+        b_h = float(row[5])
+        # classes = int(row[6])
+        box = Rectangle.Rectangle(b_x, b_y, b_w, b_h)
+
+        row = next(spamreader)
+        for cl in row:
+            probRes.append(float(cl))
+
+        return probRes, box
