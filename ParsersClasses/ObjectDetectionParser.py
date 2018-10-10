@@ -10,6 +10,7 @@ import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
 
+
 class ObjectDetectionParser(Parser):
     __metaclass__ = ABCMeta
     # precisionRecallObj = None
@@ -65,7 +66,7 @@ class ObjectDetectionParser(Parser):
     _rowDetErrors = None
     _colDetErrors = None
 
-    #precision and recall classes
+    # precision and recall classes
     _precisionClasses = None
     _recallClasses = None
 
@@ -149,7 +150,8 @@ class ObjectDetectionParser(Parser):
         # Create a Rectangle patch
         # print str(self.__class__)
         for rG in rectanglesGold:
-            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
+            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(
+                    self.__class__) or "DarknetV3Parser" in str(self.__class__):
                 rect = patches.Rectangle((rG.left, rG.top), rG.width,
                                          rG.height, linewidth=1, edgecolor='g',
                                          facecolor='none')
@@ -165,7 +167,8 @@ class ObjectDetectionParser(Parser):
 
         for rF in rectanglesFound:
             # darknet represents inverted coordinates
-            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(self.__class__):
+            if "DarknetV1Parser" in str(self.__class__) or "DarknetV2Parser" in str(
+                    self.__class__) or "DarknetV3Parser" in str(self.__class__):
                 rectF = patches.Rectangle((rF.left, rF.top), rF.width,
                                           rF.height, linewidth=1, edgecolor='g',
                                           facecolor='none')
@@ -190,6 +193,7 @@ class ObjectDetectionParser(Parser):
     found: detected classes
     gold: ground truth and gold
     """
+
     def _perfMeasure(self, found, gold):
         # precision
         outPositive = 0

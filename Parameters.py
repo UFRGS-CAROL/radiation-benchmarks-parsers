@@ -3,6 +3,7 @@
 ############################################################################################
 
 # IMG_OUTPUT_DIR is the directory to where the images with error comparisons will be saved
+# IMG_OUTPUT_DIR = '/tmp/img_darknet_v3_errors'
 IMG_OUTPUT_DIR = ''
 
 GOLD_BASE_DIR = {
@@ -75,7 +76,7 @@ RESNET_CLASSES_PATH = "../src/cuda/resnet_torch/fb.resnet.torch/pretrained/image
 ############################################################################################
 #################################OVERALL PARAMETERS ########################################
 ############################################################################################
-LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/PESQUISA/git_pesquisa/radiation-benchmarks'
+LOCAL_RADIATION_BENCH = '/mnt/4E0AEF320AEF15AD/radiation-benchmarks'
 
 # if var check_csvs is true this values must have the csvs datapath
 # _ecc_on is mandatory only for boards that have ecc memory
@@ -180,7 +181,7 @@ def setBenchmarks(**kwargs):
                                                        goldBaseDir=GOLD_BASE_DIR,
                                                        datasets=DARKNET_DATASETS
                                                        )
-        if i == 'darknetv3':
+        if i in ['darknet_v3_single', 'darknet_v3_half', 'darknet_v3_double']:
             from ParsersClasses import DarknetV3Parser
             benchObj = DarknetV3Parser.DarknetV3Parser(prThreshold=pr_threshold,
                                                        imgOutputDir=IMG_OUTPUT_DIR,

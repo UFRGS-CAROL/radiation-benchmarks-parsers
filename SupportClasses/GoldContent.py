@@ -97,6 +97,10 @@ class GoldContent:
         except:
             raise
 
+    def getNboxes(self, imgPath):
+        if self.__nn == 'darknetv3':
+            return self.__prob_array[imgPath]['nboxes']
+
     def getTotalSize(self):
         return self.__totalSize
 
@@ -405,8 +409,8 @@ class GoldContent:
     def readProbsAndBoxesV3(self, spamreader):
         probRes = []
         row = next(spamreader)
-        objectness = float(row[0])
-        sort_class = int(row[1])
+        # objectness = float(row[0])
+        # sort_class = int(row[1])
         b_x = float(row[2])
         b_y = float(row[3])
         b_w = float(row[4])
@@ -415,7 +419,8 @@ class GoldContent:
         box = Rectangle.Rectangle(b_x, b_y, b_w, b_h)
 
         row = next(spamreader)
+        # removing \n character
+        row.pop()
         for cl in row:
             probRes.append(float(cl))
-
         return probRes, box

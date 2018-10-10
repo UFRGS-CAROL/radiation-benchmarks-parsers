@@ -60,7 +60,7 @@ class Rectangle():
         copy_obj.top = self.top
         return copy_obj
 
-    def __deepcopy__(self):
+    def __deepcopy__(self, memo):
         # print "passou no deepcopy"
         copy_obj = Rectangle(0, 0, 0, 0)
         copy_obj.left = self.left
@@ -117,8 +117,8 @@ class Rectangle():
             for y in xrange(self.bottom, self.top):
                 if other.left <= x <= other.right and other.bottom <= y <= other.top:
                     intersection += 1
-        # total = (self.top - self.bottom) * (self.right - self.left) + (other.top - other.bottom) * (other.right - other.left) - intersection
-        total = self.area() + other.area() - intersection
+        total = (self.top - self.bottom) * (self.right - self.left) + (other.top - other.bottom) * (other.right - other.left) - intersection
+        # total = self.area() + other.area() - intersection
 
         try:
             similarity = (float(intersection) / float(total))
