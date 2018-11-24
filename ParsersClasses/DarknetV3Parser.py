@@ -1,3 +1,5 @@
+import math
+
 from ObjectDetectionParser import ObjectDetectionParser
 import re
 import os
@@ -83,16 +85,32 @@ class DarknetV3Parser(ObjectDetectionParser):
             rect = deepcopy(t[1])
             foundObjs.append([probs, rect])
 
+        # print "\n", len(goldObjs), imgFilename
+
         for y in errList:
             detection = y['detection']
             if y['type'] == "coord":
-                foundObjs[detection][1] = Rectangle.Rectangle(y['x_r'], y['y_r'], y['w_r'], y['h_r'])
+                try:
+                    foundObjs[detection][1] = Rectangle.Rectangle(y['x_r'], y['y_r'], y['w_r'], y['h_r'])
+                except:
+                    print "\n", self._logFileName
+
             if y['type'] == "prob":
                 cls = y['class']
-                foundObjs[detection][0][cls] = y['prob_r']
+                try:
+                    foundObjs[detection][0][cls] = y['prob_r']
+                except:
+                    print "\n", self._logFileName
 
         # before keep going is necessary to filter the results
-        w, h = getImgDim(imgPath=imgFilename.replace("/home/carol/radiation-benchmarks", self._localRadiationBench))
+        try:
+            imgFilenameFull = imgFilename.replace("/home/carol/radiation-benchmarks", self._localRadiationBench)
+            w, h = getImgDim(imgPath=imgFilenameFull)
+        except:
+            imgFilenameFull = imgFilename.replace("/home/ffsantos/fernando_rad_dir/radiation-benchmarks",
+                                                         self._localRadiationBench)
+            w, h = getImgDim(imgPath=imgFilenameFull)
+
         gValidRects, gValidProbs, gValidClasses = self.__filterResults(objs=goldObjs, h=h, w=w)
         fValidRects, gValidProbs, fValidClasses = self.__filterResults(objs=foundObjs, h=h, w=w)
 
@@ -116,7 +134,7 @@ class DarknetV3Parser(ObjectDetectionParser):
 
         if self._imgOutputDir and (self._precision != 1 or self._recall != 1
                                    or self._precisionClasses != 1 or self._recall != 1):
-            drawImgFileName = imgFilename.replace("/home/carol/radiation-benchmarks", self._localRadiationBench)
+            drawImgFileName = imgFilenameFull
             gValidRectsDraw = [
                 Rectangle.Rectangle(left=int(i.left), bottom=int(i.top), width=int(i.width), height=int(i.height),
                                     right=int(i.right), top=int(i.bottom)) for i in gValidRects]
@@ -142,7 +160,15 @@ class DarknetV3Parser(ObjectDetectionParser):
         pureMachine = self._machine.split('-ECC')[0]
         goldKey = pureMachine + "_" + self._benchmark + "_" + self._size
         if pureMachine in self._goldBaseDir:
-            goldPath = self._goldBaseDir[pureMachine] + "/darknet_v3/" + os.path.basename(self._goldFileName)
+            if self._isFaultInjection:
+                if 'HALF' in self._benchmark.upper():
+                    goldPath = self._goldBaseDir[pureMachine] + "/half/" + os.path.basename(self._goldFileName)
+                elif 'SINGLE' in self._benchmark.upper():
+                    goldPath = self._goldBaseDir[pureMachine] + "/single/" + os.path.basename(self._goldFileName)
+                elif 'DOUBLE' in self._benchmark.upper():
+                    goldPath = self._goldBaseDir[pureMachine] + "/double/" + os.path.basename(self._goldFileName)
+            else:
+                goldPath = self._goldBaseDir[pureMachine] + "/darknet_v3/" + os.path.basename(self._goldFileName)
         else:
             print 'not indexed machine: ', pureMachine, " set it on Parameters.py"
             return None
@@ -173,23 +199,25 @@ class DarknetV3Parser(ObjectDetectionParser):
 
             width = box.width * w
             height = box.height * h
-
-            if width > w - 1:
+            if width > w - 1 or math.isinf(width):
                 width = w - 1
 
-            if height > h - 1:
+            if height > h - 1 or math.isinf(height):
                 height = h - 1
 
             if left < 0:
                 left = 0
 
-            if right > w - 1:
+            if right > w - 1 or math.isinf(right):
                 right = w - 1
 
             if top < 0:
                 top = 0
 
-            if bot > h - 1:
+            if top > w - 1 or math.isinf(top):
+                top = w - 1
+
+            if bot > h - 1 or math.isinf(bot):
                 bot = h - 1
 
             final_prob = -1000

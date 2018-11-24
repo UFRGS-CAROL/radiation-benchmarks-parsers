@@ -17,7 +17,9 @@ GOLD_BASE_DIR = {
     'carolx1b': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1b',
     'carolx1c': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
     'carolx1a': '/home/fernando/Dropbox/UFRGS/Pesquisa/Teste_12_2016/GOLD_X1/tx1c',
-    'caroltitanx1': '/home/fernando/Dropbox/Voltas_LANSCE2018/V2_darknet_data'
+    # 'caroltitanx1': '/home/fernando/Dropbox/Voltas_LANSCE2018/V2_darknet_data',
+    'caroltitanx1': '/home/fernando/Dropbox/temp/carol_fi_inj/dac_2019/golds',
+    'blaise': '/home/fernando/Dropbox/temp/carol_fi_inj/dac_2019/golds'
 }
 
 ############################################################################################
@@ -188,7 +190,8 @@ def setBenchmarks(**kwargs):
                                                        localRadiationBench=LOCAL_RADIATION_BENCH,
                                                        check_csv=checkCsv,
                                                        goldBaseDir=GOLD_BASE_DIR,
-                                                       datasets=DARKNET_DATASETS
+                                                       datasets=DARKNET_DATASETS,
+                                                       is_fi=isFi
                                                        )
 
         if i == 'resnet':
