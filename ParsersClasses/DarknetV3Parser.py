@@ -85,20 +85,23 @@ class DarknetV3Parser(ObjectDetectionParser):
             rect = deepcopy(t[1])
             foundObjs.append([probs, rect])
 
-        # print "\n", len(goldObjs), imgFilename
-
         for y in errList:
             detection = y['detection']
             if y['type'] == "coord":
                 try:
-                    foundObjs[detection][1] = Rectangle.Rectangle(y['x_r'], y['y_r'], y['w_r'], y['h_r'])
+                    x_r = float(y['x_r'])
+
+                    y_r = float(y['y_r'])
+                    w_r = float(y['w_r'])
+                    h_r = float(y['h_r'])
+                    foundObjs[detection][1] = Rectangle.Rectangle(x_r, y_r, w_r, h_r)
                 except:
                     print "\n", self._logFileName
 
             if y['type'] == "prob":
                 cls = y['class']
                 try:
-                    foundObjs[detection][0][cls] = y['prob_r']
+                    foundObjs[detection][0][cls] = float(y['prob_r'])
                 except:
                     print "\n", self._logFileName
 
@@ -167,6 +170,8 @@ class DarknetV3Parser(ObjectDetectionParser):
                     goldPath = self._goldBaseDir[pureMachine] + "/single/" + os.path.basename(self._goldFileName)
                 elif 'DOUBLE' in self._benchmark.upper():
                     goldPath = self._goldBaseDir[pureMachine] + "/double/" + os.path.basename(self._goldFileName)
+                    print 'AQUI DOUBLE {}'.format(goldPath)
+
             else:
                 goldPath = self._goldBaseDir[pureMachine] + "/darknet_v3/" + os.path.basename(self._goldFileName)
         else:
@@ -191,14 +196,26 @@ class DarknetV3Parser(ObjectDetectionParser):
             # it is the CENTER of darknet box
             bX = box.left
             bY = box.bottom
+            bW = box.width
+            bH = box.height
 
-            left = (bX - box.width / 2.) * w
-            right = (bX + box.width / 2.) * w
-            top = (bY + box.height / 2.) * h
-            bot = (bY - box.height / 2.) * h
+            if math.isnan(bX):
+                bX = 1e10
+            if math.isnan(bY):
+                bY = 1e10
 
-            width = box.width * w
-            height = box.height * h
+            if math.isnan(bW):
+                bW = 1e10
+
+            if math.isnan(bH):
+                bH = 1e10
+            left = (bX - bW / 2.) * w
+            right = (bX + bW / 2.) * w
+            top = (bY + bH / 2.) * h
+            bot = (bY - bH / 2.) * h
+            width = bW * w
+            height = bH * h
+
             if width > w - 1 or math.isinf(width):
                 width = w - 1
 
