@@ -29,12 +29,8 @@ class GemmParser(Parser):
                 else:
                     return None
 
-
         except ValueError:
             return None
-
-
-
 
     def setSize(self, header):
         size = None
@@ -47,19 +43,3 @@ class GemmParser(Parser):
 
         self._size = str(size)
 
-
-    """
-    LEGACY METHODS SECTION
-    """
-    """
-    legacy method
-    """
-    # def __init__(self, **kwargs):
-    #     Parser.__init__(self, **kwargs)
-
-    """
-    legacy method
-    """
-    # def buildImageMethod(self):
-    #     # type: (integer) -> boolean
-    #     return False

@@ -110,7 +110,7 @@ class DarknetV3Parser(ObjectDetectionParser):
             imgFilenameFull = imgFilename.replace("/home/carol/radiation-benchmarks", self._localRadiationBench)
             w, h = getImgDim(imgPath=imgFilenameFull)
         except:
-            imgFilenameFull = imgFilename.replace("/home/ffsantos/fernando_rad_dir/radiation-benchmarks",
+            imgFilenameFull = imgFilename.replace("/home/users/ffsantos/radiation-benchmarks",
                                                          self._localRadiationBench)
             w, h = getImgDim(imgPath=imgFilenameFull)
 
@@ -170,8 +170,6 @@ class DarknetV3Parser(ObjectDetectionParser):
                     goldPath = self._goldBaseDir[pureMachine] + "/single/" + os.path.basename(self._goldFileName)
                 elif 'DOUBLE' in self._benchmark.upper():
                     goldPath = self._goldBaseDir[pureMachine] + "/double/" + os.path.basename(self._goldFileName)
-                    print 'AQUI DOUBLE {}'.format(goldPath)
-
             else:
                 goldPath = self._goldBaseDir[pureMachine] + "/darknet_v3/" + os.path.basename(self._goldFileName)
         else:

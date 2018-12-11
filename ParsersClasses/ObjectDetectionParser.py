@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
+from sklearn import metrics
 
 
 class ObjectDetectionParser(Parser):
@@ -195,35 +196,47 @@ class ObjectDetectionParser(Parser):
     """
 
     def _perfMeasure(self, found, gold):
-        # precision
-        outPositive = 0
-        for i in found:
-            for g in gold:
-                if g == i:  # (g.jaccard_similarity(i)) >= self.__threshold:
-                    outPositive += 1
-                    break
+        falsePositive = truePositive = falseNegative = 0
+        # # precision
+        # outPositive = 0
+        # for i in found:
+        #     for g in gold:
+        #         if g == i:  # (g.jaccard_similarity(i)) >= self.__threshold:
+        #             outPositive += 1
+        #             break
+        #
+        # falsePositive = len(found) - outPositive
+        #
+        # # recall
+        # truePositive = 0
+        # for i in gold:
+        #     for z in found:
+        #         if i == z:  # (i.jaccard_similarity(z)) >= self.__threshold:
+        #             truePositive += 1
+        #             break
+        # falseNegative = len(gold) - truePositive
+        if len(found) != len(gold):
+            raise ValueError("PAU")
 
-        falsePositive = len(found) - outPositive
+        print report['micro avg']['precision'], report['micro avg']['recall']
 
-        # recall
-        truePositive = 0
-        for i in gold:
-            for z in found:
-                if i == z:  # (i.jaccard_similarity(z)) >= self.__threshold:
-                    truePositive += 1
-                    break
 
-        falseNegative = len(gold) - truePositive
         return falsePositive, truePositive, falseNegative
 
     def _precisionAndRecallClasses(self, found, gold):
-        fp, tp, fn = self._perfMeasure(found, gold)
-        if tp + fn == 0:
-            self._recallClasses = 0
-        else:
-            self._recallClasses = float(tp) / float(tp + fn)
+        # fp, tp, fn = self._perfMeasure(found, gold)
+        # if tp + fn == 0:
+        #     self._recallClasses = 0
+        # else:
+        #     self._recallClasses = float(tp) / float(tp + fn)
+        #
+        # if tp + fp == 0:
+        #     self._precisionClasses = 0
+        # else:
+        #     self._precisionClasses = float(tp) / float(tp + fp)
+        pred = found[:]
+        if len(pred) < len(gold):
+            pred.extend([-1] * (len(gold) - len(pred)))
+        report = metrics.classification_report(gold, found, output_dict=True)
 
-        if tp + fp == 0:
-            self._precisionClasses = 0
-        else:
-            self._precisionClasses = float(tp) / float(tp + fp)
+        self._precisionClasses, self._recallClasses = report['micro avg']['precision'], report['micro avg']['recall']
