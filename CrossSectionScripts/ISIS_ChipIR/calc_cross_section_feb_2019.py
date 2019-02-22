@@ -128,7 +128,7 @@ def check_distance_factor(distance_data, start_dt, board):
             if t['start'] <= start_dt <= t['end']:
                 return calc_distance_factor(last)
 
-    return last
+    return calc_distance_factor(last)
 
 
 def get_distance_data(distance_factor_file):
