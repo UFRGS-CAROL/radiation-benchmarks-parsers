@@ -110,35 +110,25 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
 
 
 def calc_distance_factor(x):
-    return 400.0 / ((x + 20.0) * (x + 20.0))
+    # 196/((B4/100 + 14) * (B4/100 + 14))
+    return 196 / ((x / 100.0 + 14) * (x / 100.0 + 14))
 
 
 def convert_date(date_to_convert):
-    date, hr = date_to_convert.split(" ")
-    yv = date.split('/')
-    day = int(yv[0])
-    month = int(yv[1])
-    year = 2018
-    dv = hr.split(':')
-    hour = int(dv[0])
-    minute = int(dv[1])
-    second = 0
-    # we get secFrac in seconds, so we must convert to microseconds
-    # e.g: 0.100 seconds = 100 milliseconds = 100000 microseconds
-    microsecond = 0
-    return datetime(year, month, day, hour, minute, second, microsecond)
+    format = '%m/%d/%Y %I:%M:%S %p'
+    return datetime.strptime(date_to_convert, format)
 
 
 def check_distance_factor(distance_data, start_dt, board):
+    last = None
     for t in distance_data:
-        last = t
-        if t['board'] in board and t['start'] <= start_dt <= t['end']:
-            return float(t['Distance attenuation'])
-        if 'carolapu-1' in board and t['board'] == "APU1":
-            return float(t['Distance attenuation'])
 
-    print(last['start'], start_dt, last['end'])
-    return None
+        if t['board'] in board:
+            last = float(t['distance'])
+            if t['start'] <= start_dt <= t['end']:
+                return calc_distance_factor(last)
+
+    return last
 
 
 def get_distance_data(distance_factor_file):
