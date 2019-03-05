@@ -6,7 +6,7 @@ from Parser import Parser
 class CachesParser(Parser):
     # overiding csvheader
     _csvHeader = ["logFileName", "Machine", "Benchmark", "SDC_Iteration", "#Accumulated_Errors",
-                  "#Iteration_Errors", "header"]
+                  "#Iteration_Errors", "zeroToOne", "oneToZero", "cachLineErrors", "singleErrors", "header"]
 
     __cacheLineSize = 128  # size in bytes
 
@@ -63,6 +63,18 @@ class CachesParser(Parser):
         if len(errList) <= 0:
             return
 
+        self.__cacheLineErrors = 0
+        self.__singleErrors = 0
+
+        self.__zeroToOne = 0
+        self.__oneToZero = 0
+        # get the 0 to 1, or 1 to 0 errors
+        for err in errList:
+            binaryExpected = bin(err["e"])
+            binaryRead = bin(err["r"])
+            print(binaryExpected, binaryRead)
+
+
         errListSorted = sorted(errList, key=lambda k: k['i'])
         cacheLinesAffected = [i['i'] for i in errList]
         # cacheLinesAffected.sort()
@@ -84,15 +96,9 @@ class CachesParser(Parser):
             vSize = self.__sharedMem / self.__cacheLineSize
 
         for sm in range(self.__numberSms):
-
             for threads in range(vSize):
                 lowerBound = sm * threads
                 upperBound = sm * threads + self.__cacheLineSize
-                i =
-                if lowerBound <=
-
-
-
 
 
 
@@ -109,4 +115,8 @@ class CachesParser(Parser):
                                  self._sdcIteration,
                                  self._accIteErrors,
                                  self._iteErrors,
+                                 self.__zeroToOne,
+                                 self.__oneToZero,
+                                 self.__cacheLineErrors,
+                                 self.__singleErrors,
                                  self._header]
