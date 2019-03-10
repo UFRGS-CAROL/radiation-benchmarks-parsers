@@ -1,6 +1,5 @@
 import re
 from abc import ABCMeta, abstractmethod
-# from PIL import Image
 import struct
 from sklearn.metrics import jaccard_similarity_score
 import os
@@ -142,17 +141,17 @@ class Parser():
     """
 
     def debugAttPrint(self):
-        print "*******Var values*******"
-        print "log file", self._logFileName
-        print "machine", self._machine
-        print "acc ite errors", self._accIteErrors
-        print "bencharmk", self._benchmark
-        print "header", self._header
-        print "sdcIterators", self._sdcIteration
-        print "iteErrors", self._iteErrors
-        print "size", self._size
-        print "dir name", self._dirName
-        print "third dimention", self._hasThirdDimention
+        print("*******Var values*******")
+        print("log file", self._logFileName)
+        print("machine", self._machine)
+        print("acc ite errors", self._accIteErrors)
+        print("bencharmk", self._benchmark)
+        print("header", self._header)
+        print("sdcIterators", self._sdcIteration)
+        print("iteErrors", self._iteErrors)
+        print("size", self._size)
+        print("dir name", self._dirName)
+        print("third dimention", self._hasThirdDimention)
 
     """
     This method will set all attributes that were first defined by Daniel on the first script
@@ -299,7 +298,7 @@ class Parser():
         for err in errList:
             relError = 0.0
             # this is only to support N dimentional errors
-            for i in xrange(firstElement, lastElement + 1, 2):
+            for i in range(firstElement, lastElement + 1, 2):
                 if err[i] is None or err[i + 1] is None:
                     continue
                 read = float(err[i])
@@ -473,7 +472,7 @@ class Parser():
 
             except:
                 # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
-                print "Error on writing row to " + str(csvFileName)
+                print("Error on writing row to " + str(csvFileName))
                 raise
 
     """
@@ -578,125 +577,3 @@ class Parser():
                     pass
 
         return False
-
-    """
-    LEGACY METHODS SECTION
-    """
-    """
-    legacy method
-    """
-
-    # def _buildImage(self, errors, size, filename):
-    #     # identifica em qual posicao da matriz ocorreram os erros
-    #     # definindo as bordas [esquerda, cabeca, direita, pe]
-    #     err_limits = [int(size), int(size), 0, 0]
-    #     for error in errors:
-    #         if int(error[0]) < err_limits[0]:
-    #             err_limits[0] = int(error[0])
-    #         if int(error[0]) > err_limits[2]:
-    #             err_limits[2] = int(error[0])
-    #         if int(error[1]) < err_limits[1]:
-    #             err_limits[1] = int(error[1])
-    #         if int(error[1]) > err_limits[3]:
-    #             err_limits[3] = int(error[1])
-    #
-    #     # adiciona 5 pontos em cada lado para visualizacao facilitada
-    #     # verifica que isso nao ultrapassa os limites da matriz
-    #     err_limits[0] -= 5
-    #     err_limits[1] -= 5
-    #     err_limits[2] += 5
-    #     err_limits[3] += 5
-    #     if err_limits[0] < 0:
-    #         err_limits[0] = 0
-    #     if err_limits[1] < 0:
-    #         err_limits[1] = 0
-    #     if err_limits[2] > size:
-    #         err_limits[2] = size
-    #     if err_limits[3] > size:
-    #         err_limits[3] = size
-    #
-    #     # define uma imagem com o dobro do tamanho, para poder adicionar as guias
-    #     # (o quadriculado)
-    #     size_x = (err_limits[2] - err_limits[0]) * 2 + 1
-    #     size_y = (err_limits[3] - err_limits[1]) * 2 + 1
-    #     img = Image.new("RGB", (size_x, size_y), "white")
-    #
-    #     n = 0
-    #
-    #     # adiciona os erros a imagem
-    #     for error in errors:
-    #         n += 1
-    #         try:
-    #             if (n < 499):
-    #                 img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
-    #                              (255, 0, 0))
-    #             else:
-    #                 img.putpixel(((int(error[0]) - err_limits[0]) * 2, (int(error[1]) - err_limits[1]) * 2),
-    #                              (0, 0, 255))
-    #         except IndexError:
-    #             print ("Index error: ", error[0], ";", err_limits[0], ";", error[1], ";", err_limits[1])
-    #
-    #     # adiciona as guias (quadriculado)
-    #     if (size_x < 512) and (size_y < 512):
-    #         for y in range(size_y):
-    #             for x in range(size_x):
-    #                 if (x % 2) == 1 or (y % 2) == 1:
-    #                     img.putpixel((x, y), (240, 240, 240))
-    #
-    #     if not os.path.exists(os.path.dirname(filename)):
-    #         try:
-    #             os.makedirs(os.path.dirname(filename))
-    #         except OSError as exc:  # Guard against race condition
-    #             if exc.errno != errno.EEXIST:
-    #                 raise
-    #
-    #     img.save(filename + '.png')
-
-
-
-    """
-    legacy method
-    """
-    # def _setCheckRunsCsvsAndOpen(self, csvSummaries):
-    #     if self._isFaultInjection or csvSummaries == None:
-    #         return
-    #     else:
-    #         self._checkRunsCsv = csvSummaries
-
-    """legacy method"""
-    # @abstractmethod
-    # def getBenchmark(self):
-    #     raise NotImplementedError
-
-    """legacy method"""
-    # def setBuildImage(self, val):
-    #     self.__buildImage = True
-
-    """legacy method"""
-    # """
-    # if the csvHeader must be different,
-    # the variable must be set to the other value,
-    # so getCSVHeader will return other constant
-    # """
-    #
-    # def getCSVHeader(self):
-    #     return self._csvHeader
-
-    """
-    legacy method
-    """
-    # def getImageIndex(self):
-    #     return self._imageIndex
-
-    """
-    legacy method
-    """
-    # def setImageIndex(self, imageIndex):
-    #     self._imageIndex = imageIndex
-
-
-    """
-    legacy method
-    """
-    # def getHasThirdDimention(self):
-    #     return self._hasThirdDimention

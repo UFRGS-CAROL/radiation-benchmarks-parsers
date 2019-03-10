@@ -68,28 +68,29 @@ class CachesParser(Parser):
 
         self.__zeroToOne = 0
         self.__oneToZero = 0
+
+        self.__SBF = 0
+        self.__MBF = 0
         # get the 0 to 1, or 1 to 0 errors
         for err in errList:
-            binaryExpected = bin(err["e"])
-            binaryRead = bin(err["r"])
-            print(binaryExpected, binaryRead)
+            expected = int(err['e'])
+            read = int(err['r'])
+            xor = bin(expected ^ read)
+            countOnes = xor.count('1')
+            if countOnes > 1:
+                self.__MBF += 1
+            elif countOnes == 1:
+                self.__SBF += 1
 
+            # Count the 0 to 1
+            if expected == 0 and read != 0:
+                self.__zeroToOne += 1
+            # Count the 1 to 0
+            if expected != 0 and read < expected:
+                self.__oneToZero += 1
 
-        errListSorted = sorted(errList, key=lambda k: k['i'])
-        cacheLinesAffected = [i['i'] for i in errList]
-        # cacheLinesAffected.sort()
-        # listOfPatternsUnitary = []
-        # listOfPatternsUnitary.append([cacheLinesAffected[0]])
-        #
-        # for i in range(1, len(cacheLinesAffected)):
-        #     element = cacheLinesAffected[i]
-        #
-        #     if cacheLinesAffected[i] - cacheLinesAffected[i - 1] == 1:
-        #         listOfPatternsUnitary[-1].append(element)
-        #     else:
-        #         listOfPatternsUnitary.append([element])
-
-        vSize =  self.__l1Size / self.__cacheLineSize
+        # Check which lines were corrupted by the single event
+        vSize = self.__l1Size / self.__cacheLineSize
         if self.__testMode == "L2":
             vSize = self.__l2Size / self.__cacheLineSize
         elif self.__testMode == "SHARED":
@@ -99,8 +100,6 @@ class CachesParser(Parser):
             for threads in range(vSize):
                 lowerBound = sm * threads
                 upperBound = sm * threads + self.__cacheLineSize
-
-
 
     def localityParser(self):
         pass

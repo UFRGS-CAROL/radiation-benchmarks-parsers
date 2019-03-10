@@ -108,7 +108,7 @@ SUMMARIES_FILES = {
                '/summaries-fission.csv', 'data': None},
 
     'carol-tx': '', 'data': None,
-    'carol-k402': '', 'data': None
+    # 'carol-k402': '', 'data': None
 }
 
 # --- new ERROR Threshold method
@@ -142,10 +142,10 @@ def setBenchmarks(**kwargs):
 
     # I wish that importing only the selected benchmarks
     # will make things faster
-    print "Parsing for: ",
+    print("Parsing for: "),
     for i in benchmarks:
         benchObj = None
-        print i,
+        print(i),
         # darknet is the first version of tested darknet, until master degree dissertation
         if i == 'darknet':
             from ParsersClasses import DarknetParser
@@ -316,14 +316,13 @@ def setBenchmarks(**kwargs):
         elif i in ['shared', 'l1', 'l2']:
             from ParsersClasses import CachesParser
             benchObj = CachesParser.CachesParser(localRadiationBench=LOCAL_RADIATION_BENCH,
-                                                                  check_csv=checkCsv,
-                                                                  ecc=ecc,
-                                                                  parse_err_histogram=parse_err_histogram)
+                                                 check_csv=checkCsv,
+                                                 ecc=ecc,
+                                                 parse_err_histogram=parse_err_histogram)
 
-
-        elif benchObj == None:
-            print "\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system"
+        elif benchObj is None:
+            print("\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system")
 
         radiationBenchmarks[i] = benchObj
 
-    print ""
+    print("")
