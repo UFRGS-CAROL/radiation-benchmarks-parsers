@@ -1,6 +1,5 @@
 import numpy
 import csv
-from math import *
 from SupportClasses import Rectangle
 import os
 import re

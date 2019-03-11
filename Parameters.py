@@ -317,8 +317,7 @@ def setBenchmarks(**kwargs):
             from ParsersClasses import CachesParser
             benchObj = CachesParser.CachesParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
-                                                 ecc=ecc,
-                                                 parse_err_histogram=parse_err_histogram)
+                                                 ecc=ecc)
 
         elif benchObj is None:
             print("\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system")

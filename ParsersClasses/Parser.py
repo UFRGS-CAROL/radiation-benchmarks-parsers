@@ -12,7 +12,7 @@ from datetime import datetime
 """Base class for parser, need to be implemented by each benchmark"""
 
 
-class Parser():
+class Parser:
     __metaclass__ = ABCMeta
     # error bounds for relative error analysis, default is 0%, 2% and 5%
     __errorLimits = [0.0, 2.0, 5.0]
@@ -111,15 +111,15 @@ class Parser():
             limitRange = int(parseForHistogram["LIMIT_RANGE"])
             self.__errorLimits = [float(i) / precision for i in range(0, precision * limitRange + 1)]
 
-        self._keys = ["errorLimit" + str(i) for i in self.__errorLimits]
-        self.__firstKey = self._keys[0]
+            self._keys = ["errorLimit" + str(i) for i in self.__errorLimits]
+            self.__firstKey = self._keys[0]
 
-        if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader and self._extendHeader:
-            # for python list interpretation is faster than a concatenated loop
-            self._csvHeader.extend("relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits)
-            self._csvHeader.extend("jaccard_>_" + str(threshold) for threshold in self.__errorLimits)
-            self._csvHeader.extend(
-                t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes)
+            if "relative_errors_<=_" + str(self.__errorLimits[0]) not in self._csvHeader and self._extendHeader:
+                # for python list interpretation is faster than a concatenated loop
+                self._csvHeader.extend("relative_errors_<=_" + str(threshold) for threshold in self.__errorLimits)
+                self._csvHeader.extend("jaccard_>_" + str(threshold) for threshold in self.__errorLimits)
+                self._csvHeader.extend(
+                    t + "_>" + str(threshold) for threshold in self.__errorLimits for t in self.__relativeErrorTypes)
 
         try:
             self._isFaultInjection = bool(kwargs.pop("is_fi"))
