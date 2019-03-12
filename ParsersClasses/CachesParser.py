@@ -18,25 +18,19 @@ class CachesParser(Parser):
             reg_or_cache = "register"
 
         # ERR  i:1589618 cache_line:12418 e:255 r:253 hits: 30720 false_hit: 0
-        pattern = ".*i\:(\d+).*" + reg_or_cache + "\:(\d+).*e\:(\d+).*r\:(\d+).*hits\: (\d+).*false_hit\: (\d+).*"
+        pattern = ".*ERR.*i\:(\d+).*" + reg_or_cache + "\:(\d+).*e\:(\d+).*r\:(\d+).*hits\: (\d+).*false_hit\: (\d+).*"
         m = re.match(pattern, errString)
+
+        ret = None
         if m:
             ret = {}
-            i = 1
-            ret["i"] = int(m.group(i))
-            i += 1
-            ret[reg_or_cache] = int(m.group(i))
-            i += 1
-            ret["e"] = int(m.group(i))
-            i += 1
-            ret["r"] = int(m.group(i))
-            i += 1
-            ret["hits"] = int(m.group(i))
-            i += 1
-            ret["false_hit"] = int(m.group(i))
-            return ret
-        else:
-            return None
+            ret["i"] = int(m.group(1))
+            ret[reg_or_cache] = int(m.group(2))
+            ret["e"] = int(m.group(3))
+            ret["r"] = int(m.group(4))
+            ret["hits"] = int(m.group(5))
+            ret["false_hit"] = int(m.group(6))
+        return ret
 
     def setSize(self, header):
         # iterations: 100000 board: TITAN V number_sms: 80 shared_mem: 98304 l2_size: 4718592 one_second_cycles: 0 test_mode: L1
@@ -61,12 +55,12 @@ class CachesParser(Parser):
                                                                                 self.__testMode)
 
     def _relativeErrorParser(self, errList):
-        self.__cacheLineErrors = 0
-        self.__SBF = 0
-        self.__MBF = 0
-        self.__zeroToOne = 0
-        self.__oneToZero = 0
-        self.__smsCorrupted = 0
+        self._cacheLineErrors = 0
+        self._SBF = 0
+        self._MBF = 0
+        self._zeroToOne = 0
+        self._oneToZero = 0
+        self._smsCorrupted = 0
 
         if len(errList) <= 0 or self.__testMode == 'REGISTERS':
             return
@@ -78,21 +72,21 @@ class CachesParser(Parser):
             read = err['r']
 
             # save for future uses
-            errorDict[err['i']] = [expected, read]
+            errorDict[err['i']] = True
 
             xor = bin(expected ^ read)
             countOnes = xor.count('1')
             if countOnes > 1:
-                self.__MBF += 1
+                self._MBF += 1
             elif countOnes == 1:
-                self.__SBF += 1
+                self._SBF += 1
 
             # Count the 0 to 1
             if expected == 0 and read != 0:
-                self.__zeroToOne += 1
+                self._zeroToOne += 1
             # Count the 1 to 0
             if expected != 0 and read < expected:
-                self.__oneToZero += 1
+                self._oneToZero += 1
 
         # Check which lines were corrupted by the single event
         vSize = self.__l1Size / self.__cacheLineSize
@@ -104,27 +98,21 @@ class CachesParser(Parser):
         vSize = int(vSize)
 
         for sm in range(self.__numberSms):
-            linesCorrupted = False
-
+            smError = False
             for thread in range(vSize):
                 bytesCorrupted = 0
                 for byte in range(self.__cacheLineSize):
-                    i = str(sm * vSize + thread - byte)
-                    try:
-                        e = errorDict[i][0]
-                        r = errorDict[i][1]
+                    i = (sm * vSize + thread) * self.__cacheLineSize + byte
+                    if i in errorDict:
                         bytesCorrupted += 1
-                    except:
-                        pass
-                if bytesCorrupted > 0:
-                    linesCorrupted = True
 
-                    # bigger than a word size
-                    if bytesCorrupted > self.__wordSize:
-                        self.__cacheLineErrors += 1
+                smError = bytesCorrupted
 
-            if linesCorrupted:
-                self.__smsCorrupted += 1
+                # bigger than a word size
+                if bytesCorrupted > self.__wordSize:
+                    self._cacheLineErrors += 1
+
+            self._smsCorrupted += int(smError)
 
     def localityParser(self):
         pass
@@ -139,10 +127,10 @@ class CachesParser(Parser):
                                  self._sdcIteration,
                                  self._accIteErrors,
                                  self._iteErrors,
-                                 self.__zeroToOne,
-                                 self.__oneToZero,
-                                 self.__cacheLineErrors,
-                                 self.__SBF,
-                                 self.__MBF,
-                                 self.__smsCorrupted,
+                                 self._zeroToOne,
+                                 self._oneToZero,
+                                 self._cacheLineErrors,
+                                 self._SBF,
+                                 self._MBF,
+                                 self._smsCorrupted,
                                  self._header]
