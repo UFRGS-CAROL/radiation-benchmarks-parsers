@@ -63,6 +63,12 @@ class CachesParser(Parser):
         self._smsCorrupted = 0
 
         if len(errList) <= 0 or self.__testMode == 'REGISTERS':
+            self._cacheLineErrors = -1
+            self._SBF = -1
+            self._MBF = -1
+            self._zeroToOne = -1
+            self._oneToZero = -1
+            self._smsCorrupted = -1
             return
 
         errorDict = {}
@@ -80,6 +86,9 @@ class CachesParser(Parser):
                 self._MBF += 1
             elif countOnes == 1:
                 self._SBF += 1
+
+            if expected != read and countOnes == 0:
+                print "\nPau log ", self._logFileName, self._sdcIteration
 
             # Count the 0 to 1
             if expected == 0 and read != 0:
@@ -106,7 +115,8 @@ class CachesParser(Parser):
                     if i in errorDict:
                         bytesCorrupted += 1
 
-                smError = bytesCorrupted
+                if bytesCorrupted != 0:
+                    smError = True
 
                 # bigger than a word size
                 if bytesCorrupted > self.__wordSize:

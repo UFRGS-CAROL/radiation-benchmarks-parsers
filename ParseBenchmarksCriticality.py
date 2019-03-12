@@ -5,6 +5,7 @@ from SupportClasses import WriteSDCDatabase
 import shelve
 import argparse
 import Parameters as par
+from threading import Thread
 
 
 def parseErrors(benchmarkname_machinename, sdcItemList):
@@ -93,6 +94,30 @@ def parse_args():
     return args
 
 
+def multithread_parser(errorDatabase):
+    maxThreads = 4
+    # open the shelve error database
+    db = shelve.open(errorDatabase)
+    # process each benchmark class
+    jobs = [(parseErrors, k, v) for k, v in db.iteritems()]
+    db.close()
+
+    for element in range(0, len(jobs), maxThreads):
+        listQuee = []
+        for worker in range(maxThreads):
+            target = jobs[element + worker][0]
+            k = jobs[element + worker][1]
+            v = jobs[element + worker][2]
+            listQuee.append(Thread(target=target, args=(k, v,)))
+
+        for job in listQuee:
+            job.start()
+
+        for job in listQuee:
+            job.join()
+
+
+
 ###########################################
 # MAIN
 ###########################################'
@@ -130,3 +155,4 @@ if __name__ == '__main__':
             parseErrors(k, v)
 
         db.close()
+        # multithread_parser(args.error_database)
