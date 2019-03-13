@@ -87,9 +87,6 @@ class CachesParser(Parser):
             elif countOnes == 1:
                 self._SBF += 1
 
-            if expected != read and countOnes == 0:
-                print "\nPau log ", self._logFileName, self._sdcIteration
-
             # Count the 0 to 1
             if expected == 0 and read != 0:
                 self._zeroToOne += 1
@@ -104,11 +101,9 @@ class CachesParser(Parser):
         elif self.__testMode == "SHARED":
             vSize = self.__sharedMem / self.__cacheLineSize
 
-        vSize = int(vSize)
-
         for sm in range(self.__numberSms):
             smError = False
-            for thread in range(vSize):
+            for thread in range(int(vSize)):
                 bytesCorrupted = 0
                 for byte in range(self.__cacheLineSize):
                     i = (sm * vSize + thread) * self.__cacheLineSize + byte
