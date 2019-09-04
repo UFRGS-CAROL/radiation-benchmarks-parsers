@@ -90,31 +90,40 @@ def parse_args():
                         default=False,
                         action='store_true')
 
+    parser.add_argument('--multithread', dest='multithread', help='If multithread is activated each '
+                                                                  'benchmark will be parsed in a thread',
+                                                                    default=False, action='store_true')
+
     args = parser.parse_args()
     return args
 
 
 def multithread_parser(errorDatabase):
-    maxThreads = 4
     # open the shelve error database
     db = shelve.open(errorDatabase)
     # process each benchmark class
-    jobs = [(parseErrors, k, v) for k, v in db.iteritems()]
+    listQuee = []
+    data = [(k, v) for k, v in db.iteritems()]
     db.close()
+    for k, v in data:
+        th = Thread(target=parseErrors, args=(k, v,))
+        listQuee.append(th)
+        th.start()
 
-    for element in range(0, len(jobs), maxThreads):
-        listQuee = []
-        for worker in range(maxThreads):
-            target = jobs[element + worker][0]
-            k = jobs[element + worker][1]
-            v = jobs[element + worker][2]
-            listQuee.append(Thread(target=target, args=(k, v,)))
+    for job in listQuee:
+        job.join()
 
-        for job in listQuee:
-            job.start()
 
-        for job in listQuee:
-            job.join()
+def sequential_parser(errorDatabase):
+    # open the shelve error database
+    db = shelve.open(args.error_database)
+
+    # process each benchmark class
+    for k, v in db.iteritems():
+        print("Processing ", k)
+        parseErrors(k, v)
+
+    db.close()
 
 
 
@@ -146,13 +155,7 @@ if __name__ == '__main__':
             parse_err_histogram=args.parse_err_histogram
         )
 
-        # open the shelve error database
-        db = shelve.open(args.error_database)
-
-        # process each benchmark class
-        for k, v in db.iteritems():
-            print("Processing ", k)
-            parseErrors(k, v)
-
-        db.close()
-        # multithread_parser(args.error_database)
+        if args.multithread:
+            multithread_parser(args.error_database)
+        else:
+            sequential_parser(args.error_database)
