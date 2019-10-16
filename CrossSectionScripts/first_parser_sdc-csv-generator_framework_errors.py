@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 import csv
 import re
 from datetime import timedelta, datetime
@@ -106,13 +105,13 @@ for fi in all_logs:
 
         with open('./' + folder_p + '/logs_parsed_' + machine_name + '.csv', 'a') as fp, open(
                 './' + folder_p + '/logs_parsed_problematics_' + machine_name + '.csv', 'a') as fp_problem:
-            good_fp = csv.writer(fp, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            problem_fp = csv.writer(fp_problem, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            good_fp = csv.writer(fp, delimiter=';')  # , quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            problem_fp = csv.writer(fp_problem, delimiter=';')  # , quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
             if machine_name not in machine_dict:
                 machine_dict[machine_name] = 1
-                good_fp.writerow(header_csv)
-                problem_fp.writerow(header_csv)
+                good_fp.writerow(header_csv.split(";"))
+                problem_fp.writerow(header_csv.split(";"))
 
                 print("Machine first time: " + machine_name)
 
@@ -136,99 +135,107 @@ for csvFileName in good_csv_files:
     print("in: " + csvFileName)
     print("out: " + csvOutFileName)
 
-    csvFP = open(csvFileName, "r")
-    reader = csv.reader(csvFP, delimiter=';')
-    csvWFP = open(csvOutFileName, "w")
-    writer = csv.writer(csvWFP, delimiter=';')
+    # csvFP = open(csvFileName, "r")
+    # csvWFP = open(csvOutFileName, "w")
+    # csvWFP2 = open(summariesFile, "a") # summary
+    with open(csvFileName, "r") as csvFP, open(csvOutFileName, "w") as csvWFP, open(summariesFile, "a") as csvWFP2:
 
-    ##################summary
-    csvWFP2 = open(summariesFile, "a")
-    writer2 = csv.writer(csvWFP2, delimiter=';')
-    writer2.writerow([])
-    writer2.writerow([csvFileName])
-    headerW2 = ["start timestamp", "end timestamp", "benchmark", "header detail", "#lines computed", "#SDC", "#AccTime",
-                "#(Abort==0 and END==0)"]
-    writer2.writerow(headerW2)
-    ##################
+        reader = csv.reader(csvFP, delimiter=';')
+        writer = csv.writer(csvWFP, delimiter=';')
+        writer2 = csv.writer(csvWFP2, delimiter=';')
 
-    csvHeader = next(reader, None)
+        writer2.writerow([])
+        writer2.writerow([csvFileName])
+        headerW2 = ["start timestamp", "end timestamp", "benchmark", "header detail",
+                    "#lines computed", "#SDC", "#AccTime",
+                    "#(Abort==0 and END==0)", "framework_error"]
+        writer2.writerow(headerW2)
+        ##################
 
-    writer.writerow(csvHeader)
+        csvHeader = next(reader, None)
 
-    lines = list(reader)
+        writer.writerow(csvHeader)
 
-    i = 0
-    size = len(lines)
-    while i < size:
-        if re.match("Time", lines[i][0]):
+        lines = list(reader)
+
+        i = 0
+        size = len(lines)
+
+        while i < size:
+            if re.match("Time", lines[i][0]):
+                i += 1
+
+            startDT = datetime.strptime(lines[i][0].strip(), "%c")
+            ##################summary
+            benchmark = lines[i][2]
+            inputDetail = lines[i][3]
+            ##################
+            # print "date in line "+str(i)+": ",startDT
+            j = i
+            accTimeS = float(lines[i][6])
+            sdcS = int(lines[i][4])
+            abortZeroS = 0
+            frameworkErrors = 0
+
+            if int(lines[i][7]) == 0:
+                abortZeroS += 1
+            writer.writerow(lines[i])
+            if i + 1 < size:
+                try:
+                    if re.match("Time", lines[i + 1][0]):
+                        i += 1
+                    if i + 1 < size:
+
+                        while startDT - datetime.strptime(lines[i + 1][0], "%c") < timedelta(minutes=60):
+                            if i + 1 == size:
+                                break
+                            if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
+                                break
+                            if lines[i + 1][3] != lines[i][3]:  # not the same input
+                                break
+                            i += 1
+                            ##################summary
+                            endDT1h = datetime.strptime(lines[i][0], "%c")
+                            ##################
+                            accTimeS += float(lines[i][6])
+                            sdcS += int(lines[i][4])
+                            if int(lines[i][7]) == 0 and int(lines[i][8]) == 0:
+                                abortZeroS += 1
+
+                            # CUDA framework errors
+                            if int(lines[i][9]) == 1:
+                                frameworkErrors += 1
+
+                            writer.writerow(lines[i])
+                            if i == (len(lines) - 1):  # end of lines
+                                break
+                            if re.match("Time", lines[i + 1][0]):
+                                i += 1
+                            if i == (len(lines) - 1):  # end of lines
+                                break
+                except ValueError as e:
+                    print("date conversion error, detail: " + str(e))
+                    print("date: " + lines[i + 1][0] + "\n")
+            headerC = ["start timestamp", "#lines computed", "#SDC", "#AccTime",
+                       "#(Abort==0 and END==0), CUDA Framework "
+                       "errors"]
+            writer.writerow(headerC)
+            row = [startDT.ctime(), (i - j + 1), sdcS, accTimeS, abortZeroS, frameworkErrors]
+            writer.writerow(row)
+            writer.writerow([])
+            writer.writerow([])
+            ##################summary
+            try:
+                row2 = [startDT.ctime(), endDT1h.ctime(), benchmark, inputDetail, (i - j + 1), sdcS, accTimeS,
+                        abortZeroS, frameworkErrors]
+                writer2.writerow(row2)
+            except Exception:
+                pass
+            ##################
             i += 1
 
-        startDT = datetime.strptime(lines[i][0], "%c")
-        ##################summary
-        benchmark = lines[i][2]
-        inputDetail = lines[i][3]
-        ##################
-        # print "date in line "+str(i)+": ",startDT
-        j = i
-        accTimeS = float(lines[i][6])
-        sdcS = int(lines[i][4])
-        abortZeroS = 0
-        frameworkErrors = 0
-
-        if int(lines[i][7]) == 0:
-            abortZeroS += 1
-        writer.writerow(lines[i])
-        if i + 1 < size:
-            try:
-                if re.match("Time", lines[i + 1][0]):
-                    i += 1
-                if i + 1 < size:
-                    while startDT - datetime.strptime(lines[i + 1][0], "%c") < timedelta(minutes=60):
-                        if i + 1 == size:
-                            break
-                        if lines[i + 1][2] != lines[i][2]:  # not the same benchmark
-                            break
-                        if lines[i + 1][3] != lines[i][3]:  # not the same input
-                            break
-                        i += 1
-                        ##################summary
-                        endDT1h = datetime.strptime(lines[i][0], "%c")
-                        ##################
-                        accTimeS += float(lines[i][6])
-                        sdcS += int(lines[i][4])
-                        if int(lines[i][7]) == 0 and int(lines[i][8]) == 0:
-                            abortZeroS += 1
-
-                        # CUDA framework errors
-                        if int(lines[i][9]) == 1:
-                            frameworkErrors += 1
-
-                        writer.writerow(lines[i])
-                        if i == (len(lines) - 1):  # end of lines
-                            break
-                        if re.match("Time", lines[i + 1][0]):
-                            i += 1
-                        if i == (len(lines) - 1):  # end of lines
-                            break
-            except ValueError as e:
-                print("date conversion error, detail: " + str(e))
-                print("date: " + lines[i + 1][0] + "\n")
-        headerC = ["start timestamp", "#lines computed", "#SDC", "#AccTime", "#(Abort==0 and END==0), CUDA Framework "
-                                                                             "errors"]
-        writer.writerow(headerC)
-        row = [startDT.ctime(), (i - j + 1), sdcS, accTimeS, abortZeroS, frameworkErrors]
-        writer.writerow(row)
-        writer.writerow([])
-        writer.writerow([])
-        ##################summary
-        row2 = [startDT.ctime(), endDT1h.ctime(), benchmark, inputDetail, (i - j + 1), sdcS, accTimeS,
-                abortZeroS, frameworkErrors]
-        writer2.writerow(row2)
-        ##################
-        i += 1
-
-    csvFP.close()
-    csvWFP.close()
+    # csvFP.close()
+    # csvWFP.close()
 
 # os.system("rm -r -f "+tmpDir)
-sys.exit(0)
+# sys.exit(0)
