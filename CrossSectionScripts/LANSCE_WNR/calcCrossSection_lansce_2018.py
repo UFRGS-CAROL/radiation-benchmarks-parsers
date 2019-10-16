@@ -245,8 +245,8 @@ def main():
             i = 0
             while i < len(lines) - 1:
                 try:
-                    start_dt = datetime.strptime(lines[i][0][0:-1], "%c")
-                    end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
+                    start_dt = datetime.strptime(lines[i][0].strip(), "%c")
+                    end_dt = datetime.strptime(lines[i + 1][0].strip(), "%c")
                 except ValueError as err:
                     print err
                     continue
@@ -278,8 +278,8 @@ def main():
                     if int(lines[i][7]) == 0 and int(lines[i][8]) == 0:
                         abort_zero_s += 1
 
-                    end_dt_next = datetime.strptime(lines[i + 1][0][0:-1], "%c")
-                    end_dt = datetime.strptime(lines[i][0][0:-1], "%c")
+                    end_dt_next = datetime.strptime(lines[i + 1][0].strip(), "%c")
+                    end_dt = datetime.strptime(lines[i][0].strip(), "%c")
 
                 # why consider such a small run???
                 # if (end_dt - start_dt) < SMALLEST_RUN:
