@@ -319,6 +319,12 @@ def setBenchmarks(**kwargs):
                                                  check_csv=checkCsv,
                                                  ecc=ecc)
 
+        elif i in ['add', 'mul', 'fma']:
+            from ParsersClasses import MicroParser
+            benchObj = MicroParser.MicroParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                                               check_csv=checkCsv,
+                                               ecc=ecc)
+
         elif benchObj is None:
             print("\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system")
 
