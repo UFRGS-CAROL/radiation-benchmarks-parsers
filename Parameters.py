@@ -224,7 +224,7 @@ def setBenchmarks(**kwargs):
                 goldBaseDir=HOG_GOLD_BASE_DIR,
                 datasets=HOG_DATASETS
             )
-        elif i == 'lavamd':
+        elif i == 'lavamd' or i == 'lava':
             from ParsersClasses import LavaMDParser
             benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
