@@ -77,7 +77,13 @@ class LavaMDParser(Parser):
                 ye = float(m.group(7))
                 zr = float(m.group(8))
                 ze = float(m.group(9))
-                return [posX, posY, posZ, vr, ve, xr, xe, yr, ye, zr, ze]
+                result = [posX, posY, posZ, vr, ve, xr, xe, yr, ye, zr, ze]
+
+                dmrPattern = ".*s_v_r: (\S+), s_x_r: (\S+), s_y_r: (\S+), s_z_r: (\S+).*"
+                m = re.match(dmrPattern, errString)
+                if m:
+                    result.extend([float(m.group(1)), float(m.group(2)), float(m.group(3)), float(m.group(4))])
+                return result
             else:
                 return None
         except ValueError:
@@ -121,81 +127,15 @@ class LavaMDParser(Parser):
         else:
             self._size = "old_lava_boxes_" + str(self._box)
 
+        m = re.match(".*type:(\S+) streams.*redundancy:(\S+) check_block:(\d+).*", header)
+        if m:
+            self._size += "type_{}_dmr_{}_check_block_{}".format(m.group(1), m.group(2), m.group(3))
+
     def buildImageMethod(self):
         return False
 
-    """
-    LEGACY METHODS SECTION
-    """
-    """
-    legacy method
-    """
-    # def _relativeErrorParser(self, errList):
-    #     relErr = []
-    #     zeroGold = 0
-    #     zeroOut = 0
-    #     self._cleanRelativeErrorAttributes()
-    #     # relErrLowerLimit = 0
-    #     # relErrLowerLimit2 = 0
-    #     # errListFiltered = []
-    #     # errListFiltered2 = []
-    #     for err in errList:
-    #         vr = err[3]
-    #         ve = err[4]
-    #         xr = err[5]
-    #         xe = err[6]
-    #         yr = err[7]
-    #         ye = err[8]
-    #         zr = err[9]
-    #         ze = err[10]
-    #         absoluteErrV = abs(ve - vr)
-    #         absoluteErrX = abs(xe - xr)
-    #         absoluteErrY = abs(ye - yr)
-    #         absoluteErrZ = abs(ze - zr)
-    #         relErrorV = 0
-    #         relErrorX = 0
-    #         relErrorY = 0
-    #         relErrorZ = 0
-    #         if abs(vr) < 1e-6:
-    #             zeroOut += 1
-    #         if abs(xr) < 1e-6:
-    #             zeroOut += 1
-    #         if abs(yr) < 1e-6:
-    #             zeroOut += 1
-    #         if abs(zr) < 1e-6:
-    #             zeroOut += 1
-    #         if abs(ve) < 1e-6:
-    #             zeroGold += 1
-    #         else:
-    #             relErrorV = abs(absoluteErrV / ve) * 100
-    #         if abs(xe) < 1e-6:
-    #             zeroGold += 1
-    #         else:
-    #             relErrorX = abs(absoluteErrX / xe) * 100
-    #         if abs(ye) < 1e-6:
-    #             zeroGold += 1
-    #         else:
-    #             relErrorY = abs(absoluteErrY / ye) * 100
-    #         if abs(ze) < 1e-6:
-    #             zeroGold += 1
-    #         else:
-    #             relErrorZ = abs(absoluteErrZ / ze) * 100
-    #
-    #         relError = (relErrorV + relErrorX + relErrorY + relErrorZ)
-    #         if relError > 0:
-    #             relErr.append(relError)
-    #             self._placeRelativeError(relError, err)
-    #     if len(relErr) > 0:
-    #
-    #         self._maxRelErr = max(relErr)
-    #         self._minRelErr = min(relErr)
-    #         self._avgRelErr = sum(relErr) / float(len(relErr))
-    #
-    #     self._zeroOut = zeroOut
-    #     self._zeroGold = zeroGold
-
-    """
-    legacy method
-    """
-    # def __init__(self, **kwargs):
-    #     Parser.__init__(self, **kwargs)
+    def _relativeErrorParser(self, errList):
+        super(LavaMDParser, self)._relativeErrorParser(errList)
+        self._keys = ['detected_errors']
+        for key in self._keys:
+            self._outputListError.extend(self._locality[key])

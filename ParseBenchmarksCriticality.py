@@ -52,7 +52,6 @@ def parse_args():
 
     # args = parser.parse_args()
 
-
     parser.add_argument('--database', dest='error_database',
                         help='Where database is located', default="errors_log_database")
 
@@ -92,7 +91,7 @@ def parse_args():
 
     parser.add_argument('--multithread', dest='multithread', help='If multithread is activated each '
                                                                   'benchmark will be parsed in a thread',
-                                                                    default=False, action='store_true')
+                        default=False, action='store_true')
 
     args = parser.parse_args()
     return args
@@ -124,7 +123,6 @@ def sequential_parser(errorDatabase):
         parseErrors(k, v)
 
     db.close()
-
 
 
 ###########################################

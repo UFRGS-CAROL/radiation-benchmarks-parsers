@@ -224,7 +224,7 @@ def setBenchmarks(**kwargs):
                 goldBaseDir=HOG_GOLD_BASE_DIR,
                 datasets=HOG_DATASETS
             )
-        elif i == 'lavamd':
+        elif i == 'lavamd' or i == 'lava':
             from ParsersClasses import LavaMDParser
             benchObj = LavaMDParser.LavaMDParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
@@ -318,6 +318,12 @@ def setBenchmarks(**kwargs):
             benchObj = CachesParser.CachesParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
                                                  ecc=ecc)
+
+        elif i in ['add', 'mul', 'fma']:
+            from ParsersClasses import MicroParser
+            benchObj = MicroParser.MicroParser(localRadiationBench=LOCAL_RADIATION_BENCH,
+                                               check_csv=checkCsv,
+                                               ecc=ecc)
 
         elif benchObj is None:
             print("\nERROR: ", i, " is not in the benchmark list, this will probaly crash the system")
