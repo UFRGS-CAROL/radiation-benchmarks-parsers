@@ -2,11 +2,11 @@ import re
 import struct
 import sys
 
-from Parser import Parser
-from sklearn.metrics import jaccard_similarity_score
+from ParsersClasses import Parser
+from sklearn.metrics import jaccard_score
 
 
-class LavaMDParser(Parser):
+class LavaMDParser(Parser.Parser):
     _box = None
     _blockSize = None
     _streams = None
@@ -16,40 +16,42 @@ class LavaMDParser(Parser):
         # print "\n\nPassou no jaccard lava \n\n"
         expected = []
         read = []
-        for err in errListJaccard:
-            try:
-                readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[2]))
-                expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[3]))
-                readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[4]))
-                expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[5]))
-                readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[6]))
-                expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[7]))
-                readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[8]))
-                expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[9]))
-            except OverflowError:
-                readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[2]))
-                expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[3]))
-                readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[4]))
-                expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[5]))
-                readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[6]))
-                expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[7]))
-                readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[8]))
-                expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[9]))
+        # for err in errListJaccard:
+        #     try:
+        #         print(''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[2])))
+        #         readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[2]))
+        #
+        #         expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[3]))
+        #         readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[4]))
+        #         expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[5]))
+        #         readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[6]))
+        #         expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[7]))
+        #         readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[8]))
+        #         expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[9]))
+        #     except OverflowError:
+        #         readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[2]))
+        #         expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[3]))
+        #         readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[4]))
+        #         expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[5]))
+        #         readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[6]))
+        #         expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[7]))
+        #         readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[8]))
+        #         expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[9]))
+        #
+        #     read.extend([n for n in readGStr])
+        #     read.extend([n for n in readGStr2])
+        #     read.extend([n for n in readGStr3])
+        #     read.extend([n for n in readGStr4])
+        #     expected.extend([n for n in expectedGStr])
+        #     expected.extend([n for n in expectedGStr2])
+        #     expected.extend([n for n in expectedGStr3])
+        #     expected.extend([n for n in expectedGStr4])
 
-            read.extend([n for n in readGStr])
-            read.extend([n for n in readGStr2])
-            read.extend([n for n in readGStr3])
-            read.extend([n for n in readGStr4])
-            expected.extend([n for n in expectedGStr])
-            expected.extend([n for n in expectedGStr2])
-            expected.extend([n for n in expectedGStr3])
-            expected.extend([n for n in expectedGStr4])
-
-        try:
-            jac = jaccard_similarity_score(expected, read)
+        if len(expected) != 0:
+            jac = jaccard_score(expected, read)
             dissimilarity = float(1.0 - jac)
             return dissimilarity
-        except:
+        else:
             return None
 
     def parseErrMethod(self, errString):
@@ -58,9 +60,13 @@ class LavaMDParser(Parser):
             print("header: ", self._header)
             sys.exit(1)
         try:
-            ##ERR p: [357361], ea: 4, v_r: 1.5453305664062500e+03, v_e: 1.5455440673828125e+03, x_r: 9.4729260253906250e+02, x_e: 9.4630560302734375e+02, y_r: -8.0158099365234375e+02, y_e: -8.0218914794921875e+02, z_r: 9.8227819824218750e+02, z_e: 9.8161871337890625e+02
+            # ERR p: [357361], ea: 4, v_r: 1.5453305664062500e+03, v_e: 1.5455440673828125e+03,
+            # x_r: 9.4729260253906250e+02, x_e: 9.4630560302734375e+02, y_r: -8.0158099365234375e+02,
+            # y_e: -8.0218914794921875e+02, z_r: 9.8227819824218750e+02, z_e: 9.8161871337890625e+02
             m = re.match(
-                ".*ERR.*\[(\d+)\].*v_r\: ([0-9e\+\-\.]+).*v_e\: ([0-9e\+\-\.]+).*x_r\: ([0-9e\+\-\.]+).*x_e\: ([0-9e\+\-\.]+).*y_r\: ([0-9e\+\-\.]+).*y_e\: ([0-9e\+\-\.]+).*z_r\: ([0-9e\+\-\.]+).*z_e\: ([0-9e\+\-\.]+)",
+                ".*ERR.*\[(\d+)\].*v_r\: ([0-9e\+\-\.]+).*v_e\: ([0-9e\+\-\.]+).*x_r\: ([0-9e\+\-\.]+).*"
+                "x_e\: ([0-9e\+\-\.]+).*y_r\: ([0-9e\+\-\.]+).*y_e\: ([0-9e\+\-\.]+).*z_r\: ([0-9e\+\-\.]+).*"
+                "z_e\: ([0-9e\+\-\.]+)",
                 errString)
             if m:
                 pos = int(m.group(1))
@@ -138,4 +144,7 @@ class LavaMDParser(Parser):
         super(LavaMDParser, self)._relativeErrorParser(errList)
         self._keys = ['detected_errors']
         for key in self._keys:
-            self._outputListError.extend(self._locality[key])
+            self._locality[key] = [0]
+            self._relErrLowerLimit[key] = []
+            self._jaccardCoefficientDict[key] = []
+

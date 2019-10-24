@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 import sys
 from SupportClasses import MatchBenchmark
 from SupportClasses import WriteSDCDatabase
@@ -118,7 +118,7 @@ def sequential_parser(errorDatabase):
     db = shelve.open(args.error_database)
 
     # process each benchmark class
-    for k, v in db.iteritems():
+    for k, v in db.items():
         print("Processing ", k)
         parseErrors(k, v)
 

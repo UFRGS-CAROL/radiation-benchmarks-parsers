@@ -48,7 +48,7 @@ class MatchBenchmark():
 
         isBench = False
         key = None
-        for key, values in self.__radiationBenchmarks.iteritems():
+        for key, values in self.__radiationBenchmarks.items():
             isBench = re.search(str(key), benchmark, flags=re.IGNORECASE)
             if isBench:
                 # print "\n\ncurrent bench ", key

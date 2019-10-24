@@ -17,7 +17,7 @@ class WriteSDCDatabase():
             self._out = kwargs.pop('out')
             self._data = shelve.open(str(self._out))
         except:
-            print "FILE NOT OPEN"
+            print("FILE NOT OPEN")
             raise
 
     def generateSDCList(self, fi):
@@ -68,7 +68,6 @@ class WriteSDCDatabase():
 
         return sdc_item_list
 
-    ######### main
     # pega todos os arquivos .log na pasta onde esta sendo
     # executado, e nas subpastas tambem
     def execute(self):
@@ -143,5 +142,5 @@ class WriteSDCDatabase():
                     outFile.write("\n")
 
             except:
-                print "error somewhere"
+                print("error somewhere")
         outFile.close()

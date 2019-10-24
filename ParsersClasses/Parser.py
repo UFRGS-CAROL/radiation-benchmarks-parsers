@@ -320,9 +320,6 @@ class Parser:
                 # generic way to parse for many error threshold
                 self._placeRelativeError(relError, err)
 
-
-
-
         if len(relErrorList) > 0:
             self._maxRelErr = max(relErrorList)
             self._minRelErr = min(relErrorList)
@@ -330,8 +327,6 @@ class Parser:
 
         self._zeroOut = zeroOut
         self._zeroGold = zeroGold
-
-
 
     """
     jaccardCoefficient caller method
@@ -342,7 +337,7 @@ class Parser:
     def jaccardCoefficient(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            for keys, values in self._errors.iteritems():
+            for keys, values in self._errors.items():
                 self._jaccardCoefficientDict[keys] = self._jaccardCoefficient(values)
 
     """
@@ -381,7 +376,7 @@ class Parser:
     def localityParser(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=RuntimeWarning)
-            for key, value in self._errors.iteritems():
+            for key, value in self._errors.items():
                 if self._hasThirdDimention:
                     self._locality[key] = self._localityParser3D(value)
                 else:
