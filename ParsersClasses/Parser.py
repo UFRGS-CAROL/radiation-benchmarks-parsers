@@ -466,7 +466,6 @@ class Parser:
                 csvWFP.close()
 
             except:
-                # ValueError.message += ValueError.message + "Error on writing row to " + str(csvFileName)
                 print("Error on writing row to " + str(csvFileName))
                 raise
 

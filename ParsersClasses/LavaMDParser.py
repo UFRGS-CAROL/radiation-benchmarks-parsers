@@ -1,9 +1,6 @@
 import re
-import struct
 import sys
-
 from ParsersClasses import Parser
-from sklearn.metrics import jaccard_score
 
 
 class LavaMDParser(Parser.Parser):
@@ -12,53 +9,39 @@ class LavaMDParser(Parser.Parser):
     _streams = None
     _hasThirdDimention = True
 
-    def _jaccardCoefficient(self, errListJaccard):
-        # print "\n\nPassou no jaccard lava \n\n"
-        expected = []
-        read = []
-        # for err in errListJaccard:
-        #     try:
-        #         print(''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[2])))
-        #         readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[2]))
-        #
-        #         expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[3]))
-        #         readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[4]))
-        #         expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[5]))
-        #         readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[6]))
-        #         expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[7]))
-        #         readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[8]))
-        #         expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', err[9]))
-        #     except OverflowError:
-        #         readGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[2]))
-        #         expectedGStr = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[3]))
-        #         readGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[4]))
-        #         expectedGStr2 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[5]))
-        #         readGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[6]))
-        #         expectedGStr3 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[7]))
-        #         readGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[8]))
-        #         expectedGStr4 = ''.join(bin(ord(c)).replace('0b', '').rjust(8, '0') for c in struct.pack('!d', err[9]))
-        #
-        #     read.extend([n for n in readGStr])
-        #     read.extend([n for n in readGStr2])
-        #     read.extend([n for n in readGStr3])
-        #     read.extend([n for n in readGStr4])
-        #     expected.extend([n for n in expectedGStr])
-        #     expected.extend([n for n in expectedGStr2])
-        #     expected.extend([n for n in expectedGStr3])
-        #     expected.extend([n for n in expectedGStr4])
+    _csvHeader = ["logFileName", "Machine", "Benchmark", "Header", "SDC Iteration", "#Accumulated Errors",
+                  "#Iteration Errors", "Max Relative Error", "Min Rel Error",
+                  "Average Rel Err", "detectedErrors"]
 
-        if len(expected) != 0:
-            jac = jaccard_score(expected, read)
-            dissimilarity = float(1.0 - jac)
-            return dissimilarity
-        else:
-            return None
+    def _placeOutputOnList(self):
+        self._outputListError = [self._logFileName,
+                                 self._machine,
+                                 self._benchmark,
+                                 self._header,
+                                 self._sdcIteration,
+                                 self._accIteErrors,
+                                 self._iteErrors,
+                                 self._maxRelErr,
+                                 self._minRelErr,
+                                 self._avgRelErr,
+                                 self._detectedErrors]
+
+    def _jaccardCoefficient(self, errListJaccard):
+        pass
 
     def parseErrMethod(self, errString):
         if self._box is None:
             print ("box is None!!!\nerrString: ", errString)
             print("header: ", self._header)
             sys.exit(1)
+
+        pattern = ".*detected_dmr_errors: (\d+).*"
+        try:
+            m = re.match(pattern, errString)
+            return int(m.group(1))
+        except AttributeError:
+            pass
+
         try:
             # ERR p: [357361], ea: 4, v_r: 1.5453305664062500e+03, v_e: 1.5455440673828125e+03,
             # x_r: 9.4729260253906250e+02, x_e: 9.4630560302734375e+02, y_r: -8.0158099365234375e+02,
@@ -141,10 +124,28 @@ class LavaMDParser(Parser.Parser):
         return False
 
     def _relativeErrorParser(self, errList):
-        super(LavaMDParser, self)._relativeErrorParser(errList)
-        self._keys = ['detected_errors']
-        for key in self._keys:
-            self._locality[key] = [0]
-            self._relErrLowerLimit[key] = []
-            self._jaccardCoefficientDict[key] = []
+        self._detectedErrors = 0
+        self._countErrors = len(errList)
+        self._maxRelErr = -2222
+        self._minRelErr = 33333
+        self._avgRelErr = 0
 
+        for err in errList:
+            if type(err) == list:
+                for i in range(3, 11, 2):
+                    if err[i] is None or err[i + 1] is None:
+                        continue
+                    read = float(err[i])
+                    expected = float(err[i + 1])
+                    absoluteErr = abs(expected - read)
+                    relError = abs(absoluteErr / expected) * 100
+
+                    # error average calculation
+                    self._maxRelErr = max(relError, self._maxRelErr)
+                    self._minRelErr = min(relError, self._maxRelErr)
+                    self._avgRelErr = relError / float(self._countErrors * 4)
+            elif type(err) == int:
+                self._detectedErrors = err
+
+    def localityParser(self):
+        pass
