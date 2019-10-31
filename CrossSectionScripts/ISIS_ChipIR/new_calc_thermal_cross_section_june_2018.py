@@ -1,6 +1,5 @@
 #!/usr/bin/python -u
 
-
 import os
 import sys
 import re
@@ -79,10 +78,10 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
         if start_dt <= cur_dt and first_curr_integral is None:
             first_curr_integral = curr_integral
             new_curr = float(line[2])   # Obtemos a corrente que devemos somar.
-            samples = 1                 # Necesario para calcular a media. 
+            samples = 1                 # Necesario para calcular a media.
             last_dt = cur_dt
             continue
-            
+
         if first_curr_integral is not None:
             if actual_curr == 0: #beam off se nao tem corrente
                 beam_off_time += (cur_dt - last_dt).total_seconds() # Adiciona a diferenca do tempo de i e i-1 -> Beam Parado 3S
@@ -97,26 +96,26 @@ def get_fluence_flux(start_dt, end_dt, file_lines, factor, distance_factor=1.0):
             #print(cur_dt)
             #interval_total_seconds = float((end_dt - start_dt).total_seconds())
             #flux1h = ((last_curr_integral - first_curr_integral) * factor) / interval_total_seconds
-            #flux1h *= distance_factor 
-            
-            thermal_flux = new_curr / samples   # Fluxo eh a corrente media 
+            #flux1h *= distance_factor
+
+            thermal_flux = new_curr / samples   # Fluxo eh a corrente media
             thermal_flux *= factor              # Multiplicada x 16000 (Jun 2018)
             thermal_flux *= distance_factor     # Distancia eh a mesma para todos, assim assume-se 1
-            
+
             return thermal_flux, beam_off_time
-            
+
         elif first_curr_integral is not None:
             last_curr_integral = curr_integral
-            
+
     print("Neutron file have less logged time than Execution log aka parsed+board.csv")
     # Here is the case that logparsed_boarf_,csv end after logcurrent
     flux1h = -1
     beam_off_time = -1
     return flux1h, beam_off_time
-    
+
 def main():
     if len(sys.argv) < 4:
-        print "Usage: %s <neutron counts input file> <csv file> <factor>" % (sys.argv[0])
+        print("Usage: %s <neutron counts input file> <csv file> <factor>" % (sys.argv[0]))
         sys.exit(1)
     in_file_name = sys.argv[1]
     csv_file_name = sys.argv[2]
@@ -125,8 +124,8 @@ def main():
 
     csv_out_file_full = csv_file_name.replace(".csv", "_cross_section.csv")
     csv_out_file_summary = csv_file_name.replace(".csv", "_cross_section_summary.csv")
-    print "in: " + csv_file_name
-    print "out: " + csv_out_file_full
+    print("in: " + csv_file_name)
+    print("out: " + csv_out_file_full)
     with open(csv_file_name, "r") as csv_input, open(csv_out_file_full, "w") as csv_full, open(csv_out_file_summary,
                                                                                                "w") as csv_summary:
         reader = csv.reader(csv_input, delimiter=';')
@@ -149,7 +148,7 @@ def main():
         writer_csv_full.writerow(header_c)
         # We need to read the neutron count files before calling get_fluence_flux
         file_lines = read_count_file(in_file_name)
-    
+
         i = -1
         while(i< len(lines)-1):
             i = i +1 # Soluciona sobreposicao
@@ -165,7 +164,7 @@ def main():
             j = i
             machine = lines[i][1]
             bench = lines[i][2]
-            header_info = lines[i][3]            
+            header_info = lines[i][3]
             # acc_time
             acc_time_s = float(lines[i][6])
             # #SDC
@@ -174,11 +173,11 @@ def main():
             abort_zero_s = 0
             if( int(lines[i][7]) == 0 and int(lines[i][8]) == 0 ):
                 abort_zero_s += 1
-            
+
             writer_csv_summary.writerow(lines[i])
             end_dt = datetime.strptime(lines[i + 1][0][0:-1], "%c")
-            print "parsing file {} date in line {}:{}".format(csv_file_name.replace(".csv", ""), str(i), start_dt,
-                                                              end_dt)
+            print("parsing file {} date in line {}:{}".format(csv_file_name.replace(".csv", ""), str(i), start_dt,
+                                                              end_dt))
             last_line = ""
             #flag = 0
             while (end_dt - start_dt) < timedelta(minutes=60):
@@ -202,7 +201,7 @@ def main():
             # compute 1h flux; sum SDC, ACC_TIME, Abort with 0; compute fluence (flux*(sum ACC_TIME))
             print("Fora While",i)
 
-            flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),file_lines=file_lines, factor=factor,distance_factor=distance_factor)        
+            flux, time_beam_off = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(minutes=60)),file_lines=file_lines, factor=factor,distance_factor=distance_factor)
             flux_acc_time, time_beam_off_acc_time = get_fluence_flux(start_dt=start_dt, end_dt=(start_dt + timedelta(seconds=acc_time_s)),file_lines=file_lines, factor=factor, distance_factor=distance_factor)
 
             fluence = flux * acc_time_s
