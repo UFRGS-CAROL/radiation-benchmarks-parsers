@@ -114,7 +114,6 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor):
 def check_distance_factor(distance_data, start_dt, board):
     for t in distance_data:
         if t['board'] in board and t['start'] <= start_dt <= t['end']:
-            print(t)
             return float(t['Distance attenuation'])
 
     raise ValueError("Not suposed to be here")
