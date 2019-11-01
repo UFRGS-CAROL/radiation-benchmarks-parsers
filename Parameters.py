@@ -313,7 +313,7 @@ def setBenchmarks(**kwargs):
                                                                   ecc=ecc,
                                                                   parse_err_histogram=parse_err_histogram)
 
-        elif i in ['shared', 'l1', 'l2']:
+        elif i in ['shared', 'l1', 'l2', 'registers']:
             from ParsersClasses import CachesParser
             benchObj = CachesParser.CachesParser(localRadiationBench=LOCAL_RADIATION_BENCH,
                                                  check_csv=checkCsv,
