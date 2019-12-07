@@ -2,10 +2,10 @@ import re
 import struct
 import sys
 
-from Parser import Parser
+from ParsersClasses import Parser
 
 
-class MicroParser(Parser):
+class MicroParser(Parser.Parser):
     _csvHeader = ['logFileName', 'Machine', 'Benchmark', 'Header',
                   'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'corrupted_elements', 'detected_elements']
     _corrupted_elements = 0
@@ -84,7 +84,7 @@ class MicroParser(Parser):
             return
         self._corrupted_elements = self._detected_elements = 0
         for err in errList:
-            if type(err) is int or type(err) is long:
+            if type(err) is int:
                 self._detected_elements += 1
             elif len(err) == 3 or len(err) == 4:
                 self._corrupted_elements += 1
