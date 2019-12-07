@@ -155,7 +155,7 @@ print "\n\tCSV files will be stored in "+csvDirOutPrefix+"+db folder\n"
 totals = dict()
 errLimitList = [0.0, 2**-300, 10**-64]
 errLimitList += [float(10**i) for i in range(-8, -1)]
-errLimitList += [float(i)/10 for i in range(1, 101)]
+errLimitList += [float(i)/10 for i in range(1, 11)]
 #errLimitList += [float(i) for i in range(10, 101)]
 errLimitList.sort()
 
