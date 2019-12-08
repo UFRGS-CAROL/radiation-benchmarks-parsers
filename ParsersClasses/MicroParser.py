@@ -1,13 +1,10 @@
 import re
-import struct
-import sys
-
 from ParsersClasses import Parser
 
 
 class MicroParser(Parser.Parser):
     _csvHeader = ['logFileName', 'Machine', 'Benchmark', 'Header',
-                  'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'corrupted_elements', 'detected_elements']
+                  'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'corrupted_elements', 'detected_elements', 'max_relative_error']
     _corrupted_elements = 0
     _detected_elements = 0
 
@@ -38,8 +35,6 @@ class MicroParser(Parser.Parser):
         pass
 
     def setSize(self, header):
-        #   gridsize-131072 blocksize-1024 type-add-double-precision hard-dmr
-        #  kernel_type-non-persistent checkblock-100 nonconst-0 numop-100
         pattern = '.*gridsize:.*blocksize:.*type:(\S+)-double-precision '
         pattern += 'hard:(\S+) kernel_type:non-persistent checkblock:(\d+) nonconst:0 numop:(\d+).*'
         m = re.match(pattern, header)
@@ -59,7 +54,7 @@ class MicroParser(Parser.Parser):
      no return
      this method will be called by parent classes,
      so it needs only be adjusted to write the final content to self._outputListError
-     this method will be clalled in every SDC processing
+     this method will be called in every SDC processing
     """
 
     def _placeOutputOnList(self):
@@ -68,25 +63,24 @@ class MicroParser(Parser.Parser):
 
                                  # 'SDC', 'LOGGED_ERRORS', 'ACC_ERR', 'ACC_TIME',
                                  self._sdcIteration, self._iteErrors, self._accIteErrors,
-                                 self._corrupted_elements, self._detected_elements]
-
-    def float_to_int(self, f):
-        t = hex(struct.unpack('<Q', struct.pack('<d', f))[0])
-        return long(t, 0)
+                                 self._corrupted_elements, self._detected_elements, self._max_relative_error]
 
     """
     errList = list of dicts parsed by parseErrMethod
     no return
-    set the class atributes which will be write by _writeToCSV method
+    set the class attributes which will be write by _writeToCSV method
     """
+
     def _relativeErrorParser(self, errList):
         if len(errList) < 1:
             return
         self._corrupted_elements = self._detected_elements = 0
+        self._max_relative_error = 0.0
         for err in errList:
             if type(err) is int:
                 self._detected_elements += 1
             elif len(err) == 3 or len(err) == 4:
                 self._corrupted_elements += 1
-
-
+                r, e = err[1:3]
+                relative_error = abs(r - e) / abs(e)
+                self._max_relative_error = max(self._max_relative_error, relative_error)
