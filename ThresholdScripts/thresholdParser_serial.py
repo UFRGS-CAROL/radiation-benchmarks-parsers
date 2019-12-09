@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import errno
 import sys
 import os
 import csv
@@ -22,7 +22,7 @@ def processErrors(benchmarkname_machinename, sdcItemList):
         machine = machine.strip()
 
         if not parseErrorUtils.hasParser(benchmark):
-            print benchmark+" - There is no parser implemented"
+            print(benchmark + " - There is no parser implemented")
             return
 
     sdci = 1
@@ -150,7 +150,7 @@ def processErrors(benchmarkname_machinename, sdcItemList):
 # MAIN
 ###########################################
 csvDirOutPrefix = "parsed_"
-print "\n\tCSV files will be stored in "+csvDirOutPrefix+"+db folder\n"
+print("\n\tCSV files will be stored in " + csvDirOutPrefix + "+db folder\n")
 
 totals = dict()
 errLimitList = [0.0, 2**-300, 10**-64]
@@ -163,8 +163,7 @@ for inputDB in sys.argv[1:]:
     print(inputDB)
     csvDirOut = csvDirOutPrefix + inputDB.replace('/', '')
     db = shelve.open(inputDB) #python2
-    #for k, v in db.items(): #python3
-    for k, v in db.iteritems(): #python2
+    for k, v in db.items(): #python3
         processErrors(k,v)
     db.close()
 
@@ -187,7 +186,7 @@ writer.writerow(csvHeader)
 # csvWFPlava = open("thresholds_lava.csv", "w")
 # writerLava = csv.writer(csvWFPlava, delimiter=';')
 # writerLava.writerow(csvHeader)
-for key in totals.iterkeys():
+for key in totals:
     last = -1
     for errLimit in errLimitList:
         if ((last != totals[key][str(errLimit)]) or (errLimit == errLimitList[-1]) or (errLimit == errLimitList[0])):
