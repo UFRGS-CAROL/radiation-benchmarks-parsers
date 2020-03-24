@@ -17,11 +17,11 @@ def merge_files(paths, output_file):
                             out_line = out_line[:-1]
                             outf.write(out_line + "\n")
                     except Exception as err:
-                        print line, err
+                        raise ValueError("ERROR: {} {}".format(line, err))
 
 
 if __name__ == '__main__':
-    output_file = sys.argv[len(sys.argv) - 1]
-    paths = sys.argv[1:(len(sys.argv) - 1)]
+    output_file = sys.argv[1]
+    paths = sys.argv[2:]
     paths.sort()
     merge_files(paths=paths, output_file=output_file)

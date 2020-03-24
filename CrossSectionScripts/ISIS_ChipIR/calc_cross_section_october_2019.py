@@ -39,7 +39,7 @@ def read_count_file(in_file_name):
         for l in in_file:
             # Sanity check, we require a date at the beginning of the line
             line = l.rstrip()
-            if not re.match("\d{1,2}/\d{1,2}/\d{2,4}", line):
+            if len(line.split(";")) < 7:
                 sys.stderr.write("Ignoring line (malformed):\n%s\n" % (line))
                 continue
 
@@ -74,11 +74,9 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor):
         # Date;time;decimal of second; Diamond counter threshold = 40mV(counts);
         # Diamond counter th = 20mV(counts); Diamond counter th = 30mV(counts);
         # Fission Counter(counts); Integral Current uAh; Current uA
-
         year_date = line[0]
         day_time = line[1]
         sec_frac = line[2]
-
         # counter_30mv = float(line[5])
         fission_counter = float(line[6])
         # curr_integral = float(line[5])
@@ -116,7 +114,7 @@ def check_distance_factor(distance_data, start_dt, board):
         if t['board'] in board and t['start'] <= start_dt <= t['end']:
             return float(t['Distance attenuation'])
 
-    raise ValueError("Not suposed to be here")
+    raise ValueError("Not suposed to be here {} {}".format(start_dt, board))
 
 
 def get_distance_data(distance_factor_file):
