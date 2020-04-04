@@ -2,6 +2,19 @@
 
 
 import csv
+import sys
+
+#######################################################################
+# Three injection modes
+#######################################################################
+RF_MODE = "rf"
+INST_VALUE_MODE = "inst_value"
+INST_ADDRESS_MODE = "inst_address"
+
+#######################################################################
+# Categories of instruction types (IGIDs): This should match the values set in
+# err_injector/error_injector.h.
+#######################################################################
 
 GPR = 0
 CC = 1
@@ -28,7 +41,7 @@ WARP_FLIP_TWO_BITS = 5
 WARP_RANDOM_VALUE = 6
 WARP_ZERO_VALUE = 7
 
-em_str_map = {
+error_mode_map = {
     FLIP_SINGLE_BIT: "FLIP_SINGLE_BIT",
     FLIP_TWO_BITS: "FLIP_TWO_BITS",
     RANDOM_VALUE: "RANDOM_VALUE",
@@ -39,7 +52,7 @@ em_str_map = {
     WARP_ZERO_VALUE: "WARP_ZERO_VALUE"
 }
 
-rf_bfm_map = {0: "RF"}
+rf_igid_bfm_map = {0: "RF"}
 
 inst_value_igid_bfm_map = {
     GPR: "GPR",
@@ -89,9 +102,9 @@ def main(arg_list):
     map_to_use = {"rf": rf_bfm_map, "inst_value": inst_value_igid_bfm_map, "inst_address": inst_address_igid_bfm_map}
 
     igid_map = map_to_use[inst_type]
-    sdc_avf_per_inst = {igid_map[i]: 0.0 for i in igid_map}
-    due_avf_per_inst = {igid_map[i]: 0.0 for i in igid_map}
-    nvdue_avf_per_inst = {igid_map[i]: 0.0 for i in igid_map}
+    sdc_num_per_inst = {i: 0.0 for i in igid_map}
+    due_num_per_inst = {i: 0.0 for i in igid_map}
+    nvdue_num_per_inst = {i: 0.0 for i in igid_map}
 
     sdc_saturation = []
 
@@ -106,22 +119,26 @@ def main(arg_list):
             n_faults += 1.0
             sdc_it += float(sdc)
             sdc_saturation.append(sdc_it / n_faults)
-            key = igid_map[int(igid)]
-            sdc_avf_per_inst[key] += float(sdc)
-            due_avf_per_inst[key] += float(due)
-            nvdue_avf_per_inst[key] += float(nvdue)
+            key = int(igid)
+            sdc_num_per_inst[key] += float(sdc)
+            due_num_per_inst[key] += float(due)
+            nvdue_num_per_inst[key] += float(nvdue)
 
         output_csv_name = csv_input.replace(".csv", "_avf.csv")
         with open(output_csv_name, "w") as out_f:
             writer = csv.writer(out_f)
-            writer.writerow(["instruction", "#sdc", "#due", "#nvdue", "AVF SDC", "AVF DUE", "AVF NVDUE"])
+            writer.writerow(["instruction", "#sdc", "#due", "#nvdue", "#faults", "AVF SDC", "AVF DUE", "AVF NVDUE"])
             for key, value in igid_map.items():
-                sdc_num = sdc_avf_per_inst[key]
-                due_num = due_avf_per_inst[key]
-                nvdue_num = nvdue_avf_per_inst[key]
+                sdc_num = sdc_num_per_inst[key]
+                due_num = due_num_per_inst[key]
+                nvdue_num = nvdue_num_per_inst[key]
 
                 sdc_avf = sdc_num / n_faults
                 due_avf = due_num / n_faults
                 nvdue_avf = nvdue_num / n_faults
-                line = [key, sdc_num, due_num, nvdue_num, sdc_avf, due_avf, nvdue_avf]
+                line = [value, sdc_num, due_num, nvdue_num, n_faults, sdc_avf, due_avf, nvdue_avf]
                 writer.writerow(line)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
