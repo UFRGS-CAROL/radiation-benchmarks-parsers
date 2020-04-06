@@ -99,7 +99,7 @@ def check_sdc_due_nvdue(log_file):
 
 def main(arg_list):
     csv_input, log_path, inst_type = arg_list
-    map_to_use = {"rf": rf_bfm_map, "inst_value": inst_value_igid_bfm_map, "inst_address": inst_address_igid_bfm_map}
+    map_to_use = {"rf": rf_igid_bfm_map, "inst_value": inst_value_igid_bfm_map, "inst_address": inst_address_igid_bfm_map}
 
     igid_map = map_to_use[inst_type]
     sdc_num_per_inst = {i: 0.0 for i in igid_map}
