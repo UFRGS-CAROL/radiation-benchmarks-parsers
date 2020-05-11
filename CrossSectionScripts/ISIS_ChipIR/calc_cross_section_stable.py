@@ -82,7 +82,8 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor):
         # curr_integral = float(line[5])
 
         # Generate datetime for line
-        cur_dt = get_dt(year_date, day_time, sec_frac)
+        # cur_dt = get_dt(year_date, day_time, sec_frac)
+        cur_dt = datetime.strptime(year_date + " " + day_time + sec_frac, "%d/%m/%Y %H:%M:%S.%f")
         if start_dt <= cur_dt and first_fission_counter is None:
             first_fission_counter = fission_counter
             # first_counter_30mv = counter_30mv
@@ -94,7 +95,7 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor):
         if first_fission_counter is not None:
             if fission_counter == last_fission_counter:
                 beam_off_time += (
-                        cur_dt - last_dt).total_seconds()  # Adiciona a diferenca do tempo de i e i-1 -> Beam Parado 3S
+                        cur_dt - last_dt).total_seconds()  # add the diff of beam off i and i - 1
 
             last_fission_counter = fission_counter
             last_dt = cur_dt
