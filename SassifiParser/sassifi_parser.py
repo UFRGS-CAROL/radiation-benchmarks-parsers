@@ -1,8 +1,7 @@
 #!/usr/bin/env python3.6
 
-
-import csv
-import sys
+import pandas as pd
+from sys import argv
 
 #######################################################################
 # Three injection modes
@@ -68,6 +67,7 @@ inst_value_igid_bfm_map = {
     SETP_OP: "SET_OP",
     LDS_OP: "LDS_OP",
     LD_OP: "LD_OP",
+    RF_MODE: "RF"
 }
 
 # Used for instruction output-level address injection runs
@@ -97,48 +97,43 @@ def check_sdc_due_nvdue(log_file):
     return sdc, due, nvdue
 
 
-def main(arg_list):
-    csv_input, log_path, inst_type = arg_list
-    map_to_use = {"rf": rf_igid_bfm_map, "inst_value": inst_value_igid_bfm_map, "inst_address": inst_address_igid_bfm_map}
+def check_sdc(log_file):
+    global logs_dir
+    with open(logs_dir + "/" + log_file) as fp:
+        return 1 if any("SDC" in s for s in fp.readlines()) else 0
 
-    igid_map = map_to_use[inst_type]
-    sdc_num_per_inst = {i: 0.0 for i in igid_map}
-    due_num_per_inst = {i: 0.0 for i in igid_map}
-    nvdue_num_per_inst = {i: 0.0 for i in igid_map}
 
-    sdc_saturation = []
+def check_due(log_file):
+    global logs_dir
+    with open(logs_dir + "/" + log_file) as fp:
+        return 0 if any("END" in s for s in fp.readlines()) else 1
 
-    with open(csv_input) as csv_log_fp:
-        reader = csv.reader(csv_log_fp)
 
-        n_faults = 0.0
-        sdc_it = 0.0
-        for [log_file, has_sdc, kname, kcount, igid, bfm, iid, opid, bid, has_end, sdc_caught] in reader:
-            log_file_path = log_path + "/" + log_file
-            sdc, due, nvdue = check_sdc_due_nvdue(log_file=log_file_path)
-            n_faults += 1.0
-            sdc_it += float(sdc)
-            sdc_saturation.append(sdc_it / n_faults)
-            key = int(igid)
-            sdc_num_per_inst[key] += float(sdc)
-            due_num_per_inst[key] += float(due)
-            nvdue_num_per_inst[key] += float(nvdue)
+def check_nvdue(log_file):
+    global logs_dir
+    with open(logs_dir + "/" + log_file) as fp:
+        return 1 if any("CUDA Framework error" in s for s in fp.readlines()) else 0
 
-        output_csv_name = csv_input.replace(".csv", "_avf.csv")
-        with open(output_csv_name, "w") as out_f:
-            writer = csv.writer(out_f)
-            writer.writerow(["instruction", "#sdc", "#due", "#nvdue", "#faults", "AVF SDC", "AVF DUE", "AVF NVDUE"])
-            for key, value in igid_map.items():
-                sdc_num = sdc_num_per_inst[key]
-                due_num = due_num_per_inst[key]
-                nvdue_num = nvdue_num_per_inst[key]
 
-                sdc_avf = sdc_num / n_faults
-                due_avf = due_num / n_faults
-                nvdue_avf = nvdue_num / n_faults
-                line = [value, sdc_num, due_num, nvdue_num, n_faults, sdc_avf, due_avf, nvdue_avf]
-                writer.writerow(line)
+def main():
+    global logs_dir
+    input_csv = argv[1]
+    logs_dir = argv[2]
+
+    avf_df = pd.read_csv(input_csv, header=None)
+    avf_df.columns = ["logfile", "has_sdc", "kname", "kcount", "igid",
+                      "bfm", "iid", "opid", "bid", "has_end", "sdc_caught"]
+    avf_df["#sdc"] = avf_df["logfile"].apply(check_sdc)
+    avf_df["#due"] = avf_df["logfile"].apply(check_due)
+    avf_df["#nvdue"] = avf_df["logfile"].apply(check_nvdue)
+    avf_df["igid"] = avf_df["igid"].apply(lambda r: inst_value_igid_bfm_map[r.strip() if type(r) == str else r])
+    avf_per_igid = avf_df.groupby(["igid"]).sum()[["#sdc", "#due", "#nvdue"]]
+    avf_per_igid["#faults"], _ = avf_df.shape
+    avf_per_igid["AVF SDC"] = avf_per_igid["#sdc"] / avf_per_igid["#faults"]
+    avf_per_igid["AVF DUE"] = avf_per_igid["#due"] / avf_per_igid["#faults"]
+    avf_per_igid["AVF NVDUE"] = avf_per_igid["#nvdue"] / avf_per_igid["#faults"]
+    avf_per_igid.to_csv(input_csv.replace(".csv", "_avf.csv"))
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
