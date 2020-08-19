@@ -44,9 +44,9 @@ def get_crash_motivation(log_file):
     return motivation
 
 
-def parse_test_due(base_path, base_dir, analysis_path):
+def parse_test_due(base_path, base_dir, analysis_path, thread_id):
     directory = base_dir + "/" + base_path
-    print("Parsing {}".format(base_path))
+    print(f"Parsing {base_path} at thread {thread_id}")
     all_logs = [y for x in os.walk(directory) for y in glob(os.path.join(x[0], '*.log'))]
     dir_test_dict = {}
     for log in all_logs:
@@ -88,7 +88,7 @@ def main():
     analysis_path = "./due_analysis_files/"
     os.system("mkdir -p " + analysis_path)
     threads = []
-    for base_path in database:
+    for thread_id, base_path in enumerate(database):
         th = threading.Thread(target=parse_test_due, args=(base_path, base_dir, analysis_path))
         threads.append(th)
         th.start()
