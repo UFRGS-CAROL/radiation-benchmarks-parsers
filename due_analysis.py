@@ -85,11 +85,11 @@ def main():
         "ChipIR032020"
     ]
 
-    analysis_path = "./due_analysis_files/"
+    analysis_path = "/home/fernando/Dropbox/temp/profile_files/csvs_files/due_analysis_files/"
     os.system("mkdir -p " + analysis_path)
     threads = []
     for thread_id, base_path in enumerate(database):
-        th = threading.Thread(target=parse_test_due, args=(base_path, base_dir, analysis_path))
+        th = threading.Thread(target=parse_test_due, args=(base_path, base_dir, analysis_path, thread_id))
         threads.append(th)
         th.start()
 
