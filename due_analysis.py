@@ -19,28 +19,24 @@ def check_arch(hostname):
 
 
 def get_crash_motivation(log_file):
-    motivation = "no crash"
-    has_end = False
-    pattern = ".*CUDA Framework error:(.*)Bailing.*"
     with open(log_file) as fp:
         lines = fp.readlines()
+        if len(lines) == 0:
+            return "system crash"
+        motivation = "no crash" if "END" in lines[-1] else "system crash"
+        pattern_framework = ".*CUDA Framework error:(.*)Bailing.*"
+        pattern_abort = ".*ABORT (.*)"
+
         for line in lines:
-            if "CUDA" in line:
-                m = re.match(pattern=pattern, string=line)
-                if m:
-                    motivation = m.group(1)
-                    motivation = motivation.strip().replace(".", "")
-            if "END" in line:
-                has_end = True
+            m = re.match(pattern=pattern_framework, string=line)
+            if m:
+                motivation = m.group(1).strip().replace(".", "")
+                break
 
-            if "ABORT" in line:
-                pattern = ".*ABORT (.*)"
-                m = re.match(pattern=pattern, string=line)
-                if m:
-                    motivation = m.group(1)
-
-    if motivation == "no crash" and has_end is False:
-        motivation = "system crash"
+            m = re.match(pattern=pattern_abort, string=line)
+            if m:
+                motivation = m.group(1)
+                break
     return motivation
 
 
