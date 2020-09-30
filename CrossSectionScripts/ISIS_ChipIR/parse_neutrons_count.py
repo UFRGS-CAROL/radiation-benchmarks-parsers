@@ -1,26 +1,21 @@
-#!/usr/bin/env python3.6
-import re
+#!/usr/bin/env python3
 import sys
 
+# Default line in the logs
+DEFAULT_CHIPIR_LINE_SIZE = 80
 
 def merge_files():
     output_file = sys.argv[1]
     paths = sys.argv[2:]
     paths.sort()
-    with open(output_file, "w") as outf:
+    with open(output_file, "w") as output_file:
         for path in paths:
-            with open(path, 'r') as fi:
-                lines = fi.readlines()
-                for line in lines:
-                    if 'Data From ChipIR' in line:
-                        continue
-                    try:
-                        if len(line) > 10:
-                            out_line = re.sub(r"\s+", ';', line)
-                            out_line = out_line[:-1]
-                            outf.write(out_line + "\n")
-                    except Exception as err:
-                        raise ValueError("ERROR: {} {}".format(line, err))
+            with open(path, 'r') as input_file:
+                for line in input_file:
+                    if len(line) >= DEFAULT_CHIPIR_LINE_SIZE:
+                        output_file.write(line)
+                    else:
+                        print(f"Line not parsed {line} at file {path}")
 
 
 if __name__ == '__main__':

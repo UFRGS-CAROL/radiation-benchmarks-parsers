@@ -14,7 +14,7 @@ def main():
     else:
         os.system("rm -r -f " + tmp_dir + "*")
 
-    all_tar = [y for x in os.walk(".") for y in glob(os.path.join(x[0], '*.tar.gz'))]
+    all_tar = [y for x in os.walk(".") for y in glob.glob(os.path.join(x[0], '*.tar.gz'))]
     for tar in all_tar:
         try:
             if os.system("tar -xzf " + tar + " -C " + tmp_dir) != 0:
@@ -23,7 +23,7 @@ def main():
             os.system("gzip -d " + tar + " -C " + tmp_dir + "/temp_file.tar")
             os.system("tar -xf " + tmp_dir + "/temp_file.tar" + " -C " + tmp_dir)
 
-    all_logs_list = [y for x in os.walk(".") for y in glob(os.path.join(x[0], '*.log'))]
+    all_logs_list = [y for x in os.walk(".") for y in glob.glob(os.path.join(x[0], '*.log'))]
     for logs in all_logs_list:
         os.system("cp " + logs + " " + tmp_dir)
 
@@ -37,7 +37,7 @@ def main():
 
     total_sdc = 0
 
-    all_logs = [y for x in os.walk(tmp_dir) for y in glob(os.path.join(x[0], '*.log'))]
+    all_logs = [y for x in os.walk(tmp_dir) for y in glob.glob(os.path.join(x[0], '*.log'))]
 
     all_logs.sort()
 

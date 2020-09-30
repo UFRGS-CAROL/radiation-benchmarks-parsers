@@ -1,6 +1,6 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python3
+
 import sys
-import re
 import csv
 from datetime import timedelta
 from datetime import datetime
@@ -38,12 +38,12 @@ def read_count_file(in_file_name):
     with open(in_file_name, 'r') as in_file:
         for l in in_file:
             # Sanity check, we require a date at the beginning of the line
-            line = l.rstrip()
-            if len(line.split(";")) < 7:
-                sys.stderr.write("Ignoring line (malformed):\n%s\n" % (line))
+            line = l.rstrip().split()
+            if len(line) < 7:
+                print(f"Ignoring line (malformed):{l}")
                 continue
 
-            if "N/A" in line:
+            if "N/A" in l:
                 break
 
             file_lines.append(line)
@@ -67,9 +67,9 @@ def get_fluency_flux(start_dt, end_dt, file_lines, factor, distance_factor):
     first_fission_counter = None
 
     # for l in inFile:
-    for l in file_lines:
+    for line in file_lines:
         # Parse the line
-        line = l.split(';')
+        # line = l.split()  # ';')
         # the date is organized in this order:
         # Date;time;decimal of second; Diamond counter threshold = 40mV(counts);
         # Diamond counter th = 20mV(counts); Diamond counter th = 30mV(counts);
